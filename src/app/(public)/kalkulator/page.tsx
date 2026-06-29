@@ -12,6 +12,7 @@ interface HasilDosis {
   interval: string
   kategori: string
   egfr: number | null
+  usiaPostnatal?: number
   peringatan: string[]
 }
 
@@ -56,7 +57,12 @@ function dosisAmikasin(usiaGestasi: number, bb: number): Omit<HasilDosis, 'antib
   return { dosis: Math.round(15 * bb * 100) / 100, interval, kategori, peringatan }
 }
 
-function dosisVankomisin(usiaGestasi: number, bb: number, scr: number): Omit<HasilDosis, 'antibiotik' | 'egfr'> {
+function dosisVankomisin(
+  usiaGestasi: number,
+  bb: number,
+  scr: number,
+  usiaPostnatal: number
+): Omit<HasilDosis, 'antibiotik' | 'egfr'> {
   const peringatan: string[] = []
   let dosisPkg: number, interval: string, kategori: string
 
@@ -69,12 +75,24 @@ function dosisVankomisin(usiaGestasi: number, bb: number, scr: number): Omit<Has
     dosisPkg = 15; kategori = 'Prematur/Aterm (≥ 29 minggu)'
   }
 
+  // Determine interval based on SCr AND postnatal age
   if (scr === 0) {
-    interval = '12 jam'
-    peringatan.push('Serum Kreatinin tidak tersedia. Menggunakan interval default 12 jam.')
+    // No SCr: use gestasi-based interval as fallback
+    if (usiaGestasi > 0 && usiaGestasi < 29 && usiaPostnatal <= 14) {
+      interval = '24 jam'
+      peringatan.push('SCr tidak tersedia. Interval 24 jam berdasarkan gestasi < 29 minggu + usia ≤ 14 hari.')
+    } else if (usiaGestasi > 0 && usiaGestasi < 29 && usiaPostnatal > 14) {
+      interval = '18 jam'
+      peringatan.push('SCr tidak tersedia. Interval 18 jam berdasarkan gestasi < 29 minggu + usia > 14 hari.')
+    } else {
+      interval = '12 jam'
+      peringatan.push('Serum Kreatinin tidak tersedia. Menggunakan interval default 12 jam.')
+    }
   } else if (scr > 1.2) {
     interval = '24 jam'
     peringatan.push('SCr tinggi (> 1,2 mg/dL). Interval diperpanjang menjadi 24 jam.')
+  } else if (scr > 0.7) {
+    interval = '18 jam'
   } else {
     interval = '12 jam'
   }
@@ -97,11 +115,14 @@ const referensiData: Record<Antibiotik, { kategori: string; dosis: string; inter
     { kategori: 'Usia gestasi tidak diketahui', dosis: '15 mg/kg', interval: '24 jam' },
   ],
   Vankomisin: [
-    { kategori: 'Prematur ekstrem (< 29 minggu)', dosis: '10 mg/kg', interval: 'Tergantung SCr' },
-    { kategori: 'Prematur/Aterm (≥ 29 minggu)', dosis: '15 mg/kg', interval: 'Tergantung SCr' },
-    { kategori: 'SCr normal (≤ 1,2 mg/dL)', dosis: '—', interval: '12 jam' },
-    { kategori: 'SCr tinggi (> 1,2 mg/dL)', dosis: '—', interval: '24 jam' },
-    { kategori: 'SCr tidak tersedia', dosis: '—', interval: '12 jam (default)' },
+    { kategori: 'Prematur ekstrem (< 29 minggu)', dosis: '10 mg/kg', interval: 'Tergantung SCr & usia' },
+    { kategori: 'Prematur/Aterm (≥ 29 minggu)', dosis: '15 mg/kg', interval: 'Tergantung SCr & usia' },
+    { kategori: 'SCr ≤ 0,7 mg/dL', dosis: '—', interval: '12 jam' },
+    { kategori: 'SCr 0,7–1,2 mg/dL', dosis: '—', interval: '18 jam' },
+    { kategori: 'SCr > 1,2 mg/dL', dosis: '—', interval: '24 jam' },
+    { kategori: 'SCr tidak tersedia + gest. < 29 mgg + usia ≤ 14 hari', dosis: '—', interval: '24 jam' },
+    { kategori: 'SCr tidak tersedia + gest. < 29 mgg + usia > 14 hari', dosis: '—', interval: '18 jam' },
+    { kategori: 'SCr tidak tersedia (lainnya)', dosis: '—', interval: '12 jam (default)' },
   ],
 }
 
@@ -110,10 +131,12 @@ export default function KalkulatorPage() {
   const [antibiotik, setAntibiotik] = useState<Antibiotik>('Gentamisin')
   const [bb, setBb] = useState('')
   const [usiaGestasi, setUsiaGestasi] = useState('')
+  const [usiaPostnatal, setUsiaPostnatal] = useState('')
   const [tinggiBadan, setTinggiBadan] = useState('')
   const [scr, setScr] = useState('')
   const [hasil, setHasil] = useState<HasilDosis | null>(null)
   const [error, setError] = useState('')
+  const [bbWarning, setBbWarning] = useState(false)
   const [showReferensi, setShowReferensi] = useState(false)
 
   const handleHitung = () => {
@@ -127,6 +150,7 @@ export default function KalkulatorPage() {
     }
 
     const ugNum = parseFloat(usiaGestasi) || 0
+    const upNum = parseFloat(usiaPostnatal) || 0
     const tbNum = parseFloat(tinggiBadan) || 0
     const scrNum = parseFloat(scr) || 0
     const egfr = hitungEgfr(tbNum, scrNum)
@@ -135,14 +159,15 @@ export default function KalkulatorPage() {
 
     if (antibiotik === 'Gentamisin') hasilDosis = dosisGentamisin(ugNum, bbNum)
     else if (antibiotik === 'Amikasin') hasilDosis = dosisAmikasin(ugNum, bbNum)
-    else hasilDosis = dosisVankomisin(ugNum, bbNum, scrNum)
+    else hasilDosis = dosisVankomisin(ugNum, bbNum, scrNum, upNum)
 
     setHasil({ ...hasilDosis, antibiotik, egfr })
+    setBbWarning(bbNum > 5)
   }
 
   const handleReset = () => {
-    setBb(''); setUsiaGestasi(''); setTinggiBadan(''); setScr('')
-    setHasil(null); setError('')
+    setBb(''); setUsiaGestasi(''); setUsiaPostnatal(''); setTinggiBadan(''); setScr('')
+    setHasil(null); setError(''); setBbWarning(false)
   }
 
   return (
@@ -222,6 +247,24 @@ export default function KalkulatorPage() {
                   />
                 </div>
 
+                {/* Usia Postnatal */}
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">
+                    Usia Postnatal (hari)
+                    <span className="text-text-muted font-normal ml-1">opsional</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="90"
+                    value={usiaPostnatal}
+                    onChange={(e) => setUsiaPostnatal(e.target.value)}
+                    placeholder="cth: 7"
+                    className="w-full px-3 py-2.5 rounded-lg bg-background border border-border text-text text-sm placeholder:text-text-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                  />
+                </div>
+
                 {/* Tinggi Badan */}
                 <div>
                   <label className="block text-sm font-medium text-text mb-1.5">
@@ -256,6 +299,14 @@ export default function KalkulatorPage() {
                   />
                 </div>
               </div>
+
+              {/* BB Warning */}
+              {bbWarning && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm text-warning mb-4">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                  <span>Berat badan &gt; 5 kg tidak umum untuk neonatus. Periksa kembali nilai yang dimasukkan. Kalkulasi tetap dilanjutkan.</span>
+                </div>
+              )}
 
               {/* Error */}
               {error && (
@@ -309,10 +360,10 @@ export default function KalkulatorPage() {
 
                 {/* eGFR */}
                 {hasil.egfr !== null && (
-                  <div className="p-4 rounded-xl bg-info/[0.08] border border-info/20">
-                    <p className="text-xs font-medium text-info uppercase tracking-wider mb-1">eGFR (Schwartz)</p>
+                  <div className="p-4 rounded-xl bg-blue/[0.08] border border-blue/20">
+                    <p className="text-xs font-medium text-blue uppercase tracking-wider mb-1">eGFR (Schwartz)</p>
                     <p className="text-xl font-bold text-text">{hasil.egfr} <span className="text-sm font-normal text-text-muted">mL/min/1.73m²</span></p>
-                    <p className="text-xs text-text-muted mt-1">k = 0,45 (neonatus aterm)</p>
+                    <p className="text-xs text-text-muted mt-1">eGFR = (0,45 × TB) / SCr · k = 0,45 (neonatus aterm)</p>
                   </div>
                 )}
 
@@ -334,6 +385,22 @@ export default function KalkulatorPage() {
                   <span>
                     Hasil ini merupakan <strong className="text-text">rekomendasi awal</strong>. Selalu konfirmasi dengan farmasis klinik atau dokter spesialis neonatologi sebelum pemberian.
                   </span>
+                </div>
+
+                {/* Print Button */}
+                <div className="flex gap-3 pt-2 border-t border-border">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-text-muted text-xs font-medium hover:bg-surface-2 hover:text-text transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 6 2 18 2 18 9"/>
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                      <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    Print / Simpan PDF
+                  </button>
                 </div>
               </div>
             </div>
@@ -385,6 +452,15 @@ export default function KalkulatorPage() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media print {
+          nav, footer, .no-print { display: none !important; }
+          body { background: white !important; }
+          .bg-surface { background: white !important; border: 1px solid #ddd !important; }
+          .text-primary { color: #01696f !important; }
+        }
+      `}</style>
     </div>
   )
 }
