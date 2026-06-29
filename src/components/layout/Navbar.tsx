@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Menu, X, Sun, Moon } from 'lucide-react'
 import { Logo } from './Logo'
 
@@ -9,6 +10,7 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +37,7 @@ export const Navbar = () => {
     { name: 'Beranda', href: '/' },
     { name: 'Informasi Obat', href: '/obat' },
     { name: 'Tanya Farmasis', href: '/tanya' },
+    { name: 'Kalkulator Dosis', href: '/kalkulator' },
   ]
 
   return (
@@ -54,7 +57,11 @@ export const Navbar = () => {
             <Link 
               key={link.name} 
               href={link.href}
-              className="text-sm font-medium text-text-muted hover:text-primary transition-colors"
+              className={`text-sm font-medium transition-colors ${
+                pathname === link.href
+                  ? 'text-primary'
+                  : 'text-text-muted hover:text-primary'
+              }`}
             >
               {link.name}
             </Link>
@@ -104,7 +111,9 @@ export const Navbar = () => {
                 key={link.name} 
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="text-lg font-medium text-text hover:text-primary"
+                className={`text-lg font-medium transition-colors ${
+                  pathname === link.href ? 'text-primary' : 'text-text hover:text-primary'
+                }`}
               >
                 {link.name}
               </Link>
