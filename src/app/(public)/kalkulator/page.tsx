@@ -77,7 +77,6 @@ function dosisVankomisin(
 
   // Determine interval based on SCr AND postnatal age
   if (scr === 0) {
-    // No SCr: use gestasi-based interval as fallback
     if (usiaGestasi > 0 && usiaGestasi < 29 && usiaPostnatal <= 14) {
       interval = '24 jam'
       peringatan.push('SCr tidak tersedia. Interval 24 jam berdasarkan gestasi < 29 minggu + usia ≤ 14 hari.')
@@ -360,8 +359,8 @@ export default function KalkulatorPage() {
 
                 {/* eGFR */}
                 {hasil.egfr !== null && (
-                  <div className="p-4 rounded-xl bg-blue/[0.08] border border-blue/20">
-                    <p className="text-xs font-medium text-blue uppercase tracking-wider mb-1">eGFR (Schwartz)</p>
+                  <div className="p-4 rounded-xl bg-info/[0.08] border border-info/20">
+                    <p className="text-xs font-medium text-info uppercase tracking-wider mb-1">eGFR (Schwartz)</p>
                     <p className="text-xl font-bold text-text">{hasil.egfr} <span className="text-sm font-normal text-text-muted">mL/min/1.73m²</span></p>
                     <p className="text-xs text-text-muted mt-1">eGFR = (0,45 × TB) / SCr · k = 0,45 (neonatus aterm)</p>
                   </div>
