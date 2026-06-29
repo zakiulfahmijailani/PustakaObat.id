@@ -179,7 +179,7 @@ export default function KalkulatorPage() {
             <div className="p-2 rounded-lg bg-primary/10">
               <Calculator size={22} className="text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-text font-serif">Kalkulator Dosis Antibiotik</h1>
+            <h1 className="text-2xl font-bold text-text font-serif">Kalkulator Dosis Antibiotik Apoteq</h1>
           </div>
           <p className="text-text-muted text-sm leading-relaxed">
             Kalkulator dosis antibiotik indeks terapi sempit (NTI) untuk bayi dengan sepsis neonatorum.
