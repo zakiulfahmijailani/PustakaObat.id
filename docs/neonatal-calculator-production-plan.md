@@ -22,7 +22,7 @@
 - Single-case recommendations for gentamisin, amikasin, and vankomisin.
 - Existing-regimen evaluation using total-dose boundaries and explicit interval semantics.
 - In-memory-only current calculation and print report.
-- Accessible, responsive UI and traceable rule version `2026.07.13-production-1`.
+- Accessible, responsive UI and traceable rule version `2026.07.13-production-2`.
 
 ## Deferred scope
 

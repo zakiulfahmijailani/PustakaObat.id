@@ -20,11 +20,13 @@ describe("gentamicin rules", () => {
     [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 8 }, 36],
     [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 28 }, 36],
     [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 29 }, 24],
-    [{ gestationalAgeWeeks: 29, postnatalAgeDays: 7 }, 36],
+    [{ gestationalAgeWeeks: 29, postnatalAgeDays: 7 }, 48],
+    [{ gestationalAgeWeeks: 29, postnatalAgeDays: 8 }, 36],
     [{ gestationalAgeWeeks: 33.9, postnatalAgeDays: 7 }, 36],
     [{ gestationalAgeWeeks: 33.9, postnatalAgeDays: 8 }, 24],
-    [{ gestationalAgeWeeks: 34, postnatalAgeDays: 1 }, 24],
-  ])("uses production GA/PNA comparator boundary %#", (override, hours) => {
+    [{ gestationalAgeWeeks: 34, postnatalAgeDays: 7 }, 36],
+    [{ gestationalAgeWeeks: 34, postnatalAgeDays: 8 }, 24],
+  ])("matches notebook GA/PNA comparator boundary %#", (override, hours) => {
     expect(gent(override).recommendations.institutionalAgeComparator.interval).toMatchObject({ kind: "single", hours });
   });
 

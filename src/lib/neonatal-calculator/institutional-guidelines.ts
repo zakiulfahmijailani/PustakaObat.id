@@ -19,9 +19,9 @@ export function institutionalGentamicinPrimaryInterval(): IntervalRecommendation
 
 export function institutionalGentamicinAgeInterval(input: PatientInput): IntervalRecommendation {
   let hours: number;
-  if (input.gestationalAgeWeeks < 29) {
+  if (input.gestationalAgeWeeks <= 29) {
     hours = input.postnatalAgeDays <= 7 ? 48 : input.postnatalAgeDays <= 28 ? 36 : 24;
-  } else if (input.gestationalAgeWeeks < 34) {
+  } else if (input.gestationalAgeWeeks <= 34) {
     hours = input.postnatalAgeDays <= 7 ? 36 : 24;
   } else {
     hours = 24;
@@ -59,11 +59,11 @@ export function institutionalVancomycinAgeInterval(
   postnatalAgeDays: number,
 ): IntervalRecommendation {
   let hours: number;
-  if (pmaWeeks < 29) {
+  if (pmaWeeks <= 29) {
     hours = postnatalAgeDays <= 14 ? 18 : 12;
-  } else if (pmaWeeks < 36) {
+  } else if (pmaWeeks <= 36) {
     hours = postnatalAgeDays <= 14 ? 12 : 8;
-  } else if (pmaWeeks < 44) {
+  } else if (pmaWeeks <= 44) {
     hours = postnatalAgeDays <= 7 ? 12 : 8;
   } else {
     hours = 8;

@@ -35,14 +35,16 @@ describe("vancomycin rules", () => {
   });
 
   it.each([
+    [{ gestationalAgeWeeks: 27, postnatalAgeDays: 14 }, 18],
     [{ gestationalAgeWeeks: 27.5, postnatalAgeDays: 7 }, 18],
     [{ gestationalAgeWeeks: 24, postnatalAgeDays: 29 }, 12],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 14 }, 12],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 15 }, 8],
+    [{ gestationalAgeWeeks: 34, postnatalAgeDays: 14 }, 12],
     [{ gestationalAgeWeeks: 36, postnatalAgeDays: 7 }, 12],
     [{ gestationalAgeWeeks: 36, postnatalAgeDays: 8 }, 8],
-    [{ gestationalAgeWeeks: 43, postnatalAgeDays: 7 }, 8],
-  ])("covers UNC PMA/PNA comparator %#", (override, hours) => {
+    [{ gestationalAgeWeeks: 43, postnatalAgeDays: 7 }, 12],
+  ])("matches notebook UNC PMA/PNA comparator boundary %#", (override, hours) => {
     expect(vanc(override).recommendations.institutionalAgeComparator.interval).toMatchObject({ kind: "single", hours });
   });
 

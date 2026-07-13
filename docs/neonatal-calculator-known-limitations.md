@@ -1,6 +1,7 @@
 # Neonatal Calculator Known Limitations
 
 - The source notebook has valid-looking static Python but no recorded execution outputs. TypeScript behavior is verified by automated tests, not by treating the notebook as a runtime oracle.
+- Supported deterministic notebook rules now use the same executable boundary operators and antibiotic-specific qualitative notes. Production-only safety guards remain explicit: missing renal data are unknown, not normal; discrete interval semantics are preserved; licensed commercial monograph calculations and research/batch tooling remain excluded.
 - Code implementation does not imply clinical, regulatory, medical-device, or institutional validation.
 - Institutional protocols and formularies can change. Every rule must be independently reviewed against the latest controlled source before real-world use.
 - The UNC-derived renal criterion is a vankomisin decision criterion. For gentamisin/amikasin it produces a cautious review warning only; aminoglycoside renal adjustment is not automated.

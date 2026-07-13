@@ -8,9 +8,15 @@ describe("UNC-derived vancomycin renal signal", () => {
     expect(determineVancomycinRenalStatus(patient({ serumCreatinineMgDl: 1 }))).toBe("renal-impairment-criteria-met");
   });
 
-  it("matches at SCr 0.5 plus UOP exactly 1.0", () => {
+  it("does not match at SCr 0.5 plus UOP exactly 1.0", () => {
     expect(
       determineVancomycinRenalStatus(patient({ serumCreatinineMgDl: 0.5, urineOutputMlKgHour: 1 })),
+    ).toBe("no-renal-impairment-criteria-met");
+  });
+
+  it("matches at SCr 0.5 plus UOP just below 1.0", () => {
+    expect(
+      determineVancomycinRenalStatus(patient({ serumCreatinineMgDl: 0.5, urineOutputMlKgHour: 0.999 })),
     ).toBe("renal-impairment-criteria-met");
   });
 

@@ -1,5 +1,27 @@
 # Neonatal Calculator Changelog
 
+## 2026-07-13 — production rule version `2026.07.13-production-2`
+
+### Notebook parity update
+
+- Matched the executable notebook boundaries for gentamisin GA 29/34, amikasin PMA 29/34, and vankomisin PMA 29/36/44.
+- Matched the renal combination criterion exactly: SCr >=0.5 mg/dL requires UOP strictly below 1 mL/kg/hour; UOP exactly 1.0 does not meet that branch.
+- Replaced generic qualitative references with the notebook's antibiotic-specific WHO, Swiss Society of Neonatology, JAID/JSC, and ACOG/AAP context.
+- Added regression coverage at every behavior-changing boundary and bumped the traceable rule version.
+
+### Preserved production safety controls
+
+- Missing renal data remain `data-unavailable` and are never assumed normal.
+- Gentamisin q24h OR q48h remains a discrete compliance rule, so q36h is not silently accepted as an in-range institutional interval.
+- Licensed commercial monograph calculations, batch/statistical workflows, and Python-generated reports remain excluded from the public production calculator.
+
+### Verification
+
+- `npm run lint` — passed with 0 errors; 8 pre-existing warnings remain in unrelated components.
+- `npm run typecheck` — passed.
+- `npm test` — 11 files and 97 tests passed.
+- `npm run build` — passed; `/kalkulator` remains statically prerendered.
+
 ## 2026-07-13 — production rule version `2026.07.13-production-1`
 
 ### Files changed

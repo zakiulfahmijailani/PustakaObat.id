@@ -12,12 +12,22 @@ describe("recommendation and evaluation engine", () => {
       "institutionalAgeComparator",
       "anmf2024",
     ]);
-    expect(result.calculatorRuleVersion).toBe("2026.07.13-production-1");
+    expect(result.calculatorRuleVersion).toBe("2026.07.13-production-2");
     expect(result.qualitativeReferenceNotes).toHaveLength(4);
     expect(result.qualitativeReferenceNotes.join(" ")).toContain("WHO 2024");
     expect(result.qualitativeReferenceNotes.join(" ")).toContain("Swiss Society of Neonatology 2024");
     expect(result.qualitativeReferenceNotes.join(" ")).toContain("JAID/JSC 2021");
-    expect(result.qualitativeReferenceNotes.join(" ")).toContain("ACOG/AAP");
+    expect(result.qualitativeReferenceNotes.join(" ")).toContain("ACOG 2020/AAP");
+  });
+
+  it.each([
+    ["gentamisin", "ampisilin/penisilin + gentamisin"],
+    ["amikasin", "resistensi gentamisin tinggi"],
+    ["vankomisin", "kecurigaan MRSA/CoNS"],
+  ] as const)("returns notebook-specific qualitative notes for %s", (antibiotic, expected) => {
+    const notes = calculateRecommendations(patient({ antibiotic })).qualitativeReferenceNotes;
+    expect(notes).toHaveLength(4);
+    expect(notes.join(" ")).toContain(expected);
   });
 
   it("evaluates inclusive dose boundaries and above/below deviations", () => {

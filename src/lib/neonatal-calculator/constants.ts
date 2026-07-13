@@ -1,6 +1,6 @@
 import type { Antibiotic } from "./types";
 
-export const CALCULATOR_RULE_VERSION = "2026.07.13-production-1";
+export const CALCULATOR_RULE_VERSION = "2026.07.13-production-2";
 
 export const CLINICAL_DISCLAIMER =
   "Alat ini merupakan clinical decision support dan bukan pengganti penilaian klinis apoteker, dokter penanggung jawab pasien (DPJP), maupun therapeutic drug monitoring. Selalu verifikasi dengan SPO/formularium rumah sakit versi terbaru, kondisi klinis pasien, fungsi ginjal, dan hasil kadar obat bila tersedia.";
@@ -26,9 +26,23 @@ export const ANTIBIOTIC_LABELS: Record<Antibiotic, string> = {
   vankomisin: "Vankomisin",
 };
 
-export const QUALITATIVE_REFERENCE_NOTES = [
-  "WHO 2024: konteks pemilihan dan tata laksana antibiotik pada infeksi bakteri serius bayi; bukan nomogram dosis neonatal rinci untuk kalkulator ini.",
-  "Swiss Society of Neonatology 2024: pendekatan berbasis probabilitas pada risiko early-onset sepsis; tidak digunakan sebagai aturan hitung dosis.",
-  "JAID/JSC 2021: konteks strategi tata laksana sepsis dan infeksi terkait kateter; tidak digunakan sebagai tabel dosis neonatal.",
-  "ACOG/AAP: konteks pencegahan dan tata laksana early-onset sepsis; tidak digabungkan ke nomogram dosis.",
-] as const;
+export const QUALITATIVE_REFERENCE_NOTES: Record<Antibiotic, readonly string[]> = {
+  gentamisin: [
+    "WHO 2024: ampisilin/penisilin + gentamisin merupakan regimen empiris lini pertama untuk sepsis bayi 0–59 hari; rujukan dosis 5–7,5 mg/kg/kali dan durasi minimal 10 hari, tanpa nomogram interval berbasis usia gestasi.",
+    "Swiss Society of Neonatology 2024: amoksisilin + aminoglikosida tetap pilihan pertama; fokus pada keputusan memulai/menghentikan terapi, bukan rincian dosis.",
+    "JAID/JSC 2021: pedoman umum sepsis dan infeksi aliran darah terkait kateter; tidak memuat tabel dosis gentamisin neonatal rinci.",
+    "ACOG 2020/AAP: ACOG membahas profilaksis intrapartum ibu; AAP merekomendasikan ampisilin + gentamisin secara empiris tanpa merinci dosis neonatal.",
+  ],
+  amikasin: [
+    "WHO 2024: amikasin bukan regimen inti; dapat menjadi alternatif di wilayah dengan resistensi gentamisin tinggi.",
+    "Swiss Society of Neonatology 2024: tidak merinci amikasin; fokus pada keputusan memulai/menghentikan terapi empiris.",
+    "JAID/JSC 2021: tidak memuat tabel dosis amikasin neonatal rinci.",
+    "ACOG 2020/AAP: tidak membahas dosis amikasin neonatal secara langsung; ACOG berfokus pada profilaksis GBS pada ibu.",
+  ],
+  vankomisin: [
+    "WHO 2024: vankomisin bukan regimen inti sepsis neonatal; penggunaannya selektif untuk kecurigaan MRSA/CoNS di fasilitas rujukan.",
+    "Swiss Society of Neonatology 2024: tidak merinci vankomisin; fokus pada patogen utama early-onset sepsis.",
+    "JAID/JSC 2021: vankomisin dapat dikombinasikan pada kecurigaan pneumokokus resisten beta-laktam atau MRSA, tanpa tabel dosis neonatal spesifik.",
+    "ACOG 2020/AAP: vankomisin dibahas sebagai profilaksis intrapartum ibu pada kondisi tertentu, bukan sebagai dosis neonatal; penggunaan neonatal umumnya terkait sepsis awitan lambat atau dugaan MRSA.",
+  ],
+};

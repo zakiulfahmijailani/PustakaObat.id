@@ -38,11 +38,11 @@ export function anmfAmikacin(
 ): { dose: DoseRecommendation; interval: IntervalRecommendation; notes: string[] } {
   let mgPerKg: number;
   let hours: number;
-  if (pmaWeeks < 29) {
+  if (pmaWeeks <= 29) {
     if (input.postnatalAgeDays <= 7) [mgPerKg, hours] = [14, 48];
     else if (input.postnatalAgeDays <= 28) [mgPerKg, hours] = [12, 36];
     else [mgPerKg, hours] = [12, 24];
-  } else if (pmaWeeks < 34) {
+  } else if (pmaWeeks <= 34) {
     [mgPerKg, hours] = input.postnatalAgeDays <= 7 ? [12, 36] : [12, 24];
   } else {
     [mgPerKg, hours] = [12, 24];

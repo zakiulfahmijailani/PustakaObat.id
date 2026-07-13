@@ -282,7 +282,7 @@ export function calculateRecommendations(input: PatientInput): CalculatorResult 
     renalStatus,
     recommendations,
     globalWarnings,
-    qualitativeReferenceNotes: [...QUALITATIVE_REFERENCE_NOTES],
+    qualitativeReferenceNotes: [...QUALITATIVE_REFERENCE_NOTES[safeInput.antibiotic]],
     calculatorRuleVersion: CALCULATOR_RULE_VERSION,
   };
 }

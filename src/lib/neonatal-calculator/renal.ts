@@ -11,7 +11,7 @@ export function determineVancomycinRenalStatus(input: PatientInput): RenalStatus
     input.serumCreatinineMgDl >=
       RENAL_THRESHOLDS.serumCreatinineWithLowUrineOutputMgDl &&
     input.urineOutputMlKgHour !== undefined &&
-    input.urineOutputMlKgHour <= RENAL_THRESHOLDS.lowUrineOutputMlKgHour;
+    input.urineOutputMlKgHour < RENAL_THRESHOLDS.lowUrineOutputMlKgHour;
   return highCreatinine || combinedSignal
     ? "renal-impairment-criteria-met"
     : "no-renal-impairment-criteria-met";
