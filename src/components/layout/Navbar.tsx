@@ -89,13 +89,17 @@ export const Navbar = () => {
         <div className="flex items-center gap-4 md:hidden">
           <button 
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-surface-2 transition-colors text-text-muted"
+            className="min-h-11 min-w-11 p-2 rounded-full hover:bg-surface-2 transition-colors text-text-muted"
+            aria-label={theme === 'light' ? 'Aktifkan mode gelap' : 'Aktifkan mode terang'}
           >
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-full hover:bg-surface-2 transition-colors text-text"
+            className="min-h-11 min-w-11 p-2 rounded-full hover:bg-surface-2 transition-colors text-text"
+            aria-label={isOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation-menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -104,7 +108,7 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-surface border-b border-border p-6 shadow-xl animate-in slide-in-from-top duration-300">
+        <div id="mobile-navigation-menu" className="md:hidden absolute top-full left-0 right-0 bg-surface border-b border-border p-6 shadow-xl animate-in slide-in-from-top duration-300">
           <div className="flex flex-col gap-6">
             {navLinks.map((link) => (
               <Link 

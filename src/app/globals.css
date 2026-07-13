@@ -105,3 +105,44 @@ h1, h2, h3, h4, h5, h6, .font-serif {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  nav,
+  footer:not(.print-always),
+  .print-hide {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 10pt;
+  }
+
+  .print-container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-always,
+  .print-evaluation {
+    display: block !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+}
