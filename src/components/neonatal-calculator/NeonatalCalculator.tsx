@@ -182,6 +182,15 @@ function Direction({ comparison }: { comparison: DirectionComparison | null }) {
   return comparison ? <span>{comparison.message}</span> : <span>Tidak berlaku.</span>;
 }
 
+function formatEvaluationInterval(hours: number | null): string {
+  return hours === null ? "Tidak berlaku" : `q${hours}h`;
+}
+
+function formatEvaluationIntervalRange(minHours: number | null, maxHours: number | null): string {
+  if (minHours === null || maxHours === null) return "Tidak berlaku";
+  return minHours === maxHours ? `q${minHours}h` : `q${minHours}h–q${maxHours}h`;
+}
+
 function EvaluationCard({ target }: { target: RecommendationEvaluation }) {
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 print-break-inside-avoid">
@@ -453,7 +462,42 @@ export function NeonatalCalculator() {
               <Button type="button" onClick={runEvaluation} className="mt-5 min-h-12 w-full rounded-xl"><CheckCircle2 size={18} />Evaluasi regimen</Button>
             </div>
             <div className="space-y-4">
-              {!evaluation ? <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-text-muted print-hide">Masukkan dosis dan interval manual serta aktual untuk melihat perbandingan tiga sumber secara terpisah.</div> : evaluation.targets.map((target) => <EvaluationCard key={target.recommendationId} target={target} />)}
+              {!evaluation ? (
+                <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-text-muted print-hide">Masukkan dosis dan interval manual serta aktual untuk melihat perbandingan tiga sumber secara terpisah.</div>
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Hasil evaluasi aktif</p>
+                        <h2 className="text-xl font-semibold text-text">Evaluasi Pemberian — {ANTIBIOTIC_LABELS[result.input.antibiotic]}</h2>
+                      </div>
+                      <Button type="button" variant="outline" onClick={printReport} className="print-hide">
+                        <Printer size={17} />Cetak / Simpan sebagai PDF
+                      </Button>
+                    </div>
+                    <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                      <div>
+                        <dt className="text-text-muted">Rentang dosis manual</dt>
+                        <dd className="font-semibold text-text">{formatNumber(evaluation.input.manualDoseMinMg)}–{formatNumber(evaluation.input.manualDoseMaxMg)} mg</dd>
+                      </div>
+                      <div>
+                        <dt className="text-text-muted">Dosis aktual</dt>
+                        <dd className="font-semibold text-text">{formatNumber(evaluation.input.actualDoseMg)} mg</dd>
+                      </div>
+                      <div>
+                        <dt className="text-text-muted">Rentang interval manual</dt>
+                        <dd className="font-semibold text-text">{formatEvaluationIntervalRange(evaluation.input.manualIntervalMinHours, evaluation.input.manualIntervalMaxHours)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-text-muted">Interval aktual</dt>
+                        <dd className="font-semibold text-text">{formatEvaluationInterval(evaluation.input.actualIntervalHours)}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {evaluation.targets.map((target) => <EvaluationCard key={target.recommendationId} target={target} />)}
+                </>
+              )}
             </div>
           </div>
         )}

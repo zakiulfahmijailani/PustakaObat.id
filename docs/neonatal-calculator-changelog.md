@@ -2,6 +2,12 @@
 
 ## 2026-07-13 — production rule version `2026.07.13-production-2`
 
+### Evaluation PDF action
+
+- Added a visible `Cetak / Simpan sebagai PDF` action to the completed `Evaluasi Pemberian` result.
+- Added the evaluated manual/actual dose and interval summary to the on-screen and print report output.
+- The report remains browser-native, in-memory only, and sends no clinical data to an external service.
+
 ### Notebook parity update
 
 - Matched the executable notebook boundaries for gentamisin GA 29/34, amikasin PMA 29/34, and vankomisin PMA 29/36/44.
