@@ -1,0 +1,38 @@
+{
+  "dataset": "Apoteq WHO Medicine Import",
+  "generated_at": "2026-07-13T20:43:09.263782+00:00",
+  "source_organization": "World Health Organization",
+  "source_datasets": [
+    {
+      "name": "WHO Electronic Essential Medicines List",
+      "url": "https://list.essentialmeds.org/",
+      "records": 645
+    },
+    {
+      "name": "WHO AWaRe Antibiotics Portal",
+      "url": "https://aware.essentialmeds.org/list",
+      "records": 385
+    }
+  ],
+  "processed_catalog_records": 962,
+  "import_policy": {
+    "verification_status": "pending",
+    "requires_pharmacist_review": true,
+    "may_be_publicly_displayed": true,
+    "bpom_registration_confirmed": false
+  },
+  "files": {
+    "raw/who_eeml_medicines.csv": {
+      "sha256": "af0cda720eb9b2a398d7747e02cf4ba6f551ab385043984cecce4fe413c3528f"
+    },
+    "raw/who_aware_candidates.csv": {
+      "sha256": "4f6f85cafca76e9975c9bd48b2c55d0ecc757863ee291b15785433471cb09dde"
+    },
+    "processed/who_medicine_catalog.json": {
+      "sha256": "4b9c9e6191f4679edbd216d9bc7a8f058f2ebdeebe7fe4d67b1232ca6037b539"
+    },
+    "processed/who_medicine_catalog.csv": {
+      "sha256": "39645561b35db939436bf822b59e9a3170f863aa447926220f824d86314b8ab5"
+    }
+  }
+}

@@ -7,6 +7,8 @@ import {
   Users, 
   Shield, 
   History, 
+  BookOpenCheck,
+  Database,
   LogOut,
   User,
   Settings,
@@ -16,7 +18,7 @@ import {
 } from 'lucide-react'
 import { Logo } from '@/components/layout/Logo'
 import { Button } from '@/components/ui/Button'
-import { MOCK_PROFILES } from '@/lib/mock-data'
+import { requireActiveProfile } from '@/lib/auth/server'
 
 interface NavItem {
   title: string
@@ -29,23 +31,24 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Static Demo: Always use pharmacist Budi Santoso
-  const profile = MOCK_PROFILES[0]
+  const { profile } = await requireActiveProfile()
 
   const pharmacistNav: NavItem[] = [
     { title: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { title: 'Obat Saya', href: '/dashboard/obat', icon: Pill },
+    { title: 'Review Data WHO', href: '/dashboard/who', icon: BookOpenCheck },
     { title: 'Tanya Farmasis', href: '/dashboard/tanya', icon: MessageSquare },
   ]
 
   const verifierNav: NavItem[] = [
     { title: 'Queue Verifikasi', href: '/dashboard/verifikasi', icon: Shield },
-    { title: 'Semua Obat', href: '/dashboard/obat/all', icon: Pill },
+    { title: 'Semua Obat', href: '/dashboard/obat', icon: Pill },
   ]
 
   const adminNav: NavItem[] = [
     { title: 'User Management', href: '/dashboard/admin/users', icon: Users },
     { title: 'Audit Logs', href: '/dashboard/admin/audit', icon: History },
+    { title: 'Kelola Data WHO', href: '/dashboard/admin/who', icon: Database },
     { title: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
   ]
 

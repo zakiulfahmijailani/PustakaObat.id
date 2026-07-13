@@ -1,162 +1,99 @@
-import React from 'react'
-import { MOCK_DRUGS, MOCK_CATEGORIES } from '@/lib/mock-data'
-import { Search, SlidersHorizontal, ArrowRight, Pill as PillIcon } from 'lucide-react'
-import { DrugCard } from '@/components/drug/DrugCard'
+import Link from 'next/link'
+import { Database, Globe2, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { WhoMedicineCard } from '@/components/drug/WhoMedicineCard'
+import { CatalogPagination } from '@/components/drug/CatalogPagination'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import Link from 'next/link'
-import { DrugCategory } from '@/types'
+import { AWARE_CATEGORIES, WHO_PAGE_SIZE } from '@/lib/who/constants'
+import { getPublicWhoMedicines } from '@/lib/who/queries'
 
 interface SearchParams {
   q?: string
-  category?: string
+  aware?: string
+  essential?: string
+  page?: string
 }
 
-export default async function DrugSearchPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>
-}) {
-  const { q, category } = await searchParams
-  
-  // Use mock data
-  const categories = MOCK_CATEGORIES
-  
-  let drugs = [...MOCK_DRUGS]
+export const dynamic = 'force-dynamic'
 
-  if (q) {
-    const searchTerm = q.toLowerCase()
-    drugs = drugs.filter(drug => 
-      drug.name.toLowerCase().includes(searchTerm) || 
-      drug.brand_names.some(brand => brand.toLowerCase().includes(searchTerm))
-    )
-  }
+export default async function DrugSearchPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const filters = await searchParams
+  const { medicines, count, page, error } = await getPublicWhoMedicines(filters)
+  const first = count ? (page - 1) * WHO_PAGE_SIZE + 1 : 0
+  const last = Math.min(page * WHO_PAGE_SIZE, count)
 
-  if (category) {
-    drugs = drugs.filter(drug => drug.drug_categories?.slug === category)
+  const filterHref = (values: Partial<SearchParams>) => {
+    const params = new URLSearchParams()
+    const merged = { ...filters, page: undefined, ...values }
+    Object.entries(merged).forEach(([key, value]) => value && params.set(key, value))
+    const query = params.toString()
+    return query ? `/obat?${query}` : '/obat'
   }
 
   return (
-    <div className="container px-4 pb-24 space-y-12">
-      {/* Search Header */}
-      <section className="pt-10 flex flex-col md:flex-row items-end justify-between gap-8 border-b border-border pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="space-y-4 max-w-2xl">
-          <Badge variant="default" className="px-4 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest">
-            Database Obat Terverifikasi
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-serif text-text leading-tight">
-            Temukan Informasi <span className="italic">Akurat</span> Penggunaan Obat.
+    <div className="container space-y-10 px-4 pb-24">
+      <section className="grid gap-8 border-b border-border pb-10 pt-8 lg:grid-cols-[1fr_420px] lg:items-end">
+        <div className="max-w-3xl space-y-5">
+          <Badge className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest">WHO Medicine Catalog</Badge>
+          <h1 className="text-4xl font-serif leading-tight text-text md:text-6xl">
+            Informasi obat dari sumber <span className="italic text-primary">resmi WHO.</span>
           </h1>
-          <p className="text-lg text-text-muted leading-relaxed">
-            Telusuri ribuan monografi obat yang disusun secara profesional untuk keamanan penggunaan obat masyarakat.
+          <p className="max-w-2xl text-lg leading-relaxed text-text-muted">
+            Telusuri WHO Electronic Essential Medicines List dan klasifikasi antibiotik AWaRe. Status BPOM belum tersedia pada katalog ini.
           </p>
         </div>
-
-        <div className="w-full md:w-96 space-y-6">
-          <form action="/obat" method="get" className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors" size={20} />
-            <input 
-              name="q"
-              type="text" 
-              defaultValue={q}
-              placeholder="Cari nama obat..." 
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-surface border border-border focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
-            />
-            <input type="hidden" name="category" value={category || ''} />
-          </form>
-        </div>
+        <form action="/obat" method="get" className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+          <input name="q" defaultValue={filters.q} placeholder="Cari nama obat, misalnya amoxicillin" className="w-full rounded-2xl border border-border bg-surface py-4 pl-12 pr-4 shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+          {filters.aware && <input type="hidden" name="aware" value={filters.aware} />}
+          {filters.essential && <input type="hidden" name="essential" value={filters.essential} />}
+        </form>
       </section>
 
-      <div className="grid lg:grid-cols-[280px_1fr] gap-12">
-        {/* Filters Sidebar */}
-        <aside className="space-y-10 animate-in fade-in slide-in-from-left-4 duration-700 delay-100">
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 text-sm font-bold text-text uppercase tracking-widest">
-              <SlidersHorizontal size={18} className="text-primary" />
-              <span>KATEGORI OBAT</span>
-            </div>
-            
-            <div className="flex flex-col gap-1.5">
-              <Link 
-                href="/obat"
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between group ${
-                  !category 
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                    : 'text-text-muted hover:bg-surface-2 hover:text-primary border border-transparent hover:border-border'
-                }`}
-              >
-                <span>Semua Kategori</span>
-                <ArrowRight size={14} className={`transition-transform duration-350 ${!category ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
-              </Link>
-              
-                  {categories?.map((cat: DrugCategory) => (
-                    <Link 
-                      key={cat.id}
-                      href={`/obat?category=${cat.slug}${q ? `&q=${q}` : ''}`}
-                      className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between group ${
-                        category === cat.slug 
-                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                          : 'text-text-muted hover:bg-surface-2 hover:text-primary border border-transparent hover:border-border'
-                      }`}
-                    >
-                      <span>{cat.name}</span>
-                      <ArrowRight size={14} className={`transition-transform duration-350 ${category === cat.slug ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
-                    </Link>
-                  ))}
-                </div>
-              </div>
-    
-              <div className="p-6 rounded-3xl bg-[#01696f]/5 border border-[#01696f]/10 space-y-4">
-                <h4 className="text-sm font-bold text-primary uppercase tracking-widest">Butuh Bantuan?</h4>
-                <p className="text-xs text-text-muted leading-relaxed italic">
-                  Jika Anda tidak menemukan obat yang dicari, silakan ajukan pertanyaan kepada tim farmasis kami.
-                </p>
-                <Button size="sm" className="w-full rounded-xl bg-[#01696f] text-white py-5" asChild>
-                  <Link href="/tanya">Tanya Farmasis</Link>
-                </Button>
-              </div>
-            </aside>
-    
-            {/* Drug Grid */}
-            <div className="flex-1 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-text-muted font-medium">
-                  Menampilkan <span className="text-text font-bold">{drugs?.length || 0}</span> hasil untuk 
-                  {q ? ` "${q}"` : ' semua obat'} 
-                  {category ? ` dalam kategori "${categories?.find((c: DrugCategory) => c.slug === category)?.name}"` : ''}
-                </p>
-              </div>
+      <div className="grid gap-10 lg:grid-cols-[250px_1fr]">
+        <aside className="space-y-7">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text">
+            <SlidersHorizontal size={18} className="text-primary" /> Filter sumber
+          </div>
+          <div className="flex flex-col gap-2">
+            <Link href={filterHref({ aware: undefined, essential: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${!filters.aware && !filters.essential ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>Semua obat WHO</Link>
+            <Link href={filterHref({ essential: 'true', aware: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${filters.essential === 'true' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>WHO Essential Medicines</Link>
+            {AWARE_CATEGORIES.map((category) => (
+              <Link key={category} href={filterHref({ aware: category, essential: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${filters.aware === category ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>AWaRe · {category}</Link>
+            ))}
+          </div>
+          <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6">
+            <Globe2 className="mb-4 text-primary" size={28} />
+            <p className="text-sm font-bold text-text">Data WHO, bukan BPOM</p>
+            <p className="mt-2 text-xs leading-relaxed text-text-muted">Katalog ini tidak menyatakan registrasi atau ketersediaan obat di Indonesia.</p>
+          </div>
+        </aside>
 
-          {drugs && drugs.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {drugs.map((drug) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return <DrugCard key={drug.id} drug={drug as any} />
-              })}
+        <section className="space-y-8" aria-live="polite">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm text-text-muted">{count ? `Menampilkan ${first}–${last} dari ${count} obat` : 'Belum ada hasil yang dapat ditampilkan'}</p>
+            {(filters.q || filters.aware || filters.essential) && <Button variant="outline" size="sm" asChild><Link href="/obat">Reset filter</Link></Button>}
+          </div>
+
+          {error ? (
+            <div className="rounded-[2rem] border border-dashed border-border bg-surface-2/50 px-8 py-20 text-center">
+              <Database className="mx-auto mb-5 text-text-muted/40" size={42} />
+              <h2 className="text-2xl font-serif text-text">Katalog WHO belum tersambung</h2>
+              <p className="mx-auto mt-3 max-w-lg text-text-muted">Data perlu diimpor ke Supabase terlebih dahulu. Kalkulator dan fitur publik lain tetap dapat digunakan.</p>
             </div>
+          ) : medicines.length ? (
+            <>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{medicines.map((medicine) => <WhoMedicineCard key={medicine.id} medicine={medicine} />)}</div>
+              <CatalogPagination page={page} count={count} pathname="/obat" params={{ q: filters.q, aware: filters.aware, essential: filters.essential }} />
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 bg-surface-2/50 rounded-[3rem] border border-dashed border-border px-8">
-              <div className="w-20 h-20 rounded-full bg-border/20 flex items-center justify-center text-text-muted/40">
-                <PillIcon size={40} />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-serif text-text">Obat tidak ditemukan</h3>
-                <p className="text-text-muted max-w-sm mx-auto leading-relaxed">
-                  Kami tidak dapat menemukan obat yang sesuai dengan kriteria pencarian Anda. Pastikan ejaan benar atau gunakan nama generik.
-                </p>
-              </div>
-              <Button variant="outline" asChild className="rounded-full">
-                <Link href="/obat">Reset Pencarian</Link>
-              </Button>
+            <div className="rounded-[2rem] border border-dashed border-border bg-surface-2/50 px-8 py-20 text-center">
+              <ShieldCheck className="mx-auto mb-5 text-text-muted/40" size={42} />
+              <h2 className="text-2xl font-serif text-text">Obat tidak ditemukan</h2>
+              <p className="mx-auto mt-3 max-w-lg text-text-muted">Periksa ejaan nama generik atau coba kategori WHO yang lain.</p>
             </div>
           )}
-          
-          <div className="pt-10 flex justify-center">
-            <p className="text-xs text-text-muted/60 italic max-w-md text-center leading-relaxed">
-              * Database diperbarui secara berkala oleh tenaga farmasi terverifikasi. Selalu konsultasikan penggunaan obat keras dengan dokter.
-            </p>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   )

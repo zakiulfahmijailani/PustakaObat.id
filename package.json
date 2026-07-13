@@ -9,7 +9,10 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "who:validate": "node scripts/import-who-data.mjs --dry-run",
+    "who:import": "node scripts/import-who-data.mjs --apply",
+    "who:upload": "node scripts/import-who-data.mjs --apply"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

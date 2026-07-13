@@ -54,6 +54,8 @@ export default async function AdminAuditPage({
     { label: 'Approve Drug', value: 'APPROVE_DRUG' },
     { label: 'Reject Drug', value: 'REJECT_DRUG' },
     { label: 'Answer Question', value: 'ANSWER_QUESTION' },
+    { label: 'Review WHO', value: 'REVIEW_WHO_MEDICINE' },
+    { label: 'Update WHO', value: 'UPDATE_WHO_MEDICINE' },
   ]
 
   return (

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { createClient } from '@/lib/supabase/client'
 import { 
   AlertCircle, 
   Loader2, 
@@ -26,7 +27,7 @@ import {
   Shield,
   FileText as LucideFileText
 } from 'lucide-react'
-import { Drug } from '@/lib/mock-data'
+import type { Drug, DrugMonographSection } from '@/types'
 
 const drugSchema = z.object({
   name: z.string().min(3, { message: 'Nama obat minimal 3 karakter' }),
@@ -59,12 +60,13 @@ interface SectionContent {
 }
 
 interface DrugFormProps {
-  initialData?: Partial<Drug>
+  initialData?: Partial<Drug> & { sections?: DrugMonographSection[] }
   categories: { id: string, name: string }[]
   mode?: 'create' | 'edit'
+  userId: string
 }
 
-export const DrugForm = ({ initialData, categories, mode = 'create' }: DrugFormProps) => {
+export const DrugForm = ({ initialData, categories, mode = 'create', userId }: DrugFormProps) => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [activeStep, setActiveStep] = useState(1)
@@ -131,19 +133,52 @@ export const DrugForm = ({ initialData, categories, mode = 'create' }: DrugFormP
     setSections(newSections)
   }
 
-  const onSave = async (_values: DrugFormValues, _status: 'draft' | 'review') => {
+  const onSave = async (values: DrugFormValues, status: 'draft' | 'review') => {
     setIsLoading(true)
     setError(null)
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
     try {
-      // Mock save always succeeds for demo
+      const supabase = createClient()
+      const drugPayload = {
+        name: values.name.trim(),
+        slug: values.slug.trim(),
+        brand_names: values.brand_names?.split(',').map((brand) => brand.trim()).filter(Boolean) || [],
+        category_id: values.category_id || null,
+        drug_class: values.drug_class.trim(),
+        summary: values.summary.trim(),
+        status,
+        submitted_by: userId,
+      }
+
+      let drugId = initialData?.id
+      if (mode === 'edit' && drugId) {
+        const { error: updateError } = await supabase.from('drugs').update(drugPayload).eq('id', drugId)
+        if (updateError) throw updateError
+      } else {
+        const { data: created, error: insertError } = await supabase.from('drugs').insert(drugPayload).select('id').single()
+        if (insertError || !created) throw insertError || new Error('Record obat tidak berhasil dibuat.')
+        drugId = created.id
+      }
+
+      const sectionPayload = sections
+        .filter((section) => section.content.trim())
+        .map((section) => ({ drug_id: drugId!, section_type: section.section_type, content: section.content.trim() }))
+      if (sectionPayload.length) {
+        const { error: sectionError } = await supabase.from('drug_monograph_sections').upsert(sectionPayload, { onConflict: 'drug_id,section_type' })
+        if (sectionError) throw sectionError
+      }
+
+      await supabase.from('audit_logs').insert({
+        user_id: userId,
+        action: mode === 'edit' ? 'UPDATE_DRUG' : 'CREATE_DRUG',
+        resource_type: 'drug',
+        resource_id: drugId,
+        metadata: { name: values.name, status, section_count: sectionPayload.length },
+      })
       router.push('/dashboard/obat')
       router.refresh()
-    } catch {
-      setError('Gagal menyimpan data. Silakan coba lagi.')
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Gagal menyimpan data. Silakan coba lagi.')
     } finally {
       setIsLoading(false)
     }

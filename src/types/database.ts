@@ -252,6 +252,192 @@ export interface Database {
           created_at?: string
         }
       }
+      who_medicines: {
+        Row: {
+          id: string
+          source_key: string
+          external_id: string | null
+          medicine_name: string
+          editorial_name: string | null
+          normalized_name: string
+          slug: string
+          source_name: 'WHO'
+          source_version: string
+          official_source_url: string | null
+          is_who_eeml: boolean
+          aware_category: 'Access' | 'Watch' | 'Reserve' | 'Not recommended' | null
+          is_monitoring_only: boolean
+          is_not_on_eml: boolean
+          data_status: 'WHO_ONLY' | 'WHO_AND_AWARE' | 'AWARE_ONLY'
+          import_status: string
+          source_retrieved_at: string | null
+          source_generated_at: string
+          source_payload: Json
+          payload_checksum: string
+          last_import_checksum: string
+          publication_status: 'published' | 'hidden'
+          verification_status: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          is_active: boolean
+          reviewed_by: string | null
+          reviewed_at: string | null
+          manually_edited_at: string | null
+          drug_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          source_key: string
+          external_id?: string | null
+          medicine_name: string
+          editorial_name?: string | null
+          normalized_name: string
+          slug: string
+          source_name?: 'WHO'
+          source_version: string
+          official_source_url?: string | null
+          is_who_eeml?: boolean
+          aware_category?: 'Access' | 'Watch' | 'Reserve' | 'Not recommended' | null
+          is_monitoring_only?: boolean
+          is_not_on_eml?: boolean
+          data_status: 'WHO_ONLY' | 'WHO_AND_AWARE' | 'AWARE_ONLY'
+          import_status?: string
+          source_retrieved_at?: string | null
+          source_generated_at: string
+          source_payload?: Json
+          payload_checksum: string
+          last_import_checksum: string
+          publication_status?: 'published' | 'hidden'
+          verification_status?: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          is_active?: boolean
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          manually_edited_at?: string | null
+          drug_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          source_key?: string
+          external_id?: string | null
+          medicine_name?: string
+          editorial_name?: string | null
+          normalized_name?: string
+          slug?: string
+          source_name?: 'WHO'
+          source_version?: string
+          official_source_url?: string | null
+          is_who_eeml?: boolean
+          aware_category?: 'Access' | 'Watch' | 'Reserve' | 'Not recommended' | null
+          is_monitoring_only?: boolean
+          is_not_on_eml?: boolean
+          data_status?: 'WHO_ONLY' | 'WHO_AND_AWARE' | 'AWARE_ONLY'
+          import_status?: string
+          source_retrieved_at?: string | null
+          source_generated_at?: string
+          source_payload?: Json
+          payload_checksum?: string
+          last_import_checksum?: string
+          publication_status?: 'published' | 'hidden'
+          verification_status?: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          is_active?: boolean
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          manually_edited_at?: string | null
+          drug_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      who_medicine_verifications: {
+        Row: {
+          id: string
+          medicine_id: string
+          previous_status: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          status: 'verified' | 'rejected' | 'needs_revision'
+          note: string | null
+          verified_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          medicine_id: string
+          previous_status: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          status: 'verified' | 'rejected' | 'needs_revision'
+          note?: string | null
+          verified_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          medicine_id?: string
+          previous_status?: 'pending' | 'verified' | 'rejected' | 'needs_revision'
+          status?: 'verified' | 'rejected' | 'needs_revision'
+          note?: string | null
+          verified_by?: string
+          created_at?: string
+        }
+      }
+      who_import_runs: {
+        Row: {
+          id: string
+          source_name: 'WHO'
+          source_version: string
+          source_file: string
+          manifest_hash: string
+          dataset_checksum: string
+          schema_version: string
+          record_count: number
+          inserted_count: number
+          updated_count: number
+          skipped_count: number
+          failed_count: number
+          status: 'completed' | 'failed'
+          started_at: string
+          completed_at: string
+          error_message: string | null
+          imported_at: string
+        }
+        Insert: {
+          id?: string
+          source_name?: 'WHO'
+          source_version: string
+          source_file: string
+          manifest_hash: string
+          dataset_checksum: string
+          schema_version: string
+          record_count: number
+          inserted_count?: number
+          updated_count?: number
+          skipped_count?: number
+          failed_count?: number
+          status: 'completed' | 'failed'
+          started_at: string
+          completed_at?: string
+          error_message?: string | null
+          imported_at?: string
+        }
+        Update: {
+          id?: string
+          source_name?: 'WHO'
+          source_version?: string
+          source_file?: string
+          manifest_hash?: string
+          dataset_checksum?: string
+          schema_version?: string
+          record_count?: number
+          inserted_count?: number
+          updated_count?: number
+          skipped_count?: number
+          failed_count?: number
+          status?: 'completed' | 'failed'
+          started_at?: string
+          completed_at?: string
+          error_message?: string | null
+          imported_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -270,6 +456,38 @@ export interface Database {
           _roles: string[]
         }
         Returns: boolean
+      }
+      import_who_catalog: {
+        Args: {
+          _dataset_checksum: string
+          _manifest_hash: string
+          _schema_version: string
+          _source_version: string
+          _source_file: string
+          _generated_at: string
+          _started_at: string
+          _skipped_count: number
+          _failed_count: number
+          _records: Json
+        }
+        Returns: Json
+      }
+      review_who_medicine: {
+        Args: {
+          _record_id: string
+          _decision: 'verified' | 'rejected' | 'needs_revision'
+          _note?: string | null
+        }
+        Returns: Database['public']['Tables']['who_medicines']['Row']
+      }
+      admin_update_who_medicine: {
+        Args: {
+          _record_id: string
+          _editorial_name: string
+          _publication_status: 'published' | 'hidden'
+          _is_active: boolean
+        }
+        Returns: Database['public']['Tables']['who_medicines']['Row']
       }
     }
     Enums: {

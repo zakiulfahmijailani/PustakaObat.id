@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local WHO source files and generated import payloads
+/data/import/who/incoming/*
+!/data/import/who/incoming/.gitkeep
+/data/import/who/prepared/*
+!/data/import/who/prepared/.gitkeep
+__pycache__/
+*.py[cod]

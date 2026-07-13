@@ -1,0 +1,963 @@
+medicine_id,medicine_name,medicine_name_normalized,is_who_eeml,aware_category,is_monitoring_only,is_not_on_eml,official_source_url,data_status,verification_status,verified_by,verified_at,source_name,source_version,import_status
+315,Abacavir,abacavir,True,[],False,False,https://list.essentialmeds.org/medicines/315/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+947,Abacavir + dolutegravir + lamivudine,abacavir + dolutegravir + lamivudine,True,[],False,False,https://list.essentialmeds.org/medicines/947/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+316,Abacavir + lamivudine,abacavir + lamivudine,True,[],False,False,https://list.essentialmeds.org/medicines/316/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+406,Abiraterone,abiraterone,True,[],False,False,https://list.essentialmeds.org/medicines/406/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+908,Acamprosate calcium,acamprosate calcium,True,[],False,False,https://list.essentialmeds.org/medicines/908/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+979,Acenocoumarol,acenocoumarol,True,[],False,False,https://list.essentialmeds.org/medicines/979/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+234,Acetazolamide,acetazolamide,True,[],False,False,https://list.essentialmeds.org/medicines/234/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+270,Acetic acid,acetic acid,True,[],False,False,https://list.essentialmeds.org/medicines/270/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+36,Acetylcysteine,acetylcysteine,True,[],False,False,https://list.essentialmeds.org/medicines/36/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+13,Acetylsalicylic acid,acetylsalicylic acid,True,[],False,False,https://list.essentialmeds.org/medicines/13/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+910,Acetylsalicylic acid + atorvastatin + ramipril,acetylsalicylic acid + atorvastatin + ramipril,True,[],False,False,https://list.essentialmeds.org/medicines/910/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+911,Acetylsalicylic acid + simvastatin + ramipril + atenolol + hydrochlorothiazide,acetylsalicylic acid + simvastatin + ramipril + atenolol + hydrochlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/911/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Acetylspiramycin + metronidazole,acetylspiramycin + metronidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1003,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+226,Aciclovir,aciclovir,True,[],False,False,https://list.essentialmeds.org/medicines/226/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+674,Aclidinium,aclidinium,True,[],False,False,https://list.essentialmeds.org/medicines/674/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+297,Activated charcoal,activated charcoal,True,[],False,False,https://list.essentialmeds.org/medicines/297/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+552,Adalimumab,adalimumab,True,[],False,False,https://list.essentialmeds.org/medicines/552/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+404,Afatinib,afatinib,True,[],False,False,https://list.essentialmeds.org/medicines/404/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+57,Albendazole,albendazole,True,[],False,False,https://list.essentialmeds.org/medicines/57/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+173,Alcohol based hand rub,alcohol based hand rub,True,[],False,False,https://list.essentialmeds.org/medicines/173/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+70,All-trans retinoic acid,all-trans retinoic acid,True,[],False,False,https://list.essentialmeds.org/medicines/70/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+71,Allopurinol,allopurinol,True,[],False,False,https://list.essentialmeds.org/medicines/71/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+273,Alprostadil (prostaglandin E1),alprostadil prostaglandin e1,True,[],False,False,https://list.essentialmeds.org/medicines/273/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+482,Alteplase,alteplase,True,[],False,False,https://list.essentialmeds.org/medicines/482/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+166,Amidotrizoate,amidotrizoate,True,[],False,False,https://list.essentialmeds.org/medicines/166/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+327,Amikacin,amikacin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/327/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Amikacin + cefepime,amikacin + cefepime,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1002,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+176,Amiloride,amiloride,True,[],False,False,https://list.essentialmeds.org/medicines/176/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+135,Amiodarone,amiodarone,True,[],False,False,https://list.essentialmeds.org/medicines/135/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+19,Amitriptyline,amitriptyline,True,[],False,False,https://list.essentialmeds.org/medicines/19/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+136,Amlodipine,amlodipine,True,[],False,False,https://list.essentialmeds.org/medicines/136/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+564,Amodiaquine - sulfadoxine + pyrimethamine,amodiaquine - sulfadoxine + pyrimethamine,True,[],False,False,https://list.essentialmeds.org/medicines/564/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+299,Amoxicillin,amoxicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/299/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + bacillus coagulans + cloxacillin,amoxicillin + bacillus coagulans + cloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1004,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + bacillus coagulans + dicloxacillin,amoxicillin + bacillus coagulans + dicloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1005,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+310,Amoxicillin + clavulanic acid,amoxicillin + clavulanic acid,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/310/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + clavulanic acid + lactic ferments,amoxicillin + clavulanic acid + lactic ferments,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1006,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + clavulanic acid + lactobacillus acidophilus,amoxicillin + clavulanic acid + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1007,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + clavulanic acid + nimesulide,amoxicillin + clavulanic acid + nimesulide,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1008,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + cloxacillin,amoxicillin + cloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1009,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + cloxacillin + lactic acid,amoxicillin + cloxacillin + lactic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1010,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + cloxacillin + lactobacillus acidophilus + serrapeptase,amoxicillin + cloxacillin + lactobacillus acidophilus + serrapeptase,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1011,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + cloxacillin + lactobacillus lactis,amoxicillin + cloxacillin + lactobacillus lactis,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1012,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + cloxacillin + serrapeptase,amoxicillin + cloxacillin + serrapeptase,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1013,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + dicloxacillin,amoxicillin + dicloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1014,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + dicloxacillin + saccharomyces boulardii,amoxicillin + dicloxacillin + saccharomyces boulardii,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1015,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + flucloxacillin,amoxicillin + flucloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1016,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + flucloxacillin + lactobacillus acidophilus,amoxicillin + flucloxacillin + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1017,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + metronidazole,amoxicillin + metronidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1018,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + pivsulbactam,amoxicillin + pivsulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1019,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Amoxicillin + sulbactam,amoxicillin + sulbactam,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/981,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+357,Amphotericin B,amphotericin b,True,[],False,False,https://list.essentialmeds.org/medicines/357/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+302,Ampicillin,ampicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/302/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + cloxacillin,ampicillin + cloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1021,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + cloxacillin + saccharomyces boulardii,ampicillin + cloxacillin + saccharomyces boulardii,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1023,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + cloxacillin+ lactobacillus acidophilus,ampicillin + cloxacillin+ lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1022,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + dicloxacillin,ampicillin + dicloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1024,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + dicloxacillin + lactobacillus acidophilus,ampicillin + dicloxacillin + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1025,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + flucloxacillin,ampicillin + flucloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1026,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + oxacillin,ampicillin + oxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1028,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + sulbactam,ampicillin + sulbactam,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/598,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ampicillin + sultamicillin,ampicillin + sultamicillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1029,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+111,Anastrozole,anastrozole,True,[],False,False,https://list.essentialmeds.org/medicines/111/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+620,Anidulafungin,anidulafungin,True,[],False,False,https://list.essentialmeds.org/medicines/620/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+900,Ansuvimab,ansuvimab,True,[],False,False,https://list.essentialmeds.org/medicines/900/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+460,Anti-D immunoglobulin,anti-d immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/460/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+462,Anti-rabies immunoglobulin,anti-rabies immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/462/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+604,Anti-rabies virus monoclonal antibodies,anti-rabies virus monoclonal antibodies,True,[],False,False,https://list.essentialmeds.org/medicines/604/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+464,Anti-tetanus immunoglobulin,anti-tetanus immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/464/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+508,Antivenom immunoglobulin,antivenom immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/508/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+478,Apixaban,apixaban,True,[],False,False,https://list.essentialmeds.org/medicines/478/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+536,Aprepitant,aprepitant,True,[],False,False,https://list.essentialmeds.org/medicines/536/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Arbekacin,arbekacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/678,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+921,Aripiprazole,aripiprazole,True,[],False,False,https://list.essentialmeds.org/medicines/921/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+948,Arpraziquantel,arpraziquantel,True,[],False,False,https://list.essentialmeds.org/medicines/948/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+554,Arsenic trioxide,arsenic trioxide,True,[],False,False,https://list.essentialmeds.org/medicines/554/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+372,Artemether,artemether,True,[],False,False,https://list.essentialmeds.org/medicines/372/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+373,Artemether + lumefantrine,artemether + lumefantrine,True,[],False,False,https://list.essentialmeds.org/medicines/373/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+374,Artesunate,artesunate,True,[],False,False,https://list.essentialmeds.org/medicines/374/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+375,Artesunate + amodiaquine,artesunate + amodiaquine,True,[],False,False,https://list.essentialmeds.org/medicines/375/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+376,Artesunate + mefloquine,artesunate + mefloquine,True,[],False,False,https://list.essentialmeds.org/medicines/376/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+377,Artesunate + pyronaridine,artesunate + pyronaridine,True,[],False,False,https://list.essentialmeds.org/medicines/377/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+978,Artesunate - sulfadoxine + pyrimethamine,artesunate - sulfadoxine + pyrimethamine,True,[],False,False,https://list.essentialmeds.org/medicines/978/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+259,Ascorbic acid,ascorbic acid,True,[],False,False,https://list.essentialmeds.org/medicines/259/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ascorbic acid + metamizole sodium + benzylpenicillin + streptomycin,ascorbic acid + metamizole sodium + benzylpenicillin + streptomycin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1030,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+72,Asparaginase,asparaginase,True,[],False,False,https://list.essentialmeds.org/medicines/72/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Aspoxicillin,aspoxicillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/792,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+283,Atazanavir + ritonavir,atazanavir + ritonavir,True,[],False,False,https://list.essentialmeds.org/medicines/283/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+496,Atenolol,atenolol,True,[],False,False,https://list.essentialmeds.org/medicines/496/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+570,Atezolizumab,atezolizumab,True,[],False,False,https://list.essentialmeds.org/medicines/570/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+901,Atoltivimab + maftivimab + odesivimab,atoltivimab + maftivimab + odesivimab,True,[],False,False,https://list.essentialmeds.org/medicines/901/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+529,Atorvastatin,atorvastatin,True,[],False,False,https://list.essentialmeds.org/medicines/529/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+912,Atorvastatin + perindopril + amlodipine,atorvastatin + perindopril + amlodipine,True,[],False,False,https://list.essentialmeds.org/medicines/912/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+222,Atracurium,atracurium,True,[],False,False,https://list.essentialmeds.org/medicines/222/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+10,Atropine,atropine,True,[],False,False,https://list.essentialmeds.org/medicines/10/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,AWaRe group,aware group,False,"[""Not recommended""]",True,True,,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azanidazole,azanidazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/980,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+68,Azathioprine,azathioprine,True,[],False,False,https://list.essentialmeds.org/medicines/68/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azidocillin,azidocillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/793,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+227,Azithromycin,azithromycin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/227/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + cefixime,azithromycin + cefixime,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1031,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + cefixime + lactobacillus acidophilus,azithromycin + cefixime + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1032,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + cefpodoxime proxetil,azithromycin + cefpodoxime proxetil,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1033,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + fluconazole + secnidazole,azithromycin + fluconazole + secnidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1034,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + levofloxacin,azithromycin + levofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1035,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azithromycin + ofloxacin,azithromycin + ofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1036,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Azlocillin,azlocillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/679,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Aztreonam,aztreonam,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/337,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Aztreonam + avibactam,aztreonam + avibactam,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/982,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Bacampicillin,bacampicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/680,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+971,Baclofen,baclofen,True,[],False,False,https://list.essentialmeds.org/medicines/971/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+167,Barium sulfate,barium sulfate,True,[],False,False,https://list.essentialmeds.org/medicines/167/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+205,BCG vaccine,bcg vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/205/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+250,Beclometasone,beclometasone,True,[],False,False,https://list.essentialmeds.org/medicines/250/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+669,Beclometasone + formoterol,beclometasone + formoterol,True,[],False,False,https://list.essentialmeds.org/medicines/669/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+279,Bedaquiline,bedaquiline,True,[],False,False,https://list.essentialmeds.org/medicines/279/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Bekanamycin,bekanamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/794,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+73,Bendamustine,bendamustine,True,[],False,False,https://list.essentialmeds.org/medicines/73/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+311,Benzathine benzylpenicillin,benzathine benzylpenicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/311/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Benzathine phenoxymethylpenicillin,benzathine phenoxymethylpenicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/983,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+391,Benznidazole,benznidazole,True,[],False,False,https://list.essentialmeds.org/medicines/391/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+157,Benzoyl peroxide,benzoyl peroxide,True,[],False,False,https://list.essentialmeds.org/medicines/157/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+162,Benzyl benzoate,benzyl benzoate,True,[],False,False,https://list.essentialmeds.org/medicines/162/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+303,Benzylpenicillin,benzylpenicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/303/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Benzylpenicillin + procaine benzylpenicillin + benzathine benzylpenicillin,benzylpenicillin + procaine benzylpenicillin + benzathine benzylpenicillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1038,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Benzylpenicillin + streptomycin,benzylpenicillin + streptomycin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1037,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+274,Beractant,beractant,True,[],False,False,https://list.essentialmeds.org/medicines/274/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+155,Betamethasone,betamethasone,True,[],False,False,https://list.essentialmeds.org/medicines/155/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+238,Bevacizumab,bevacizumab,True,[],False,False,https://list.essentialmeds.org/medicines/238/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Biapenem,biapenem,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/681,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+112,Bicalutamide,bicalutamide,True,[],False,False,https://list.essentialmeds.org/medicines/112/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+116,Biperiden,biperiden,True,[],False,False,https://list.essentialmeds.org/medicines/116/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+652,Bisacodyl,bisacodyl,True,[],False,False,https://list.essentialmeds.org/medicines/652/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+130,Bisoprolol,bisoprolol,True,[],False,False,https://list.essentialmeds.org/medicines/130/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+74,Bleomycin,bleomycin,True,[],False,False,https://list.essentialmeds.org/medicines/74/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+949,Blinatumomab,blinatumomab,True,[],False,False,https://list.essentialmeds.org/medicines/949/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+407,Bortezomib,bortezomib,True,[],False,False,https://list.essentialmeds.org/medicines/407/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Brodimoprim,brodimoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/795,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Bromelains + doxycycline + lactobacillus reuteri + lactobacillus rhamnosus + ornidazole,bromelains + doxycycline + lactobacillus reuteri + lactobacillus rhamnosus + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1039,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Bromhexine + sulfamethoxazole + trimethoprim,bromhexine + sulfamethoxazole + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1040,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+592,Bromocriptine,bromocriptine,True,[],False,False,https://list.essentialmeds.org/medicines/592/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+251,Budesonide,budesonide,True,[],False,False,https://list.essentialmeds.org/medicines/251/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+252,Budesonide + formoterol,budesonide + formoterol,True,[],False,False,https://list.essentialmeds.org/medicines/252/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+668,Budesonide + salmeterol,budesonide + salmeterol,True,[],False,False,https://list.essentialmeds.org/medicines/668/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+648,Bumetanide,bumetanide,True,[],False,False,https://list.essentialmeds.org/medicines/648/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+7,Bupivacaine,bupivacaine,True,[],False,False,https://list.essentialmeds.org/medicines/7/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+644,Buprenorphine,buprenorphine,True,[],False,False,https://list.essentialmeds.org/medicines/644/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+606,Bupropion,bupropion,True,[],False,False,https://list.essentialmeds.org/medicines/606/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+593,Cabergoline,cabergoline,True,[],False,False,https://list.essentialmeds.org/medicines/593/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+426,Caffeine citrate,caffeine citrate,True,[],False,False,https://list.essentialmeds.org/medicines/426/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+156,Calamine,calamine,True,[],False,False,https://list.essentialmeds.org/medicines/156/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+609,Calcipotriol,calcipotriol,True,[],False,False,https://list.essentialmeds.org/medicines/609/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+608,Calcitriol,calcitriol,True,[],False,False,https://list.essentialmeds.org/medicines/608/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+260,Calcium,calcium,True,[],False,False,https://list.essentialmeds.org/medicines/260/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+75,Calcium folinate (leucovorin calcium),calcium folinate leucovorin calcium,True,[],False,False,https://list.essentialmeds.org/medicines/75/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+37,Calcium gluconate,calcium gluconate,True,[],False,False,https://list.essentialmeds.org/medicines/37/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+612,Canagliflozin,canagliflozin,True,[],False,False,https://list.essentialmeds.org/medicines/612/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+76,Capecitabine,capecitabine,True,[],False,False,https://list.essentialmeds.org/medicines/76/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Capreomycin,capreomycin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/349,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+657,Carbachol,carbachol,True,[],False,False,https://list.essentialmeds.org/medicines/657/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+49,Carbamazepine,carbamazepine,True,[],False,False,https://list.essentialmeds.org/medicines/49/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Carbenicillin,carbenicillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/682,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+425,Carbetocin,carbetocin,True,[],False,False,https://list.essentialmeds.org/medicines/425/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+507,Carbimazole,carbimazole,True,[],False,False,https://list.essentialmeds.org/medicines/507/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+77,Carboplatin,carboplatin,True,[],False,False,https://list.essentialmeds.org/medicines/77/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Carindacillin,carindacillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/796,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Carumonam,carumonam,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/797,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+498,Carvedilol,carvedilol,True,[],False,False,https://list.essentialmeds.org/medicines/498/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+619,Caspofungin,caspofungin,True,[],False,False,https://list.essentialmeds.org/medicines/619/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefacetrile,cefacetrile,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/683,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefaclor,cefaclor,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/684,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefaclor + clavulanic acid,cefaclor + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1041,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefadroxil,cefadroxil,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/685,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefadroxil + clavulanic acid,cefadroxil + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1042,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefadroxil + trimethoprim,cefadroxil + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1043,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+304,Cefalexin,cefalexin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/304/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefalexin + trimethoprim,cefalexin + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1044,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefaloridine,cefaloridine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/798,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefalotin,cefalotin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/686,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefamandole,cefamandole,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/687,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefapirin,cefapirin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/688,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefatrizine,cefatrizine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/689,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefazedone,cefazedone,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/690,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+305,Cefazolin,cefazolin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/305/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefbuperazone,cefbuperazone,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/691,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefcapene,cefcapene,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/692,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefdinir,cefdinir,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/693,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefdinir + clavulanic acid,cefdinir + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1045,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefditoren,cefditoren,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/694,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefepime,cefepime,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/341,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefepime + sulbactam,cefepime + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1046,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefepime + tazobactam,cefepime + tazobactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1047,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefetamet,cefetamet,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/695,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+611,Cefiderocol,cefiderocol,True,"[""Reserve""]",False,False,https://list.essentialmeds.org/medicines/611/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+307,Cefixime,cefixime,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/307/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + cefpodoxime proxetil,cefixime + cefpodoxime proxetil,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1048,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + clavulanic acid,cefixime + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1049,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + clavulanic acid + lactobacillus acidophilus,cefixime + clavulanic acid + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1050,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + cloxacillin,cefixime + cloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1051,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + cloxacillin + lactobacillus acidophilus,cefixime + cloxacillin + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1052,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + dicloxacillin,cefixime + dicloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1053,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + lactobacillus acidophilus + ofloxacin,cefixime + lactobacillus acidophilus + ofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1054,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + levofloxacin,cefixime + levofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1055,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + linezolid,cefixime + linezolid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1056,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + moxifloxacin,cefixime + moxifloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1057,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + ofloxacin,cefixime + ofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1058,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefixime + ornidazole,cefixime + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1059,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefmenoxime,cefmenoxime,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/696,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefmetazole,cefmetazole,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/697,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefminox,cefminox,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/698,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefodizime,cefodizime,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/699,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefonicid,cefonicid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/700,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefoperazone,cefoperazone,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/701,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefoperazone + sulbactam,cefoperazone + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1060,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefoperazone + tazobactam,cefoperazone + tazobactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1061,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceforanide,ceforanide,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/702,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefoselis,cefoselis,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/703,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+312,Cefotaxime,cefotaxime,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/312/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefotaxime + sulbactam,cefotaxime + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1062,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefotetan,cefotetan,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/704,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefotiam,cefotiam,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/705,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefoxitin,cefoxitin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/706,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefozopran,cefozopran,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/707,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpiramide,cefpiramide,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/708,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpirome,cefpirome,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/709,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime,cefpodoxime,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/710,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + clavulanic acid,cefpodoxime proxetil + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1063,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + cloxacillin + lactobacillus acidophilus,cefpodoxime proxetil + cloxacillin + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1064,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + dicloxacillin,cefpodoxime proxetil + dicloxacillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1065,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + dicloxacillin + lactobacillus acidophilus,cefpodoxime proxetil + dicloxacillin + lactobacillus acidophilus,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1066,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + levofloxacin,cefpodoxime proxetil + levofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1067,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + ofloxacin,cefpodoxime proxetil + ofloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1068,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefpodoxime proxetil + sulbactam,cefpodoxime proxetil + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1069,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefprozil,cefprozil,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/711,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefradine,cefradine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/712,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefroxadine,cefroxadine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/713,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefsulodin,cefsulodin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/799,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftaroline,ceftaroline,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/340,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+328,Ceftazidime,ceftazidime,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/328/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+395,Ceftazidime + avibactam,ceftazidime + avibactam,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/395/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftazidime + sulbactam,ceftazidime + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1070,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftazidime + tazobactam,ceftazidime + tazobactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1071,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefteram,cefteram,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/714,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftezole,ceftezole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/715,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftibuten,ceftibuten,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/716,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftibuten + clavulanic acid,ceftibuten + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1073,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftizoxime,ceftizoxime,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/717,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftobiprole,ceftobiprole,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/718,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+398,Ceftolozane + tazobactam,ceftolozane + tazobactam,True,"[""Reserve""]",False,False,https://list.essentialmeds.org/medicines/398/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+314,Ceftriaxone,ceftriaxone,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/314/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftriaxone + sulbactam,ceftriaxone + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1074,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftriaxone + tazobactam,ceftriaxone + tazobactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1075,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ceftriaxone + vancomycin,ceftriaxone + vancomycin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1076,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+401,Cefuroxime,cefuroxime,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/401/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefuroxime + clavulanic acid,cefuroxime + clavulanic acid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1080,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefuroxime + metronidazole,cefuroxime + metronidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1081,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cefuroxime axetil + linezolid,cefuroxime axetil + linezolid,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1078,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+937,Cemiplimab,cemiplimab,True,[],False,False,https://list.essentialmeds.org/medicines/937/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+550,Certolizumab pegol,certolizumab pegol,True,[],False,False,https://list.essentialmeds.org/medicines/550/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+633,Cetirizine,cetirizine,True,[],False,False,https://list.essentialmeds.org/medicines/633/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+78,Chlorambucil,chlorambucil,True,[],False,False,https://list.essentialmeds.org/medicines/78/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+332,Chloramphenicol,chloramphenicol,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/332/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Chloramphenicol + tetracycline,chloramphenicol + tetracycline,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1082,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+170,Chlorhexidine,chlorhexidine,True,[],False,False,https://list.essentialmeds.org/medicines/170/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+174,Chlorine base compound,chlorine base compound,True,[],False,False,https://list.essentialmeds.org/medicines/174/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+275,Chloroquine,chloroquine,True,[],False,False,https://list.essentialmeds.org/medicines/275/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+645,Chlorothiazide,chlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/645/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+175,Chloroxylenol,chloroxylenol,True,[],False,False,https://list.essentialmeds.org/medicines/175/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+244,Chlorpromazine,chlorpromazine,True,[],False,False,https://list.essentialmeds.org/medicines/244/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+646,Chlortalidone,chlortalidone,True,[],False,False,https://list.essentialmeds.org/medicines/646/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+655,Chlortetracycline,chlortetracycline,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/655/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+435,Cholera vaccine,cholera vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/435/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+664,Ciclesonide,ciclesonide,True,[],False,False,https://list.essentialmeds.org/medicines/664/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+69,Ciclosporin,ciclosporin,True,[],False,False,https://list.essentialmeds.org/medicines/69/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Cinoxacin,cinoxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/800,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+271,Ciprofloxacin,ciprofloxacin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/271/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Ciprofloxacin + metronidazole,ciprofloxacin + metronidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1083,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ciprofloxacin + ornidazole,ciprofloxacin + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1084,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ciprofloxacin + tinidazole,ciprofloxacin + tinidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1085,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+79,Cisplatin,cisplatin,True,[],False,False,https://list.essentialmeds.org/medicines/79/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+903,Cladribine,cladribine,True,[],False,False,https://list.essentialmeds.org/medicines/903/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+317,Clarithromycin,clarithromycin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/317/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+309,Clindamycin,clindamycin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/309/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+292,Clofazimine,clofazimine,True,[],False,False,https://list.essentialmeds.org/medicines/292/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Clofoctol,clofoctol,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/719,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Clometocillin,clometocillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/720,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+198,Clomifene,clomifene,True,[],False,False,https://list.essentialmeds.org/medicines/198/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+249,Clomipramine,clomipramine,True,[],False,False,https://list.essentialmeds.org/medicines/249/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Clomocycline,clomocycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/801,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+146,Clopidogrel,clopidogrel,True,[],False,False,https://list.essentialmeds.org/medicines/146/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+358,Clotrimazole,clotrimazole,True,[],False,False,https://list.essentialmeds.org/medicines/358/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+306,Cloxacillin,cloxacillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/306/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+247,Clozapine,clozapine,True,[],False,False,https://list.essentialmeds.org/medicines/247/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+940,Coagulation factor IX complex,coagulation factor ix complex,True,[],False,False,https://list.essentialmeds.org/medicines/940/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+468,"Coagulation factor IX, plasma-derived",coagulation factor ix. plasma-derived,True,[],False,False,https://list.essentialmeds.org/medicines/468/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+951,"Coagulation factor IX, recombinant",coagulation factor ix. recombinant,True,[],False,False,https://list.essentialmeds.org/medicines/951/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+466,"Coagulation factor VIII, plasma-derived",coagulation factor viii. plasma-derived,True,[],False,False,https://list.essentialmeds.org/medicines/466/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+950,"Coagulation factor VIII, recombinant",coagulation factor viii. recombinant,True,[],False,False,https://list.essentialmeds.org/medicines/950/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+158,Coal tar,coal tar,True,[],False,False,https://list.essentialmeds.org/medicines/158/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+16,Codeine,codeine,True,[],False,False,https://list.essentialmeds.org/medicines/16/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+261,Colecalciferol,colecalciferol,True,[],False,False,https://list.essentialmeds.org/medicines/261/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+348,Colistin (injection),colistin injection,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/348/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Colistin (oral),colistin oral,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/802,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+544,Compound sodium lactate solution,compound sodium lactate solution,True,[],False,False,https://list.essentialmeds.org/medicines/544/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+422,Condoms,condoms,True,[],False,False,https://list.essentialmeds.org/medicines/422/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+421,Copper-containing intrauterine device,copper-containing intrauterine device,True,[],False,False,https://list.essentialmeds.org/medicines/421/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+914,Cryoprecipitate (native),cryoprecipitate native,True,[],False,False,https://list.essentialmeds.org/medicines/914/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+915,Cryoprecipitate (pathogen-reduced),cryoprecipitate pathogen-reduced,True,[],False,False,https://list.essentialmeds.org/medicines/915/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+20,Cyclizine,cyclizine,True,[],False,False,https://list.essentialmeds.org/medicines/20/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+651,Cyclopentolate,cyclopentolate,True,[],False,False,https://list.essentialmeds.org/medicines/651/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+80,Cyclophosphamide,cyclophosphamide,True,[],False,False,https://list.essentialmeds.org/medicines/80/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+350,Cycloserine,cycloserine,True,[],False,False,https://list.essentialmeds.org/medicines/350/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+81,Cytarabine,cytarabine,True,[],False,False,https://list.essentialmeds.org/medicines/81/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+952,Cytisine (cytisinicline),cytisine cytisinicline,True,[],False,False,https://list.essentialmeds.org/medicines/952/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+479,Dabigatran,dabigatran,True,[],False,False,https://list.essentialmeds.org/medicines/479/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+82,Dacarbazine,dacarbazine,True,[],False,False,https://list.essentialmeds.org/medicines/82/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+295,Daclatasvir,daclatasvir,True,[],False,False,https://list.essentialmeds.org/medicines/295/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+626,Daclatasvir + sofosbuvir,daclatasvir + sofosbuvir,True,[],False,False,https://list.essentialmeds.org/medicines/626/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+83,Dactinomycin,dactinomycin,True,[],False,False,https://list.essentialmeds.org/medicines/83/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Dalbavancin,dalbavancin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/721,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Dalfopristin + quinupristin,dalfopristin + quinupristin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/722,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+414,Dalteparin,dalteparin,True,[],False,False,https://list.essentialmeds.org/medicines/414/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+613,Dapagliflozin,dapagliflozin,True,[],False,False,https://list.essentialmeds.org/medicines/613/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+293,Dapsone,dapsone,True,[],False,False,https://list.essentialmeds.org/medicines/293/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Daptomycin,daptomycin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/342,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+418,Darbepoetin alfa,darbepoetin alfa,True,[],False,False,https://list.essentialmeds.org/medicines/418/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+458,Darunavir,darunavir,True,[],False,False,https://list.essentialmeds.org/medicines/458/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+84,Dasatinib,dasatinib,True,[],False,False,https://list.essentialmeds.org/medicines/84/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+85,Daunorubicin,daunorubicin,True,[],False,False,https://list.essentialmeds.org/medicines/85/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+643,Deferasirox,deferasirox,True,[],False,False,https://list.essentialmeds.org/medicines/643/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+916,Deferiprone,deferiprone,True,[],False,False,https://list.essentialmeds.org/medicines/916/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+40,Deferoxamine,deferoxamine,True,[],False,False,https://list.essentialmeds.org/medicines/40/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Delafloxacin,delafloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/400,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+280,Delamanid,delamanid,True,[],False,False,https://list.essentialmeds.org/medicines/280/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Demeclocycline,demeclocycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/803,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+434,Dengue vaccine,dengue vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/434/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+129,Desmopressin,desmopressin,True,[],False,False,https://list.essentialmeds.org/medicines/129/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+21,Dexamethasone,dexamethasone,True,[],False,False,https://list.essentialmeds.org/medicines/21/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+472,Dextran 70,dextran 70,True,[],False,False,https://list.essentialmeds.org/medicines/472/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+423,Diaphragms,diaphragms,True,[],False,False,https://list.essentialmeds.org/medicines/423/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+22,Diazepam,diazepam,True,[],False,False,https://list.essentialmeds.org/medicines/22/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+505,Diazoxide,diazoxide,True,[],False,False,https://list.essentialmeds.org/medicines/505/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Dibekacin,dibekacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/723,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+724,Dicloxacillin,dicloxacillin,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/724/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+64,Diethylcarbamazine,diethylcarbamazine,True,[],False,False,https://list.essentialmeds.org/medicines/64/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+134,Digoxin,digoxin,True,[],False,False,https://list.essentialmeds.org/medicines/134/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+378,Dihydroartemisinin + piperaquine,dihydroartemisinin + piperaquine,True,[],False,False,https://list.essentialmeds.org/medicines/378/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+363,Diloxanide,diloxanide,True,[],False,False,https://list.essentialmeds.org/medicines/363/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+41,Dimercaprol,dimercaprol,True,[],False,False,https://list.essentialmeds.org/medicines/41/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+428,Dinoprostone (prostaglandin E2),dinoprostone prostaglandin e2,True,[],False,False,https://list.essentialmeds.org/medicines/428/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+511,Diphtheria antitoxin,diphtheria antitoxin,True,[],False,False,https://list.essentialmeds.org/medicines/511/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+430,Diphtheria vaccine,diphtheria vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/430/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Dirithromycin,dirithromycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/725,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+86,Docetaxel,docetaxel,True,[],False,False,https://list.essentialmeds.org/medicines/86/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+23,Docusate sodium,docusate sodium,True,[],False,False,https://list.essentialmeds.org/medicines/23/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+629,Dolasetron,dolasetron,True,[],False,False,https://list.essentialmeds.org/medicines/629/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+278,Dolutegravir,dolutegravir,True,[],False,False,https://list.essentialmeds.org/medicines/278/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+483,Dolutegravir + lamivudine + tenofovir,dolutegravir + lamivudine + tenofovir,True,[],False,False,https://list.essentialmeds.org/medicines/483/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+145,Dopamine,dopamine,True,[],False,False,https://list.essentialmeds.org/medicines/145/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Doripenem,doripenem,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/726,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+87,Doxorubicin,doxorubicin,True,[],False,False,https://list.essentialmeds.org/medicines/87/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+906,Doxorubicin (as pegylated liposomal),doxorubicin as pegylated liposomal,True,[],False,False,https://list.essentialmeds.org/medicines/906/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+318,Doxycycline,doxycycline,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/318/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Doxycycline + tinidazole,doxycycline + tinidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1086,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+972,Dulaglutide,dulaglutide,True,[],False,False,https://list.essentialmeds.org/medicines/972/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+953,Ebola vaccine,ebola vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/953/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+480,Edoxaban,edoxaban,True,[],False,False,https://list.essentialmeds.org/medicines/480/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+450,Efavirenz,efavirenz,True,[],False,False,https://list.essentialmeds.org/medicines/450/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+463,Efavirenz + emtricitabine + tenofovir,efavirenz + emtricitabine + tenofovir,True,[],False,False,https://list.essentialmeds.org/medicines/463/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+285,Efavirenz + lamivudine + tenofovir,efavirenz + lamivudine + tenofovir,True,[],False,False,https://list.essentialmeds.org/medicines/285/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+388,Eflornithine,eflornithine,True,[],False,False,https://list.essentialmeds.org/medicines/388/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+990,Eletriptan,eletriptan,True,[],False,False,https://list.essentialmeds.org/medicines/990/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+954,Elexacaftor + tezacaftor + ivacaftor,elexacaftor + tezacaftor + ivacaftor,True,[],False,False,https://list.essentialmeds.org/medicines/954/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+955,Emicizumab,emicizumab,True,[],False,False,https://list.essentialmeds.org/medicines/955/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+614,Empagliflozin,empagliflozin,True,[],False,False,https://list.essentialmeds.org/medicines/614/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+467,Emtricitabine + tenofovir,emtricitabine + tenofovir,True,[],False,False,https://list.essentialmeds.org/medicines/467/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+137,Enalapril,enalapril,True,[],False,False,https://list.essentialmeds.org/medicines/137/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Enoxacin,enoxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/727,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+123,Enoxaparin,enoxaparin,True,[],False,False,https://list.essentialmeds.org/medicines/123/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+490,Entecavir,entecavir,True,[],False,False,https://list.essentialmeds.org/medicines/490/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+455,Enzalutamide,enzalutamide,True,[],False,False,https://list.essentialmeds.org/medicines/455/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+9,Ephedrine,ephedrine,True,[],False,False,https://list.essentialmeds.org/medicines/9/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Epicillin,epicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/804,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+32,Epinephrine,epinephrine,True,[],False,False,https://list.essentialmeds.org/medicines/32/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+415,Epoetin alfa,epoetin alfa,True,[],False,False,https://list.essentialmeds.org/medicines/415/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+416,Epoetin beta,epoetin beta,True,[],False,False,https://list.essentialmeds.org/medicines/416/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+417,Epoetin theta,epoetin theta,True,[],False,False,https://list.essentialmeds.org/medicines/417/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+605,Equine rabies immunoglobulin,equine rabies immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/605/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Eravacycline,eravacycline,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/402,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+262,Ergocalciferol,ergocalciferol,True,[],False,False,https://list.essentialmeds.org/medicines/262/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+239,Ergometrine,ergometrine,True,[],False,False,https://list.essentialmeds.org/medicines/239/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+405,Erlotinib,erlotinib,True,[],False,False,https://list.essentialmeds.org/medicines/405/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ertapenem,ertapenem,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/728,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+228,Erythromycin,erythromycin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/228/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Erythromycin + sulfamethoxazole + trimethoprim,erythromycin + sulfamethoxazole + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1087,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Erythromycin + trimethoprim,erythromycin + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1088,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+122,Erythropoiesis-stimulating agents,erythropoiesis-stimulating agents,True,[],False,False,https://list.essentialmeds.org/medicines/122/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+188,Estradiol cypionate + medroxyprogesterone acetate,estradiol cypionate + medroxyprogesterone acetate,True,[],False,False,https://list.essentialmeds.org/medicines/188/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+548,Etanercept,etanercept,True,[],False,False,https://list.essentialmeds.org/medicines/548/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+321,Ethambutol,ethambutol,True,[],False,False,https://list.essentialmeds.org/medicines/321/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+323,Ethambutol + isoniazid + pyrazinamide + rifampicin,ethambutol + isoniazid + pyrazinamide + rifampicin,True,[],False,False,https://list.essentialmeds.org/medicines/323/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+324,Ethambutol + isoniazid + rifampicin,ethambutol + isoniazid + rifampicin,True,[],False,False,https://list.essentialmeds.org/medicines/324/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+171,Ethanol,ethanol,True,[],False,False,https://list.essentialmeds.org/medicines/171/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+677,Ethinylestradiol + etonogestrel,ethinylestradiol + etonogestrel,True,[],False,False,https://list.essentialmeds.org/medicines/677/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+184,Ethinylestradiol + levonorgestrel,ethinylestradiol + levonorgestrel,True,[],False,False,https://list.essentialmeds.org/medicines/184/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+185,Ethinylestradiol + norethisterone,ethinylestradiol + norethisterone,True,[],False,False,https://list.essentialmeds.org/medicines/185/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+351,Ethionamide,ethionamide,True,[],False,False,https://list.essentialmeds.org/medicines/351/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+56,Ethosuximide,ethosuximide,True,[],False,False,https://list.essentialmeds.org/medicines/56/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+192,Etonogestrel-releasing implant,etonogestrel-releasing implant,True,[],False,False,https://list.essentialmeds.org/medicines/192/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+88,Etoposide,etoposide,True,[],False,False,https://list.essentialmeds.org/medicines/88/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+615,Everolimus,everolimus,True,[],False,False,https://list.essentialmeds.org/medicines/615/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Faropenem,faropenem,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/729,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+17,Fentanyl,fentanyl,True,[],False,False,https://list.essentialmeds.org/medicines/17/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+118,Ferrous salt,ferrous salt,True,[],False,False,https://list.essentialmeds.org/medicines/118/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+394,Ferrous salt + folic acid,ferrous salt + folic acid,True,[],False,False,https://list.essentialmeds.org/medicines/394/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+557,Fexinidazole,fexinidazole,True,[],False,False,https://list.essentialmeds.org/medicines/557/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+634,Fexofenadine,fexofenadine,True,[],False,False,https://list.essentialmeds.org/medicines/634/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Fidaxomicin,fidaxomicin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/805,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+89,Filgrastim,filgrastim,True,[],False,False,https://list.essentialmeds.org/medicines/89/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,First choice,first choice,False,"[""Access"", ""Not recommended"", ""Reserve"", ""Watch""]",True,True,https://list.essentialmeds.org/recommendations/610,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Fleroxacin,fleroxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/730,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Flomoxef,flomoxef,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/731,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+732,Flucloxacillin,flucloxacillin,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/732/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+359,Fluconazole,fluconazole,True,[],False,False,https://list.essentialmeds.org/medicines/359/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+360,Flucytosine,flucytosine,True,[],False,False,https://list.essentialmeds.org/medicines/360/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+90,Fludarabine,fludarabine,True,[],False,False,https://list.essentialmeds.org/medicines/90/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+182,Fludrocortisone,fludrocortisone,True,[],False,False,https://list.essentialmeds.org/medicines/182/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Flumequine,flumequine,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/733,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+164,Fluorescein,fluorescein,True,[],False,False,https://list.essentialmeds.org/medicines/164/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+268,Fluoride,fluoride,True,[],False,False,https://list.essentialmeds.org/medicines/268/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+91,Fluorouracil,fluorouracil,True,[],False,False,https://list.essentialmeds.org/medicines/91/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+24,Fluoxetine,fluoxetine,True,[],False,False,https://list.essentialmeds.org/medicines/24/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+245,Fluphenazine,fluphenazine,True,[],False,False,https://list.essentialmeds.org/medicines/245/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Flurithromycin,flurithromycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/806,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+640,Flutamide,flutamide,True,[],False,False,https://list.essentialmeds.org/medicines/640/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+666,Fluticasone,fluticasone,True,[],False,False,https://list.essentialmeds.org/medicines/666/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+671,Fluticasone + formoterol,fluticasone + formoterol,True,[],False,False,https://list.essentialmeds.org/medicines/671/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+672,Fluticasone furoate + vilanterol,fluticasone furoate + vilanterol,True,[],False,False,https://list.essentialmeds.org/medicines/672/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+528,Fluvastatin,fluvastatin,True,[],False,False,https://list.essentialmeds.org/medicines/528/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+120,Folic acid,folic acid,True,[],False,False,https://list.essentialmeds.org/medicines/120/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+46,Fomepizole,fomepizole,True,[],False,False,https://list.essentialmeds.org/medicines/46/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Fosfomycin + trimethoprim,fosfomycin + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1089,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+343,Fosfomycin (injection),fosfomycin injection,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/343/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Fosfomycin (oral),fosfomycin oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/869,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+454,Fresh-frozen plasma,fresh-frozen plasma,True,[],False,False,https://list.essentialmeds.org/medicines/454/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Furazidin,furazidin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/807,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+143,Furosemide,furosemide,True,[],False,False,https://list.essentialmeds.org/medicines/143/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Fusidic acid,fusidic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/734,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Garenoxacin,garenoxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/735,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Gatifloxacin,gatifloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/562,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Gatifloxacin + ornidazole,gatifloxacin + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1090,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+403,Gefitinib,gefitinib,True,[],False,False,https://list.essentialmeds.org/medicines/403/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+92,Gemcitabine,gemcitabine,True,[],False,False,https://list.essentialmeds.org/medicines/92/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Gemifloxacin,gemifloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/736,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+229,Gentamicin,gentamicin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/229/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Gepotidacin,gepotidacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/984,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+616,Glass ionomer cement,glass ionomer cement,True,[],False,False,https://list.essentialmeds.org/medicines/616/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+568,Glatiramer acetate,glatiramer acetate,True,[],False,False,https://list.essentialmeds.org/medicines/568/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+491,Glecaprevir + pibrentasvir,glecaprevir + pibrentasvir,True,[],False,False,https://list.essentialmeds.org/medicines/491/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+194,Gliclazide,gliclazide,True,[],False,False,https://list.essentialmeds.org/medicines/194/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+195,Glucagon,glucagon,True,[],False,False,https://list.essentialmeds.org/medicines/195/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+256,Glucose,glucose,True,[],False,False,https://list.essentialmeds.org/medicines/256/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+542,Glucose + sodium chloride,glucose + sodium chloride,True,[],False,False,https://list.essentialmeds.org/medicines/542/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+525,Glutaral,glutaral,True,[],False,False,https://list.essentialmeds.org/medicines/525/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+956,Glycerol,glycerol,True,[],False,False,https://list.essentialmeds.org/medicines/956/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+131,Glyceryl trinitrate,glyceryl trinitrate,True,[],False,False,https://list.essentialmeds.org/medicines/131/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+675,Glycopyrronium,glycopyrronium,True,[],False,False,https://list.essentialmeds.org/medicines/675/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+551,Golimumab,golimumab,True,[],False,False,https://list.essentialmeds.org/medicines/551/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+873,Goserelin,goserelin,True,[],False,False,https://list.essentialmeds.org/medicines/873/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+630,Granisetron,granisetron,True,[],False,False,https://list.essentialmeds.org/medicines/630/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Grepafloxacin,grepafloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/808,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+361,Griseofulvin,griseofulvin,True,[],False,False,https://list.essentialmeds.org/medicines/361/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+206,Haemophilus influenzae type b vaccine,haemophilus influenzae type b vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/206/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+25,Haloperidol,haloperidol,True,[],False,False,https://list.essentialmeds.org/medicines/25/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+924,Haloperidol decanoate,haloperidol decanoate,True,[],False,False,https://list.essentialmeds.org/medicines/924/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+124,Heparin sodium,heparin sodium,True,[],False,False,https://list.essentialmeds.org/medicines/124/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+217,Hepatitis A vaccine,hepatitis a vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/217/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+207,Hepatitis B vaccine,hepatitis b vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/207/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+957,Hepatitis E vaccine,hepatitis e vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/957/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Hetacillin,hetacillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/809,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+512,Homatropine,homatropine,True,[],False,False,https://list.essentialmeds.org/medicines/512/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+208,Human papilloma virus (HPV) vaccine,human papilloma virus hpv vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/208/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+138,Hydralazine,hydralazine,True,[],False,False,https://list.essentialmeds.org/medicines/138/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+139,Hydrochlorothiazide,hydrochlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/139/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+33,Hydrocortisone,hydrocortisone,True,[],False,False,https://list.essentialmeds.org/medicines/33/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+560,Hydromorphone,hydromorphone,True,[],False,False,https://list.essentialmeds.org/medicines/560/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+121,Hydroxocobalamin,hydroxocobalamin,True,[],False,False,https://list.essentialmeds.org/medicines/121/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+93,Hydroxycarbamide (hydroxyurea),hydroxycarbamide hydroxyurea,True,[],False,False,https://list.essentialmeds.org/medicines/93/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+276,Hydroxychloroquine,hydroxychloroquine,True,[],False,False,https://list.essentialmeds.org/medicines/276/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+26,Hyoscine butylbromide,hyoscine butylbromide,True,[],False,False,https://list.essentialmeds.org/medicines/26/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+281,Hyoscine hydrobromide,hyoscine hydrobromide,True,[],False,False,https://list.essentialmeds.org/medicines/281/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+875,Hypochlorous acid,hypochlorous acid,True,[],False,False,https://list.essentialmeds.org/medicines/875/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+618,Ibrutinib,ibrutinib,True,[],False,False,https://list.essentialmeds.org/medicines/618/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+14,Ibuprofen,ibuprofen,True,[],False,False,https://list.essentialmeds.org/medicines/14/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Iclaprim,iclaprim,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/810,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+94,Ifosfamide,ifosfamide,True,[],False,False,https://list.essentialmeds.org/medicines/94/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+95,Imatinib,imatinib,True,[],False,False,https://list.essentialmeds.org/medicines/95/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+600,Imipenem + cilastatin,imipenem + cilastatin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/600/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Imipenem + cilastatin + relebactam,imipenem + cilastatin + relebactam,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/811,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+647,Indapamide,indapamide,True,[],False,False,https://list.essentialmeds.org/medicines/647/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+427,Indometacin,indometacin,True,[],False,False,https://list.essentialmeds.org/medicines/427/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+549,Infliximab,infliximab,True,[],False,False,https://list.essentialmeds.org/medicines/549/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+439,Influenza vaccine (seasonal),influenza vaccine seasonal,True,[],False,False,https://list.essentialmeds.org/medicines/439/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+622,"Insulin (analogue, long-acting)",insulin analogue. long-acting,True,[],False,False,https://list.essentialmeds.org/medicines/622/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+958,"Insulin (analogue, rapid-acting)",insulin analogue. rapid-acting,True,[],False,False,https://list.essentialmeds.org/medicines/958/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+965,Insulin aspart,insulin aspart,True,[],False,False,https://list.essentialmeds.org/medicines/965/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+575,Insulin degludec,insulin degludec,True,[],False,False,https://list.essentialmeds.org/medicines/575/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+574,Insulin detemir,insulin detemir,True,[],False,False,https://list.essentialmeds.org/medicines/574/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+573,Insulin glargine,insulin glargine,True,[],False,False,https://list.essentialmeds.org/medicines/573/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+966,Insulin glulisine,insulin glulisine,True,[],False,False,https://list.essentialmeds.org/medicines/966/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+197,"Insulin (human, intermediate-acting)",insulin human. intermediate-acting,True,[],False,False,https://list.essentialmeds.org/medicines/197/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+196,"Insulin (human, short-acting)",insulin human. short-acting,True,[],False,False,https://list.essentialmeds.org/medicines/196/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+964,Insulin lispro,insulin lispro,True,[],False,False,https://list.essentialmeds.org/medicines/964/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+429,Intraperitoneal dialysis solution,intraperitoneal dialysis solution,True,[],False,False,https://list.essentialmeds.org/medicines/429/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+263,Iodine,iodine,True,[],False,False,https://list.essentialmeds.org/medicines/263/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+202,Iodine + potassium iodide (Lugol's solution),iodine + potassium iodide lugol s solution,True,[],False,False,https://list.essentialmeds.org/medicines/202/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+168,Iohexol,iohexol,True,[],False,False,https://list.essentialmeds.org/medicines/168/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+253,Ipratropium bromide,ipratropium bromide,True,[],False,False,https://list.essentialmeds.org/medicines/253/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+96,Irinotecan,irinotecan,True,[],False,False,https://list.essentialmeds.org/medicines/96/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Isepamicin,isepamicin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/737,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+2,Isoflurane,isoflurane,True,[],False,False,https://list.essentialmeds.org/medicines/2/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+325,Isoniazid,isoniazid,True,[],False,False,https://list.essentialmeds.org/medicines/325/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+326,Isoniazid + pyrazinamide + rifampicin,isoniazid + pyrazinamide + rifampicin,True,[],False,False,https://list.essentialmeds.org/medicines/326/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+286,Isoniazid + pyridoxine + sulfamethoxazole + trimethoprim,isoniazid + pyridoxine + sulfamethoxazole + trimethoprim,True,[],False,False,https://list.essentialmeds.org/medicines/286/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+330,Isoniazid + rifampicin,isoniazid + rifampicin,True,[],False,False,https://list.essentialmeds.org/medicines/330/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+627,Isoniazid + rifapentine,isoniazid + rifapentine,True,[],False,False,https://list.essentialmeds.org/medicines/627/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+132,Isosorbide dinitrate,isosorbide dinitrate,True,[],False,False,https://list.essentialmeds.org/medicines/132/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+287,Itraconazole,itraconazole,True,[],False,False,https://list.essentialmeds.org/medicines/287/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+959,Ivacaftor,ivacaftor,True,[],False,False,https://list.essentialmeds.org/medicines/959/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+58,Ivermectin,ivermectin,True,[],False,False,https://list.essentialmeds.org/medicines/58/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+436,Japanese encephalitis vaccine,japanese encephalitis vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/436/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Josamycin,josamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/738,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+876,Kanamycin,kanamycin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/876/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Kanamycin + benzylpenicillin,kanamycin + benzylpenicillin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1091,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Kanamycin (injection),kanamycin injection,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/352,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Kanamycin (oral),kanamycin oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/812,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+5,Ketamine,ketamine,True,[],False,False,https://list.essentialmeds.org/medicines/5/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+27,Lactulose,lactulose,True,[],False,False,https://list.essentialmeds.org/medicines/27/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+364,Lamivudine,lamivudine,True,[],False,False,https://list.essentialmeds.org/medicines/364/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+638,Lamivudine + tenofovir,lamivudine + tenofovir,True,[],False,False,https://list.essentialmeds.org/medicines/638/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+470,Lamivudine + zidovudine,lamivudine + zidovudine,True,[],False,False,https://list.essentialmeds.org/medicines/470/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+50,Lamotrigine,lamotrigine,True,[],False,False,https://list.essentialmeds.org/medicines/50/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Lascufloxacin,lascufloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/813,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Latamoxef,latamoxef,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/740,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+235,Latanoprost,latanoprost,True,[],False,False,https://list.essentialmeds.org/medicines/235/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+495,Ledipasvir + sofosbuvir,ledipasvir + sofosbuvir,True,[],False,False,https://list.essentialmeds.org/medicines/495/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Lefamulin,lefamulin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/814,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+408,Lenalidomide,lenalidomide,True,[],False,False,https://list.essentialmeds.org/medicines/408/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+917,Letrozole,letrozole,True,[],False,False,https://list.essentialmeds.org/medicines/917/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+113,Leuprorelin,leuprorelin,True,[],False,False,https://list.essentialmeds.org/medicines/113/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+59,Levamisole,levamisole,True,[],False,False,https://list.essentialmeds.org/medicines/59/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+902,Levetiracetam,levetiracetam,True,[],False,False,https://list.essentialmeds.org/medicines/902/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+642,Levodopa + benserazide,levodopa + benserazide,True,[],False,False,https://list.essentialmeds.org/medicines/642/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+393,Levodopa + carbidopa,levodopa + carbidopa,True,[],False,False,https://list.essentialmeds.org/medicines/393/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+353,Levofloxacin,levofloxacin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/353/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Levofloxacin + metronidazole,levofloxacin + metronidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1092,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Levofloxacin + ornidazole,levofloxacin + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1093,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Levonadifloxacin,levonadifloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/815,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+186,Levonorgestrel,levonorgestrel,True,[],False,False,https://list.essentialmeds.org/medicines/186/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+424,Levonorgestrel-releasing implant,levonorgestrel-releasing implant,True,[],False,False,https://list.essentialmeds.org/medicines/424/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+199,Levothyroxine,levothyroxine,True,[],False,False,https://list.essentialmeds.org/medicines/199/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+8,Lidocaine,lidocaine,True,[],False,False,https://list.essentialmeds.org/medicines/8/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+277,Lidocaine + epinephrine,lidocaine + epinephrine,True,[],False,False,https://list.essentialmeds.org/medicines/277/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Lincomycin,lincomycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/741,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+345,Linezolid,linezolid,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/345/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+932,Liraglutide,liraglutide,True,[],False,False,https://list.essentialmeds.org/medicines/932/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+531,Lisinopril + amlodipine,lisinopril + amlodipine,True,[],False,False,https://list.essentialmeds.org/medicines/531/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+532,Lisinopril + hydrochlorothiazide,lisinopril + hydrochlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/532/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+248,Lithium carbonate,lithium carbonate,True,[],False,False,https://list.essentialmeds.org/medicines/248/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Lomefloxacin,lomefloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/742,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+28,Loperamide,loperamide,True,[],False,False,https://list.essentialmeds.org/medicines/28/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+453,Lopinavir + ritonavir,lopinavir + ritonavir,True,[],False,False,https://list.essentialmeds.org/medicines/453/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Loracarbef,loracarbef,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/816,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+34,Loratadine,loratadine,True,[],False,False,https://list.essentialmeds.org/medicines/34/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+51,Lorazepam,lorazepam,True,[],False,False,https://list.essentialmeds.org/medicines/51/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+141,Losartan,losartan,True,[],False,False,https://list.essentialmeds.org/medicines/141/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+527,Lovastatin,lovastatin,True,[],False,False,https://list.essentialmeds.org/medicines/527/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Lymecycline,lymecycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/743,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+52,Magnesium sulfate,magnesium sulfate,True,[],False,False,https://list.essentialmeds.org/medicines/52/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+969,Malaria vaccine,malaria vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/969/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+177,Mannitol,mannitol,True,[],False,False,https://list.essentialmeds.org/medicines/177/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+209,Measles vaccine,measles vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/209/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+60,Mebendazole,mebendazole,True,[],False,False,https://list.essentialmeds.org/medicines/60/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Mecillinam,mecillinam,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/744,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+905,Medicines for COVID-19,medicines for covid-19,True,[],False,False,https://list.essentialmeds.org/medicines/905/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+189,Medroxyprogesterone acetate,medroxyprogesterone acetate,True,[],False,False,https://list.essentialmeds.org/medicines/189/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+379,Mefloquine,mefloquine,True,[],False,False,https://list.essentialmeds.org/medicines/379/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+370,Meglumine antimoniate,meglumine antimoniate,True,[],False,False,https://list.essentialmeds.org/medicines/370/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+169,Meglumine iotroxate,meglumine iotroxate,True,[],False,False,https://list.essentialmeds.org/medicines/169/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+389,Melarsoprol,melarsoprol,True,[],False,False,https://list.essentialmeds.org/medicines/389/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+556,Melphalan,melphalan,True,[],False,False,https://list.essentialmeds.org/medicines/556/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+438,Meningococcal meningitis vaccine,meningococcal meningitis vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/438/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+97,Mercaptopurine,mercaptopurine,True,[],False,False,https://list.essentialmeds.org/medicines/97/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+329,Meropenem,meropenem,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/329/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Meropenem + sulbactam,meropenem + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1094,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+396,Meropenem + vaborbactam,meropenem + vaborbactam,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/396/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+547,Mesalazine,mesalazine,True,[],False,False,https://list.essentialmeds.org/medicines/547/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+98,Mesna,mesna,True,[],False,False,https://list.essentialmeds.org/medicines/98/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metacycline,metacycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/745,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metampicillin,metampicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/817,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+191,Metformin,metformin,True,[],False,False,https://list.essentialmeds.org/medicines/191/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+18,Methadone,methadone,True,[],False,False,https://list.essentialmeds.org/medicines/18/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+506,Methimazole,methimazole,True,[],False,False,https://list.essentialmeds.org/medicines/506/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+99,Methotrexate,methotrexate,True,[],False,False,https://list.essentialmeds.org/medicines/99/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+419,Methoxy polyethylene glycol-epoetin beta,methoxy polyethylene glycol-epoetin beta,True,[],False,False,https://list.essentialmeds.org/medicines/419/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+140,Methyldopa,methyldopa,True,[],False,False,https://list.essentialmeds.org/medicines/140/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+658,Methylergometrine,methylergometrine,True,[],False,False,https://list.essentialmeds.org/medicines/658/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+114,Methylprednisolone,methylprednisolone,True,[],False,False,https://list.essentialmeds.org/medicines/114/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+38,Methylthioninium chloride,methylthioninium chloride,True,[],False,False,https://list.essentialmeds.org/medicines/38/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+818,Meticillin,meticillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/818/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+29,Metoclopramide,metoclopramide,True,[],False,False,https://list.essentialmeds.org/medicines/29/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+497,Metoprolol,metoprolol,True,[],False,False,https://list.essentialmeds.org/medicines/497/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+313,Metronidazole,metronidazole,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/313/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Metronidazole + diloxanide,metronidazole + diloxanide,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1095,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metronidazole + furazolidone,metronidazole + furazolidone,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1096,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metronidazole + norfloxacin,metronidazole + norfloxacin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1097,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metronidazole + spiramycin,metronidazole + spiramycin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1098,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Metronidazole + tetracycline,metronidazole + tetracycline,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1099,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Mezlocillin,mezlocillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/746,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Mezlocillin + sulbactam,mezlocillin + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1100,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+621,Micafungin,micafungin,True,[],False,False,https://list.essentialmeds.org/medicines/621/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+149,Miconazole,miconazole,True,[],False,False,https://list.essentialmeds.org/medicines/149/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Micronomicin,micronomicin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/747,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+11,Midazolam,midazolam,True,[],False,False,https://list.essentialmeds.org/medicines/11/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Midecamycin,midecamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/748,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+242,Mifepristone - misoprostol,mifepristone - misoprostol,True,[],False,False,https://list.essentialmeds.org/medicines/242/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+367,Miltefosine,miltefosine,True,[],False,False,https://list.essentialmeds.org/medicines/367/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Minocycline (injection),minocycline injection,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/750,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Minocycline (oral),minocycline oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/749,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Miocamycin,miocamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/819,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+240,Misoprostol,misoprostol,True,[],False,False,https://list.essentialmeds.org/medicines/240/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+667,Mometasone,mometasone,True,[],False,False,https://list.essentialmeds.org/medicines/667/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+670,Mometasone + formoterol,mometasone + formoterol,True,[],False,False,https://list.essentialmeds.org/medicines/670/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+12,Morphine,morphine,True,[],False,False,https://list.essentialmeds.org/medicines/12/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+963,Moxidectin,moxidectin,True,[],False,False,https://list.essentialmeds.org/medicines/963/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+354,Moxifloxacin,moxifloxacin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/354/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+960,Mpox vaccine,mpox vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/960/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+546,Multiple micronutrient powder,multiple micronutrient powder,True,[],False,False,https://list.essentialmeds.org/medicines/546/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+624,Multiple micronutrient supplement,multiple micronutrient supplement,True,[],False,False,https://list.essentialmeds.org/medicines/624/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+220,Mumps vaccine,mumps vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/220/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+152,Mupirocin,mupirocin,True,[],False,False,https://list.essentialmeds.org/medicines/152/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+413,Nadroparin,nadroparin,True,[],False,False,https://list.essentialmeds.org/medicines/413/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+751,Nafcillin,nafcillin,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/751/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Nalidixic acid,nalidixic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/602,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+39,Naloxone,naloxone,True,[],False,False,https://list.essentialmeds.org/medicines/39/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+909,Naltrexone,naltrexone,True,[],False,False,https://list.essentialmeds.org/medicines/909/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+977,Naproxen,naproxen,True,[],False,False,https://list.essentialmeds.org/medicines/977/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+230,Natamycin,natamycin,True,[],False,False,https://list.essentialmeds.org/medicines/230/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Nemonoxacin,nemonoxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/820,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Neomycin (injection),neomycin injection,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/752,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Neomycin (oral),neomycin oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/821,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+223,Neostigmine,neostigmine,True,[],False,False,https://list.essentialmeds.org/medicines/223/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+653,Netilmicin,netilmicin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/653/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+451,Nevirapine,nevirapine,True,[],False,False,https://list.essentialmeds.org/medicines/451/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+61,Niclosamide,niclosamide,True,[],False,False,https://list.essentialmeds.org/medicines/61/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+264,Nicotinamide,nicotinamide,True,[],False,False,https://list.essentialmeds.org/medicines/264/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+530,Nicotine replacement therapy,nicotine replacement therapy,True,[],False,False,https://list.essentialmeds.org/medicines/530/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+243,Nifedipine,nifedipine,True,[],False,False,https://list.essentialmeds.org/medicines/243/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+390,Nifurtimox,nifurtimox,True,[],False,False,https://list.essentialmeds.org/medicines/390/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Nifurtoinol,nifurtoinol,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/822,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+100,Nilotinib,nilotinib,True,[],False,False,https://list.essentialmeds.org/medicines/100/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+641,Nilutamide,nilutamide,True,[],False,False,https://list.essentialmeds.org/medicines/641/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Nimorazole,nimorazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/985,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+301,Nitrofurantoin,nitrofurantoin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/301/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+3,Nitrous oxide,nitrous oxide,True,[],False,False,https://list.essentialmeds.org/medicines/3/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+566,Nivolumab,nivolumab,True,[],False,False,https://list.essentialmeds.org/medicines/566/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+420,Norethisterone,norethisterone,True,[],False,False,https://list.essentialmeds.org/medicines/420/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+190,Norethisterone enantate,norethisterone enantate,True,[],False,False,https://list.essentialmeds.org/medicines/190/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Norfloxacin,norfloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/753,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Norfloxacin + tinidazole,norfloxacin + tinidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1101,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+465,Normal immunoglobulin,normal immunoglobulin,True,[],False,False,https://list.essentialmeds.org/medicines/465/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+362,Nystatin,nystatin,True,[],False,False,https://list.essentialmeds.org/medicines/362/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+913,Octreotide,octreotide,True,[],False,False,https://list.essentialmeds.org/medicines/913/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+231,Ofloxacin,ofloxacin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/231/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Ofloxacin + nitazoxanide,ofloxacin + nitazoxanide,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1102,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ofloxacin + ornidazole,ofloxacin + ornidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1103,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ofloxacin + tinidazole,ofloxacin + tinidazole,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1104,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+918,Olanzapine,olanzapine,True,[],False,False,https://list.essentialmeds.org/medicines/918/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Oleandomycin,oleandomycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/754,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Oleandomycin + tetracycline,oleandomycin + tetracycline,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1105,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Omadacycline,omadacycline,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/399,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+178,Omeprazole,omeprazole,True,[],False,False,https://list.essentialmeds.org/medicines/178/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+30,Ondansetron,ondansetron,True,[],False,False,https://list.essentialmeds.org/medicines/30/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+540,Oral rehydration salts,oral rehydration salts,True,[],False,False,https://list.essentialmeds.org/medicines/540/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+541,Oral rehydration salts - zinc sulfate,oral rehydration salts - zinc sulfate,True,[],False,False,https://list.essentialmeds.org/medicines/541/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Oritavancin,oritavancin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/755,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ornidazole (injection),ornidazole injection,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/823,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ornidazole (oral),ornidazole oral,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/824,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+291,Oseltamivir,oseltamivir,True,[],False,False,https://list.essentialmeds.org/medicines/291/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+756,Oxacillin,oxacillin,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/756/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+101,Oxaliplatin,oxaliplatin,True,[],False,False,https://list.essentialmeds.org/medicines/101/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+66,Oxamniquine,oxamniquine,True,[],False,False,https://list.essentialmeds.org/medicines/66/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Oxolinic acid,oxolinic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/825,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+559,Oxycodone,oxycodone,True,[],False,False,https://list.essentialmeds.org/medicines/559/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+4,Oxygen,oxygen,True,[],False,False,https://list.essentialmeds.org/medicines/4/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+656,Oxytetracycline,oxytetracycline,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/656/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+241,Oxytocin,oxytocin,True,[],False,False,https://list.essentialmeds.org/medicines/241/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+904,P-aminosalicylate sodium,p-aminosalicylate sodium,True,[],False,False,https://list.essentialmeds.org/medicines/904/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+102,Paclitaxel,paclitaxel,True,[],False,False,https://list.essentialmeds.org/medicines/102/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+623,Paliperidone,paliperidone,True,[],False,False,https://list.essentialmeds.org/medicines/623/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+631,Palonosetron,palonosetron,True,[],False,False,https://list.essentialmeds.org/medicines/631/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+514,Pancreatic enzymes,pancreatic enzymes,True,[],False,False,https://list.essentialmeds.org/medicines/514/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Panipenem,panipenem,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/757,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+15,Paracetamol (acetaminophen),paracetamol acetaminophen,True,[],False,False,https://list.essentialmeds.org/medicines/15/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+368,Paromomycin,paromomycin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/368/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Pazufloxacin,pazufloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/758,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pefloxacin,pefloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/759,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+558,Pegaspargase,pegaspargase,True,[],False,False,https://list.essentialmeds.org/medicines/558/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+907,Pegfilgrastim,pegfilgrastim,True,[],False,False,https://list.essentialmeds.org/medicines/907/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+565,Pembrolizumab,pembrolizumab,True,[],False,False,https://list.essentialmeds.org/medicines/565/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Penamecillin,penamecillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/760,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+42,Penicillamine,penicillamine,True,[],False,False,https://list.essentialmeds.org/medicines/42/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Penimepicycline,penimepicycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/826,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+386,Pentamidine,pentamidine,True,[],False,False,https://list.essentialmeds.org/medicines/386/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+961,Perindopril + amlodipine + indapamide,perindopril + amlodipine + indapamide,True,[],False,False,https://list.essentialmeds.org/medicines/961/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+163,Permethrin,permethrin,True,[],False,False,https://list.essentialmeds.org/medicines/163/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+210,Pertussis vaccine,pertussis vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/210/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pheneticillin,pheneticillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/761,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+53,Phenobarbital,phenobarbital,True,[],False,False,https://list.essentialmeds.org/medicines/53/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+308,Phenoxymethylpenicillin,phenoxymethylpenicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/308/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+54,Phenytoin,phenytoin,True,[],False,False,https://list.essentialmeds.org/medicines/54/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+125,Phytomenadione,phytomenadione,True,[],False,False,https://list.essentialmeds.org/medicines/125/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+236,Pilocarpine,pilocarpine,True,[],False,False,https://list.essentialmeds.org/medicines/236/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pipemidic acid,pipemidic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/827,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Piperacillin,piperacillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/762,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Piperacillin + sulbactam,piperacillin + sulbactam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1106,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+320,Piperacillin + tazobactam,piperacillin + tazobactam,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/320/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Piromidic acid,piromidic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/828,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pivampicillin,pivampicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/763,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pivampicillin + pivmecillinam,pivampicillin + pivmecillinam,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1107,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pivmecillinam,pivmecillinam,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/764,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+456,Platelets,platelets,True,[],False,False,https://list.essentialmeds.org/medicines/456/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+397,Plazomicin,plazomicin,True,"[""Reserve""]",False,False,https://list.essentialmeds.org/medicines/397/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+211,Pneumococcal vaccine,pneumococcal vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/211/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+520,Podophyllotoxin,podophyllotoxin,True,[],False,False,https://list.essentialmeds.org/medicines/520/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+159,Podophyllum resin,podophyllum resin,True,[],False,False,https://list.essentialmeds.org/medicines/159/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+212,Poliomyelitis vaccine,poliomyelitis vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/212/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+471,Polygeline,polygeline,True,[],False,False,https://list.essentialmeds.org/medicines/471/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+561,Polymyxin B (injection),polymyxin b injection,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/561/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Polymyxin B (oral),polymyxin b oral,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/829,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+989,Porcatant alfa,porcatant alfa,True,[],False,False,https://list.essentialmeds.org/medicines/989/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+255,Potassium chloride,potassium chloride,True,[],False,False,https://list.essentialmeds.org/medicines/255/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+43,Potassium ferric hexacyanoferrate (Prussian blue),potassium ferric hexacyanoferrate prussian blue,True,[],False,False,https://list.essentialmeds.org/medicines/43/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+200,Potassium iodide,potassium iodide,True,[],False,False,https://list.essentialmeds.org/medicines/200/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+153,Potassium permanganate,potassium permanganate,True,[],False,False,https://list.essentialmeds.org/medicines/153/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+172,Povidone iodine,povidone iodine,True,[],False,False,https://list.essentialmeds.org/medicines/172/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+526,Pravastatin,pravastatin,True,[],False,False,https://list.essentialmeds.org/medicines/526/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+62,Praziquantel,praziquantel,True,[],False,False,https://list.essentialmeds.org/medicines/62/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+650,Precipitated sulfur,precipitated sulfur,True,[],False,False,https://list.essentialmeds.org/medicines/650/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+35,Prednisolone,prednisolone,True,[],False,False,https://list.essentialmeds.org/medicines/35/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+635,Prednisone,prednisone,True,[],False,False,https://list.essentialmeds.org/medicines/635/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+919,Pretomanid,pretomanid,True,[],False,False,https://list.essentialmeds.org/medicines/919/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+380,Primaquine,primaquine,True,[],False,False,https://list.essentialmeds.org/medicines/380/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Pristinamycin,pristinamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/765,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+319,Procaine benzylpenicillin,procaine benzylpenicillin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/319/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+103,Procarbazine,procarbazine,True,[],False,False,https://list.essentialmeds.org/medicines/103/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+193,Progesterone vaginal ring,progesterone vaginal ring,True,[],False,False,https://list.essentialmeds.org/medicines/193/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+524,Propanol,propanol,True,[],False,False,https://list.essentialmeds.org/medicines/524/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Propenidazole,propenidazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/986,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Propicillin,propicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/830,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+6,Propofol,propofol,True,[],False,False,https://list.essentialmeds.org/medicines/6/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+392,Propranolol,propranolol,True,[],False,False,https://list.essentialmeds.org/medicines/392/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+201,Propylthiouracil,propylthiouracil,True,[],False,False,https://list.essentialmeds.org/medicines/201/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+126,Protamine sulfate,protamine sulfate,True,[],False,False,https://list.essentialmeds.org/medicines/126/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+637,Protionamide,protionamide,True,[],False,False,https://list.essentialmeds.org/medicines/637/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Prulifloxacin,prulifloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/766,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+63,Pyrantel,pyrantel,True,[],False,False,https://list.essentialmeds.org/medicines/63/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+331,Pyrazinamide,pyrazinamide,True,[],False,False,https://list.essentialmeds.org/medicines/331/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+204,Pyridostigmine,pyridostigmine,True,[],False,False,https://list.essentialmeds.org/medicines/204/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+265,Pyridoxine,pyridoxine,True,[],False,False,https://list.essentialmeds.org/medicines/265/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+384,Pyrimethamine,pyrimethamine,True,[],False,False,https://list.essentialmeds.org/medicines/384/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+920,Quetiapine,quetiapine,True,[],False,False,https://list.essentialmeds.org/medicines/920/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+381,Quinine,quinine,True,[],False,False,https://list.essentialmeds.org/medicines/381/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+218,Rabies vaccine,rabies vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/218/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+289,Raltegravir,raltegravir,True,[],False,False,https://list.essentialmeds.org/medicines/289/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+179,Ranitidine,ranitidine,True,[],False,False,https://list.essentialmeds.org/medicines/179/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+625,Rasburicase,rasburicase,True,[],False,False,https://list.essentialmeds.org/medicines/625/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+899,Ravidasvir,ravidasvir,True,[],False,False,https://list.essentialmeds.org/medicines/899/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+586,Ready to use therapeutic food,ready to use therapeutic food,True,[],False,False,https://list.essentialmeds.org/medicines/586/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+555,Realgar-indigo naturalis formulation,realgar-indigo naturalis formulation,True,[],False,False,https://list.essentialmeds.org/medicines/555/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+457,Red blood cells,red blood cells,True,[],False,False,https://list.essentialmeds.org/medicines/457/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+923,Resin-based composite (high-viscosity),resin-based composite high-viscosity,True,[],False,False,https://list.essentialmeds.org/medicines/923/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+922,Resin-based composite (low-viscosity),resin-based composite low-viscosity,True,[],False,False,https://list.essentialmeds.org/medicines/922/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+970,Respiratory syncytial virus vaccine,respiratory syncytial virus vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/970/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+266,Retinol,retinol,True,[],False,False,https://list.essentialmeds.org/medicines/266/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+473,Ribavirin,ribavirin,True,[],False,False,https://list.essentialmeds.org/medicines/473/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+267,Riboflavin,riboflavin,True,[],False,False,https://list.essentialmeds.org/medicines/267/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ribostamycin,ribostamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/767,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+335,Rifabutin,rifabutin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/335/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+294,Rifampicin,rifampicin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/294/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Rifamycin (injection),rifamycin injection,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/768,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rifamycin (oral),rifamycin oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/831,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+336,Rifapentine,rifapentine,True,[],False,False,https://list.essentialmeds.org/medicines/336/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rifaximin,rifaximin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/769,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+246,Risperidone,risperidone,True,[],False,False,https://list.essentialmeds.org/medicines/246/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+461,Ritonavir,ritonavir,True,[],False,False,https://list.essentialmeds.org/medicines/461/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+104,Rituximab,rituximab,True,[],False,False,https://list.essentialmeds.org/medicines/104/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+481,Rivaroxaban,rivaroxaban,True,[],False,False,https://list.essentialmeds.org/medicines/481/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rokitamycin,rokitamycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/832,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rolitetracycline,rolitetracycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/833,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rosoxacin,rosoxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/834,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+213,Rotavirus vaccine,rotavirus vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/213/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Roxithromycin,roxithromycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/770,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+214,Rubella vaccine,rubella vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/214/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Rufloxacin,rufloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/771,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+254,Salbutamol,salbutamol,True,[],False,False,https://list.essentialmeds.org/medicines/254/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+160,Salicylic acid,salicylic acid,True,[],False,False,https://list.essentialmeds.org/medicines/160/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sarecycline,sarecycline,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/835,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Satranidazole,satranidazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/987,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Secnidazole,secnidazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/836,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Second choice,second choice,False,"[""Access"", ""Not recommended"", ""Reserve"", ""Watch""]",True,True,https://list.essentialmeds.org/recommendations/616,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+150,Selenium sulfide,selenium sulfide,True,[],False,False,https://list.essentialmeds.org/medicines/150/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+973,Semaglutide,semaglutide,True,[],False,False,https://list.essentialmeds.org/medicines/973/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+31,Senna,senna,True,[],False,False,https://list.essentialmeds.org/medicines/31/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+897,Sevoflurane,sevoflurane,True,[],False,False,https://list.essentialmeds.org/medicines/897/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+617,Silver diamine fluoride,silver diamine fluoride,True,[],False,False,https://list.essentialmeds.org/medicines/617/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+154,Silver sulfadiazine,silver sulfadiazine,True,[],False,False,https://list.essentialmeds.org/medicines/154/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+148,Simvastatin,simvastatin,True,[],False,False,https://list.essentialmeds.org/medicines/148/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sisomicin,sisomicin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/772,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sitafloxacin,sitafloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/773,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+47,Sodium calcium edetate,sodium calcium edetate,True,[],False,False,https://list.essentialmeds.org/medicines/47/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+258,Sodium chloride,sodium chloride,True,[],False,False,https://list.essentialmeds.org/medicines/258/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+543,Sodium hydrogen carbonate,sodium hydrogen carbonate,True,[],False,False,https://list.essentialmeds.org/medicines/543/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+44,Sodium nitrite,sodium nitrite,True,[],False,False,https://list.essentialmeds.org/medicines/44/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+142,Sodium nitroprusside,sodium nitroprusside,True,[],False,False,https://list.essentialmeds.org/medicines/142/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+369,Sodium stibogluconate,sodium stibogluconate,True,[],False,False,https://list.essentialmeds.org/medicines/369/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+45,Sodium thiosulfate,sodium thiosulfate,True,[],False,False,https://list.essentialmeds.org/medicines/45/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+296,Sofosbuvir,sofosbuvir,True,[],False,False,https://list.essentialmeds.org/medicines/296/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+290,Sofosbuvir + velpatasvir,sofosbuvir + velpatasvir,True,[],False,False,https://list.essentialmeds.org/medicines/290/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Solithromycin,solithromycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/837,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sparfloxacin,sparfloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/774,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+300,Spectinomycin,spectinomycin,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/300/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Spiramycin,spiramycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/775,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+144,Spironolactone,spironolactone,True,[],False,False,https://list.essentialmeds.org/medicines/144/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Streptoduocin,streptoduocin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/838,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+147,Streptokinase,streptokinase,True,[],False,False,https://list.essentialmeds.org/medicines/147/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+356,Streptomycin (injection),streptomycin injection,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/356/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Streptomycin (oral),streptomycin oral,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/839,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+48,Succimer,succimer,True,[],False,False,https://list.essentialmeds.org/medicines/48/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulbactam,sulbactam,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/840,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulbenicillin,sulbenicillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/777,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfacarbamide + sulfadiazine + sulfadimidine,sulfacarbamide + sulfadiazine + sulfadimidine,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1109,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+385,Sulfadiazine,sulfadiazine,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/385/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadiazine + sulfamethoxazole + trimethoprim,sulfadiazine + sulfamethoxazole + trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1110,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadiazine + tetroxoprim,sulfadiazine + tetroxoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/841,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadiazine + trimethoprim,sulfadiazine + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/778,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadimethoxine,sulfadimethoxine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/842,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadimidine,sulfadimidine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/601,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfadimidine + trimethoprim,sulfadimidine + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/843,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+382,Sulfadoxine + pyrimethamine,sulfadoxine + pyrimethamine,True,[],False,False,https://list.essentialmeds.org/medicines/382/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfafurazole,sulfafurazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/844,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfaisodimidine,sulfaisodimidine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/845,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfalene,sulfalene,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/846,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamazone,sulfamazone,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/847,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamerazine,sulfamerazine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/848,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamerazine + trimethoprim,sulfamerazine + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/849,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamethizole,sulfamethizole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/850,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamethizole + trimethoprim,sulfamethizole + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/779,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamethoxazole,sulfamethoxazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/851,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+334,Sulfamethoxazole + trimethoprim,sulfamethoxazole + trimethoprim,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/334/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamethoxypyridazine,sulfamethoxypyridazine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/852,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfametomidine,sulfametomidine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/853,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfametoxydiazine,sulfametoxydiazine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/854,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfametrole + trimethoprim,sulfametrole + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/780,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamoxole,sulfamoxole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/855,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfamoxole + trimethoprim,sulfamoxole + trimethoprim,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/781,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfanilamide,sulfanilamide,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/856,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfaperin,sulfaperin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/857,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfaphenazole,sulfaphenazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/858,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfapyridine,sulfapyridine,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/859,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+180,Sulfasalazine,sulfasalazine,True,[],False,False,https://list.essentialmeds.org/medicines/180/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfathiazole,sulfathiazole,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/860,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfathiourea,sulfathiourea,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/861,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sulfonamide combinations (excl trimethoprim),sulfonamide combinations excl trimethoprim,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1111,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Sultamicillin,sultamicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/782,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+571,Sumatriptan,sumatriptan,True,[],False,False,https://list.essentialmeds.org/medicines/571/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+943,"Sunscreen, broad-spectrum",sunscreen. broad-spectrum,True,[],False,False,https://list.essentialmeds.org/medicines/943/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+387,Suramin sodium,suramin sodium,True,[],False,False,https://list.essentialmeds.org/medicines/387/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+224,Suxamethonium,suxamethonium,True,[],False,False,https://list.essentialmeds.org/medicines/224/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+610,Tacalcitol,tacalcitol,True,[],False,False,https://list.essentialmeds.org/medicines/610/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+553,Tacrolimus,tacrolimus,True,[],False,False,https://list.essentialmeds.org/medicines/553/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Talampicillin,talampicillin,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/862,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+115,Tamoxifen,tamoxifen,True,[],False,False,https://list.essentialmeds.org/medicines/115/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tazobactam,tazobactam,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/863,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tebipenem,tebipenem,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/783,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+784,Tedizolid,tedizolid,True,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/784/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Teicoplanin,teicoplanin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/785,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Telavancin,telavancin,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/786,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Telithromycin,telithromycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/787,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+533,Telmisartan + amlodipine,telmisartan + amlodipine,True,[],False,False,https://list.essentialmeds.org/medicines/533/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+534,Telmisartan + hydrochlorothiazide,telmisartan + hydrochlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/534/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Temafloxacin,temafloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/864,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Temocillin,temocillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/788,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+365,Tenofovir disoproxil fumarate,tenofovir disoproxil fumarate,True,[],False,False,https://list.essentialmeds.org/medicines/365/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+151,Terbinafine,terbinafine,True,[],False,False,https://list.essentialmeds.org/medicines/151/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+673,Terbutaline,terbutaline,True,[],False,False,https://list.essentialmeds.org/medicines/673/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+636,Terizidone,terizidone,True,[],False,False,https://list.essentialmeds.org/medicines/636/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+183,Testosterone,testosterone,True,[],False,False,https://list.essentialmeds.org/medicines/183/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+215,Tetanus vaccine,tetanus vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/215/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+233,Tetracaine,tetracaine,True,[],False,False,https://list.essentialmeds.org/medicines/233/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+232,Tetracycline,tetracycline,True,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/232/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+,Tetracycline + chlortetracycline + demeclocycline,tetracycline + chlortetracycline + demeclocycline,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1112,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tetracycline + nystatin,tetracycline + nystatin,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1113,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+409,Thalidomide,thalidomide,True,[],False,False,https://list.essentialmeds.org/medicines/409/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+269,Thiamine,thiamine,True,[],False,False,https://list.essentialmeds.org/medicines/269/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Thiamphenicol,thiamphenicol,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/789,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+628,Thiopental,thiopental,True,[],False,False,https://list.essentialmeds.org/medicines/628/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ticarcillin,ticarcillin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/790,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Ticarcillin + clavulanic acid,ticarcillin + clavulanic acid,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/988,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+437,Tick-borne encephalitis vaccine,tick-borne encephalitis vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/437/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tigecycline,tigecycline,False,"[""Reserve""]",True,True,https://list.essentialmeds.org/medicines/346,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+237,Timolol,timolol,True,[],False,False,https://list.essentialmeds.org/medicines/237/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+639,Tinidazole,tinidazole,True,[],False,False,https://list.essentialmeds.org/medicines/639/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tinidazole + diloxanide,tinidazole + diloxanide,False,"[""Not recommended""]",True,True,https://list.essentialmeds.org/medicines/1114,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tinidazole (injection),tinidazole injection,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/865,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tinidazole (oral),tinidazole oral,False,"[""Access""]",True,True,https://list.essentialmeds.org/medicines/866,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+105,Tioguanine,tioguanine,True,[],False,False,https://list.essentialmeds.org/medicines/105/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+539,Tiotropium bromide,tiotropium bromide,True,[],False,False,https://list.essentialmeds.org/medicines/539/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+976,Tirzepatide,tirzepatide,True,[],False,False,https://list.essentialmeds.org/medicines/976/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+654,Tobramycin,tobramycin,True,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/654/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+649,Torasemide,torasemide,True,[],False,False,https://list.essentialmeds.org/medicines/649/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Tosufloxacin,tosufloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/791,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+127,Tranexamic acid,tranexamic acid,True,[],False,False,https://list.essentialmeds.org/medicines/127/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+106,Trastuzumab,trastuzumab,True,[],False,False,https://list.essentialmeds.org/medicines/106/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+893,Triamcinolone hexacetonide,triamcinolone hexacetonide,True,[],False,False,https://list.essentialmeds.org/medicines/893/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+65,Triclabendazole,triclabendazole,True,[],False,False,https://list.essentialmeds.org/medicines/65/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+410,Trihexyphenidyl,trihexyphenidyl,True,[],False,False,https://list.essentialmeds.org/medicines/410/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+599,Trimethoprim,trimethoprim,True,"[""Access""]",False,False,https://list.essentialmeds.org/medicines/599/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+874,Triptorelin,triptorelin,True,[],False,False,https://list.essentialmeds.org/medicines/874/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Troleandomycin,troleandomycin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/867,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+165,Tropicamide,tropicamide,True,[],False,False,https://list.essentialmeds.org/medicines/165/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+632,Tropisetron,tropisetron,True,[],False,False,https://list.essentialmeds.org/medicines/632/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+,Trovafloxacin,trovafloxacin,False,"[""Watch""]",True,True,https://list.essentialmeds.org/medicines/868,AWARE_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+203,"Tuberculin, purified protein derivative",tuberculin. purified protein derivative,True,[],False,False,https://list.essentialmeds.org/medicines/203/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+219,Typhoid vaccine,typhoid vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/219/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+187,Ulipristal,ulipristal,True,[],False,False,https://list.essentialmeds.org/medicines/187/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+676,Umeclidinium,umeclidinium,True,[],False,False,https://list.essentialmeds.org/medicines/676/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+161,Urea,urea,True,[],False,False,https://list.essentialmeds.org/medicines/161/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+946,Ustekinumab,ustekinumab,True,[],False,False,https://list.essentialmeds.org/medicines/946/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+563,Valaciclovir,valaciclovir,True,[],False,False,https://list.essentialmeds.org/medicines/563/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+474,Valganciclovir,valganciclovir,True,[],False,False,https://list.essentialmeds.org/medicines/474/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+55,Valproic acid (sodium valproate),valproic acid sodium valproate,True,[],False,False,https://list.essentialmeds.org/medicines/55/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+962,Valsartan + amlodipine + hydrochlorothiazide,valsartan + amlodipine + hydrochlorothiazide,True,[],False,False,https://list.essentialmeds.org/medicines/962/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+333,Vancomycin,vancomycin,True,"[""Watch""]",False,False,https://list.essentialmeds.org/medicines/333/,WHO_AND_AWARE,pending,,,WHO,WHO electronic list snapshot,ready
+607,Varenicline,varenicline,True,[],False,False,https://list.essentialmeds.org/medicines/607/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+221,Varicella vaccine,varicella vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/221/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+225,Vecuronium,vecuronium,True,[],False,False,https://list.essentialmeds.org/medicines/225/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+133,Verapamil,verapamil,True,[],False,False,https://list.essentialmeds.org/medicines/133/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+107,Vinblastine,vinblastine,True,[],False,False,https://list.essentialmeds.org/medicines/107/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+108,Vincristine,vincristine,True,[],False,False,https://list.essentialmeds.org/medicines/108/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+109,Vinorelbine,vinorelbine,True,[],False,False,https://list.essentialmeds.org/medicines/109/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+288,Voriconazole,voriconazole,True,[],False,False,https://list.essentialmeds.org/medicines/288/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+128,Warfarin,warfarin,True,[],False,False,https://list.essentialmeds.org/medicines/128/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+587,Water for injection,water for injection,True,[],False,False,https://list.essentialmeds.org/medicines/587/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+459,Whole blood,whole blood,True,[],False,False,https://list.essentialmeds.org/medicines/459/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+272,Xylometazoline,xylometazoline,True,[],False,False,https://list.essentialmeds.org/medicines/272/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+216,Yellow fever vaccine,yellow fever vaccine,True,[],False,False,https://list.essentialmeds.org/medicines/216/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+895,Zanubrutinib,zanubrutinib,True,[],False,False,https://list.essentialmeds.org/medicines/895/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+366,Zidovudine,zidovudine,True,[],False,False,https://list.essentialmeds.org/medicines/366/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+181,Zinc sulfate,zinc sulfate,True,[],False,False,https://list.essentialmeds.org/medicines/181/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+110,Zoledronic acid,zoledronic acid,True,[],False,False,https://list.essentialmeds.org/medicines/110/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready
+925,Zuclopenthixol decanoate,zuclopenthixol decanoate,True,[],False,False,https://list.essentialmeds.org/medicines/925/,WHO_ONLY,pending,,,WHO,WHO electronic list snapshot,ready

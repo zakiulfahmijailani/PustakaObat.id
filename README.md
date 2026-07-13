@@ -34,3 +34,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## WHO medicine catalog
+
+Apoteq includes an import workflow for WHO eEML and AWaRe data. Validate the committed snapshot with:
+
+```bash
+npm run who:validate
+```
+
+Database migration, import credentials, role behavior, routes, provenance, and the BPOM limitation are documented in [docs/who-data-import.md](docs/who-data-import.md).
