@@ -14,7 +14,7 @@ describe('WHO catalog import contract', () => {
   })
 
   it('prepares the repository snapshot deterministically and removes scraper navigation labels', async () => {
-    const raw = JSON.parse(await readFile('data/import/who/processed/who_medicine_catalog.json', 'utf8'))
+    const raw = JSON.parse(await readFile('data/imports/who/processed/who_medicine_catalog.json', 'utf8'))
     const first = prepareWhoCatalog(raw)
     const second = prepareWhoCatalog(raw)
 

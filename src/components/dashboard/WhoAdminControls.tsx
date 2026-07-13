@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import type { WhoMedicine } from '@/types'
@@ -19,16 +18,20 @@ export function WhoAdminControls({ medicine }: { medicine: WhoMedicine }) {
   const save = async () => {
     setPending(true)
     setMessage(null)
-    const supabase = createClient()
-    const { error } = await supabase.rpc('admin_update_who_medicine', {
-      _record_id: medicine.id,
-      _editorial_name: name,
-      _publication_status: publication,
-      _is_active: active,
+    const response = await fetch('/api/who/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        medicineId: medicine.id,
+        editorialName: name,
+        publicationStatus: publication,
+        isActive: active,
+      }),
     })
-    setMessage(error ? error.message : 'Perubahan editorial tersimpan.')
+    const result = await response.json().catch(() => ({}))
+    setMessage(response.ok ? 'Perubahan editorial tersimpan.' : result.error || 'Gagal menyimpan perubahan.')
     setPending(false)
-    if (!error) router.refresh()
+    if (response.ok) router.refresh()
   }
 
   return (

@@ -41,9 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # Local WHO source files and generated import payloads
-/data/import/who/incoming/*
-!/data/import/who/incoming/.gitkeep
-/data/import/who/prepared/*
-!/data/import/who/prepared/.gitkeep
+/data/imports/who/incoming/*
+!/data/imports/who/incoming/.gitkeep
+/data/imports/who/prepared/*
+!/data/imports/who/prepared/.gitkeep
 __pycache__/
 *.py[cod]

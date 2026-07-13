@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types'
 
-export async function requireActiveProfile(allowedRoles?: UserRole[]) {
+export async function getActiveProfile() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) return null
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -13,8 +13,15 @@ export async function requireActiveProfile(allowedRoles?: UserRole[]) {
     .eq('id', user.id)
     .single()
 
-  if (!profile?.is_active) redirect('/pending-approval')
+  if (!profile?.is_active) return null
+  return { supabase, user, profile }
+}
+
+export async function requireActiveProfile(allowedRoles?: UserRole[]) {
+  const activeProfile = await getActiveProfile()
+  if (!activeProfile) redirect('/login')
+  const { profile } = activeProfile
   if (allowedRoles && !allowedRoles.includes(profile.role)) redirect('/dashboard')
 
-  return { supabase, user, profile }
+  return activeProfile
 }

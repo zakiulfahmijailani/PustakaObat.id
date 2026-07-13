@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { createClient } from '@supabase/supabase-js'
+import { neon } from '@neondatabase/serverless'
 import { prepareWhoCatalog } from './who/catalog.mjs'
 
-const DEFAULT_FILE = resolve('data/import/who/processed/who_medicine_catalog.json')
-const DEFAULT_MANIFEST = resolve('data/import/who/manifest.json')
+const DEFAULT_FILE = resolve('data/imports/who/processed/who_medicine_catalog.json')
+const DEFAULT_MANIFEST = resolve('data/imports/who/manifest.json')
 
 function parseArguments(argv) {
   const options = { apply: false, file: DEFAULT_FILE, manifest: DEFAULT_MANIFEST }
@@ -24,12 +24,10 @@ function fileHash(content) {
   return createHash('sha256').update(content).digest('hex')
 }
 
-function serviceCredentials() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) throw new Error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before using --apply')
-  if (key === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) throw new Error('The service-role key must not be the public anon key')
-  return { url, key }
+function databaseUrl() {
+  const url = process.env.DATABASE_URL
+  if (!url) throw new Error('Set the server-only Neon DATABASE_URL before using --apply')
+  return url
 }
 
 async function main() {
@@ -57,33 +55,27 @@ async function main() {
     return
   }
 
-  const { url, key } = serviceCredentials()
-  const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
-  const { data, error } = await supabase.rpc('import_who_catalog', {
-    _dataset_checksum: prepared.dataset_checksum,
-    _manifest_hash: manifestHash,
-    _schema_version: prepared.schema_version,
-    _source_version: sourceVersion,
-    _source_file: options.file.replaceAll('\\', '/'),
-    _generated_at: manifest.generated_at || new Date().toISOString(),
-    _started_at: startedAt,
-    _skipped_count: prepared.skipped.length,
-    _failed_count: prepared.failed.length,
-    _records: prepared.records,
-  })
-  if (error) {
-    await supabase.from('who_import_runs').insert({
-      source_name: 'WHO', source_version: sourceVersion,
-      source_file: options.file.replaceAll('\\', '/'), manifest_hash: manifestHash,
-      dataset_checksum: prepared.dataset_checksum, schema_version: prepared.schema_version,
-      record_count: prepared.records.length, inserted_count: 0, updated_count: 0,
-      skipped_count: prepared.skipped.length, failed_count: prepared.records.length,
-      status: 'failed', started_at: startedAt, completed_at: new Date().toISOString(),
-      error_message: error.message,
-    })
-    throw new Error(`WHO import failed: ${error.message}. Apply migration 003_who_catalog.sql first.`)
+  const sql = neon(databaseUrl())
+  try {
+    const rows = await sql.query(
+      'select public.import_who_catalog($1, $2, $3, $4, $5, $6::timestamptz, $7::timestamptz, $8::integer, $9::integer, $10::jsonb) as result',
+      [
+        prepared.dataset_checksum,
+        manifestHash,
+        prepared.schema_version,
+        sourceVersion,
+        options.file.replaceAll('\\', '/'),
+        manifest.generated_at || new Date().toISOString(),
+        startedAt,
+        prepared.skipped.length,
+        prepared.failed.length,
+        JSON.stringify(prepared.records),
+      ],
+    )
+    console.log(`Import result: ${JSON.stringify(rows[0]?.result || null)}`)
+  } catch (error) {
+    throw new Error(`WHO import failed: ${error instanceof Error ? error.message : error}. Apply database/migrations/003_who_catalog.sql to Neon first.`)
   }
-  console.log(`Import result: ${JSON.stringify(data)}`)
 }
 
 main().catch((error) => {

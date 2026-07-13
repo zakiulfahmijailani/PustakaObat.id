@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { isNeonConfigured, queryNeon } from '@/lib/neon/server'
 import { WHO_PAGE_SIZE } from './constants'
 import type { Drug, DrugMonographSection, WhoImportRun, WhoMedicine, WhoMedicineVerification } from '@/types'
 
@@ -24,85 +24,131 @@ export interface PublicMedicineFilters {
   page?: string
 }
 
+function unavailable<T>(fallback: T) {
+  return { ...fallback, error: new Error('Neon is not configured. Set DATABASE_URL on the server.') }
+}
+
 export async function getPublicWhoMedicines(filters: PublicMedicineFilters) {
   const page = Math.max(1, Number.parseInt(filters.page || '1', 10) || 1)
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return { medicines: [] as WhoMedicine[], count: 0, page, error: new Error('Supabase is not configured') }
+  if (!isNeonConfigured()) return unavailable({ medicines: [] as WhoMedicine[], count: 0, page })
+
+  try {
+    const conditions = ["is_active = true", "publication_status = 'published'"]
+    const parameters: unknown[] = []
+    const normalizedQuery = normalizeWhoSearchQuery(filters.q)
+    if (normalizedQuery) {
+      parameters.push(`%${normalizedQuery}%`)
+      conditions.push(`normalized_name ilike $${parameters.length}`)
+    }
+    if (filters.aware) {
+      parameters.push(filters.aware)
+      conditions.push(`aware_category = $${parameters.length}`)
+    }
+    if (filters.essential === 'true') conditions.push('is_who_eeml = true')
+
+    const where = conditions.join(' and ')
+    const countRows = await queryNeon<{ count: string }>(
+      `select count(*)::text as count from public.who_medicines where ${where}`,
+      parameters,
+    )
+    parameters.push(WHO_PAGE_SIZE, (page - 1) * WHO_PAGE_SIZE)
+    const medicines = await queryNeon<WhoMedicine>(
+      `select * from public.who_medicines where ${where} order by medicine_name asc limit $${parameters.length - 1} offset $${parameters.length}`,
+      parameters,
+    )
+    return { medicines, count: Number(countRows[0]?.count || 0), page, error: null }
+  } catch (error) {
+    return { medicines: [] as WhoMedicine[], count: 0, page, error }
   }
-  const supabase = await createClient()
-  const from = (page - 1) * WHO_PAGE_SIZE
-  const to = from + WHO_PAGE_SIZE - 1
-  let query = supabase
-    .from('who_medicines')
-    .select('*', { count: 'exact' })
-    .order('medicine_name', { ascending: true })
-    .range(from, to)
-
-  const normalizedQuery = normalizeWhoSearchQuery(filters.q)
-  if (normalizedQuery) query = query.ilike('normalized_name', `%${normalizedQuery}%`)
-  if (filters.aware) query = query.eq('aware_category', filters.aware as WhoMedicine['aware_category'])
-  if (filters.essential === 'true') query = query.eq('is_who_eeml', true)
-
-  const { data, count, error } = await query
-  return { medicines: (data || []) as WhoMedicine[], count: count || 0, page, error }
 }
 
 export async function getPublicWhoMedicineBySlug(slug: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return { medicine: null, error: new Error('Supabase is not configured') }
+  if (!isNeonConfigured()) return unavailable({ medicine: null as WhoMedicine | null })
+  try {
+    const rows = await queryNeon<WhoMedicine>(
+      "select * from public.who_medicines where slug = $1 and is_active = true and publication_status = 'published' limit 1",
+      [slug],
+    )
+    return { medicine: rows[0] || null, error: null }
+  } catch (error) {
+    return { medicine: null, error }
   }
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('who_medicines').select('*').eq('slug', slug).single()
-  return { medicine: data as WhoMedicine | null, error }
 }
 
 export async function getPublicLocalDrugBySlug(slug: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('drugs')
-    .select('*, sections:drug_monograph_sections(*)')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
-  return data as (Drug & { sections: DrugMonographSection[] }) | null
+  if (!isNeonConfigured()) return null
+  try {
+    const drugs = await queryNeon<Drug>('select * from public.drugs where slug = $1 and status = $2 limit 1', [slug, 'published'])
+    if (!drugs[0]) return null
+    const sections = await queryNeon<DrugMonographSection>(
+      'select * from public.drug_monograph_sections where drug_id = $1 order by created_at',
+      [drugs[0].id],
+    )
+    return { ...drugs[0], sections }
+  } catch {
+    return null
+  }
 }
 
 export async function getStaffWhoMedicines(filters: PublicMedicineFilters & { status?: string }) {
-  const supabase = await createClient()
   const page = Math.max(1, Number.parseInt(filters.page || '1', 10) || 1)
-  const from = (page - 1) * WHO_PAGE_SIZE
-  const to = from + WHO_PAGE_SIZE - 1
-  let query = supabase
-    .from('who_medicines')
-    .select('*', { count: 'exact' })
-    .order('updated_at', { ascending: false })
-    .range(from, to)
+  if (!isNeonConfigured()) return unavailable({ medicines: [] as WhoMedicine[], count: 0, page })
 
-  const normalizedQuery = normalizeWhoSearchQuery(filters.q)
-  if (normalizedQuery) query = query.ilike('normalized_name', `%${normalizedQuery}%`)
-  if (filters.status) query = query.eq('verification_status', filters.status as WhoMedicine['verification_status'])
-  if (filters.aware) query = query.eq('aware_category', filters.aware as WhoMedicine['aware_category'])
+  try {
+    const conditions: string[] = []
+    const parameters: unknown[] = []
+    const normalizedQuery = normalizeWhoSearchQuery(filters.q)
+    if (normalizedQuery) {
+      parameters.push(`%${normalizedQuery}%`)
+      conditions.push(`normalized_name ilike $${parameters.length}`)
+    }
+    if (filters.status) {
+      parameters.push(filters.status)
+      conditions.push(`verification_status = $${parameters.length}`)
+    }
+    if (filters.aware) {
+      parameters.push(filters.aware)
+      conditions.push(`aware_category = $${parameters.length}`)
+    }
 
-  const { data, count, error } = await query
-  return { medicines: (data || []) as WhoMedicine[], count: count || 0, page, error }
+    const where = conditions.length ? `where ${conditions.join(' and ')}` : ''
+    const countRows = await queryNeon<{ count: string }>(
+      `select count(*)::text as count from public.who_medicines ${where}`,
+      parameters,
+    )
+    parameters.push(WHO_PAGE_SIZE, (page - 1) * WHO_PAGE_SIZE)
+    const medicines = await queryNeon<WhoMedicine>(
+      `select * from public.who_medicines ${where} order by updated_at desc limit $${parameters.length - 1} offset $${parameters.length}`,
+      parameters,
+    )
+    return { medicines, count: Number(countRows[0]?.count || 0), page, error: null }
+  } catch (error) {
+    return { medicines: [] as WhoMedicine[], count: 0, page, error }
+  }
 }
 
 export async function getWhoMedicineForStaff(id: string) {
-  const supabase = await createClient()
-  const [{ data: medicine, error }, { data: history }] = await Promise.all([
-    supabase.from('who_medicines').select('*').eq('id', id).single(),
-    supabase.from('who_medicine_verifications').select('*').eq('medicine_id', id).order('created_at', { ascending: false }),
-  ])
-  return {
-    medicine: medicine as WhoMedicine | null,
-    history: (history || []) as WhoMedicineVerification[],
-    error,
+  if (!isNeonConfigured()) return unavailable({ medicine: null as WhoMedicine | null, history: [] as WhoMedicineVerification[] })
+  try {
+    const [medicineRows, history] = await Promise.all([
+      queryNeon<WhoMedicine>('select * from public.who_medicines where id = $1 limit 1', [id]),
+      queryNeon<WhoMedicineVerification>(
+        'select * from public.who_medicine_verifications where medicine_id = $1 order by created_at desc',
+        [id],
+      ),
+    ])
+    return { medicine: medicineRows[0] || null, history, error: null }
+  } catch (error) {
+    return { medicine: null, history: [] as WhoMedicineVerification[], error }
   }
 }
 
 export async function getWhoImportRuns() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('who_import_runs').select('*').order('imported_at', { ascending: false }).limit(20)
-  return { runs: (data || []) as WhoImportRun[], error }
+  if (!isNeonConfigured()) return unavailable({ runs: [] as WhoImportRun[] })
+  try {
+    const runs = await queryNeon<WhoImportRun>('select * from public.who_import_runs order by imported_at desc limit 20')
+    return { runs, error: null }
+  } catch (error) {
+    return { runs: [] as WhoImportRun[], error }
+  }
 }

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, Loader2, RotateCcw, XCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 
@@ -22,13 +21,13 @@ export function WhoReviewActions({ medicineId }: { medicineId: string }) {
     }
     setPending(decision)
     setMessage(null)
-    const supabase = createClient()
-    const { error } = await supabase.rpc('review_who_medicine', {
-      _record_id: medicineId,
-      _decision: decision,
-      _note: note.trim() || null,
+    const response = await fetch('/api/who/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ medicineId, decision, note: note.trim() || null }),
     })
-    if (error) setMessage(error.message)
+    const result = await response.json().catch(() => ({}))
+    if (!response.ok) setMessage(result.error || 'Gagal menyimpan keputusan.')
     else {
       setMessage('Keputusan tersimpan dan riwayat verifikasi diperbarui.')
       setNote('')
