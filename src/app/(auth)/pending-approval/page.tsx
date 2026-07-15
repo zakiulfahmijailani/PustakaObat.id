@@ -36,7 +36,7 @@ export default function PendingApprovalPage() {
               <div className="p-4 rounded-2xl bg-surface-2 border border-border flex gap-4 text-sm leading-relaxed text-text">
                 <ShieldAlert className="text-primary shrink-0" size={20} />
                 <p>
-                  Untuk memastikan integritas informasi obat, setiap akun apoteker dan verifikator harus diverifikasi secara manual oleh tim apoteq.
+                  Untuk memastikan integritas informasi obat, setiap akun Apoteker Reviewer harus diperiksa secara manual oleh Admin Apoteq.
                 </p>
               </div>
               
@@ -63,7 +63,7 @@ export default function PendingApprovalPage() {
                 Hubungi Admin
               </Link>
             </Button>
-            <form action="/auth/logout" method="post" className="w-full">
+            <form action="/api/auth/logout" method="post" className="w-full">
               <Button variant="ghost" className="w-full text-text-muted hover:text-error" type="submit">
                 <LogOut className="mr-2 h-4 w-4" />
                 Keluar

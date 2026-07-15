@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getActiveProfile } from '@/lib/auth/server'
 import { canReviewWho } from '@/lib/auth/permissions'
 import { reviewWhoMedicine } from '@/lib/who/mutations'
+import { isSameOriginMutation } from '@/lib/auth/request'
 
 const reviewSchema = z.object({
   medicineId: z.string().uuid(),
@@ -15,6 +16,7 @@ const reviewSchema = z.object({
 })
 
 export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
   const session = await getActiveProfile()
   if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
   if (!canReviewWho(session.profile.role)) return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })

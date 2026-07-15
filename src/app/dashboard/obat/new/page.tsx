@@ -3,16 +3,12 @@ import { DrugForm } from '@/components/drug/DrugForm'
 import { requireActiveProfile } from '@/lib/auth/server'
 
 export default async function NewDrugPage() {
-  const { supabase, user } = await requireActiveProfile(['pharmacist', 'admin'])
-
-  const { data: categories } = await supabase
-    .from('drug_categories')
-    .select('id, name')
-    .order('name')
+  const { user } = await requireActiveProfile(['admin'])
+  const categories: { id: string; name: string }[] = []
 
   return (
     <div className="py-6">
-      <DrugForm categories={categories || []} mode="create" userId={user.id} />
+      <DrugForm categories={categories} mode="create" userId={user.id} />
     </div>
   )
 }

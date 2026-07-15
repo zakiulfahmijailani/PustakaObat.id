@@ -1,11 +1,11 @@
-import type { UserRole } from '@/types'
+import type { StaffRole } from './constants'
 
-export const WHO_REVIEW_ROLES: UserRole[] = ['pharmacist', 'verifier', 'admin']
+export const WHO_REVIEW_ROLES: StaffRole[] = ['reviewer', 'admin']
 
-export function canReviewWho(role: UserRole | null | undefined) {
-  return Boolean(role && WHO_REVIEW_ROLES.includes(role))
+export function canReviewWho(role: string | null | undefined) {
+  return Boolean(role && WHO_REVIEW_ROLES.includes(role as StaffRole))
 }
 
-export function canAdminWho(role: UserRole | null | undefined) {
+export function canAdminWho(role: string | null | undefined) {
   return role === 'admin'
 }

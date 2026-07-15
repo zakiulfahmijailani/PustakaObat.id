@@ -1,148 +1,74 @@
-import React from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { UserTable } from '@/components/dashboard/UserTable'
-import { Users, Search, BadgeCheck, ShieldPlus } from 'lucide-react'
+import Link from 'next/link'
+import { BadgeCheck, Search, ShieldPlus, Users } from 'lucide-react'
+import { requireActiveProfile } from '@/lib/auth/server'
+import { queryNeon } from '@/lib/neon/server'
+import { UserTable, type AdminProfileRow } from '@/components/dashboard/UserTable'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import Link from 'next/link'
 
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ role?: string; q?: string; active?: string }>
-}) {
-  const { role, q, active } = await searchParams
-  const supabase = createClient()
-  const { data: { user } } = await (await supabase).auth.getUser()
+export const dynamic = 'force-dynamic'
 
-  if (!user) {
-    redirect('/login')
+export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ role?: string; q?: string; status?: string }> }) {
+  const { profile: currentAdmin } = await requireActiveProfile(['admin'])
+  const { role = 'all', q = '', status = 'all' } = await searchParams
+  const params: unknown[] = []
+  const filters: string[] = []
+
+  if (role !== 'all' && ['reviewer', 'admin'].includes(role)) {
+    params.push(role)
+    filters.push(`p.role::text = $${params.length}`)
+  }
+  if (status !== 'all' && ['pending_review', 'needs_revision', 'active', 'rejected', 'suspended'].includes(status)) {
+    params.push(status)
+    filters.push(`p.account_status = $${params.length}`)
+  }
+  if (q.trim()) {
+    params.push(`%${q.trim()}%`)
+    filters.push(`(p.full_name ILIKE $${params.length} OR p.email ILIKE $${params.length} OR p.institution ILIKE $${params.length})`)
   }
 
-  // Admin Check
-  const { data: profile } = await (await supabase)
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const profiles = await queryNeon<AdminProfileRow>(`
+    SELECT
+      p.id, p.email, p.full_name, p.role::text AS role, p.account_status,
+      p.is_active, p.institution, p.sipa_number, p.professional_license_number,
+      p.phone, p.created_at, p.last_login_at,
+      application.application_status, application.review_note, application.submitted_at
+    FROM public.profiles p
+    LEFT JOIN LATERAL (
+      SELECT application_status, review_note, submitted_at
+      FROM public.reviewer_applications ra
+      WHERE ra.profile_id = p.id
+      ORDER BY ra.created_at DESC
+      LIMIT 1
+    ) application ON true
+    ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
+    ORDER BY
+      CASE p.account_status WHEN 'pending_review' THEN 0 WHEN 'needs_revision' THEN 1 ELSE 2 END,
+      p.created_at DESC
+  `, params)
 
-  if (profile?.role !== 'admin') {
-    redirect('/dashboard')
+  const pendingCount = profiles.filter((profile) => profile.account_status === 'pending_review').length
+  const roleOptions = [['all', 'Semua'], ['reviewer', 'Reviewer'], ['admin', 'Admin']]
+  const statusOptions = [['all', 'Semua status'], ['pending_review', 'Pending'], ['needs_revision', 'Perlu revisi'], ['active', 'Aktif'], ['rejected', 'Ditolak'], ['suspended', 'Ditangguhkan']]
+  const hrefFor = (next: { role?: string; status?: string }) => {
+    const search = new URLSearchParams({ role: next.role || role, status: next.status || status })
+    if (q) search.set('q', q)
+    return `/dashboard/admin/users?${search}`
   }
 
-  let query = (await supabase)
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (role && role !== 'all') {
-    query = query.eq('role', role)
-  }
-
-  if (active === 'true') {
-    query = query.eq('is_active', true)
-  } else if (active === 'false') {
-    query = query.eq('is_active', false)
-  }
-
-  if (q) {
-    query = query.ilike('full_name', `%${q}%`)
-  }
-
-  const { data: profiles } = await query
-
-  const roleOptions = [
-    { label: 'Semua', value: 'all' },
-    { label: 'Apoteker', value: 'pharmacist' },
-    { label: 'Verifikator', value: 'verifier' },
-    { label: 'Admin', value: 'admin' },
-  ]
-
-  return (
-    <div className="space-y-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden">
-        <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-          <Badge variant="destructive" className="px-5 py-2 rounded-full border-error/20 text-error bg-error/5 uppercase text-[10px] font-bold tracking-widest mb-4">
-            Domain Administrator
-          </Badge>
-          <h2 className="text-3xl font-serif text-text leading-tight">Manajemen Pengguna</h2>
-          <p className="text-text-muted mt-1 leading-relaxed">
-            Kelola akses, peran, dan persetujuan akun tenaga farmasi apoteq.
-          </p>
-        </div>
-        <div className="flex items-center gap-6 animate-in fade-in slide-in-from-right-4 duration-700">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Pending Approval</span>
-            <span className="text-2xl font-bold text-error">{profiles?.filter(p => !p.is_active).length || 0}</span>
-          </div>
-          <div className="w-px h-10 bg-border" />
-          <BadgeCheck size={32} className="text-primary opacity-20" />
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="border-none bg-surface-2/40 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-        <CardContent className="p-6 md:p-8 flex flex-col md:flex-row gap-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-            <form action="" method="get">
-              <input 
-                name="q"
-                type="text" 
-                defaultValue={q}
-                placeholder="Cari nama pengguna..." 
-                className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-              />
-              <input type="hidden" name="role" value={role || 'all'} />
-              <input type="hidden" name="active" value={active || 'all'} />
-            </form>
-          </div>
-          
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-            {roleOptions.map((opt) => (
-              <Link 
-                key={opt.value}
-                href={`/dashboard/admin/users?role=${opt.value}${q ? `&q=${q}` : ''}${active ? `&active=${active}` : ''}`}
-                className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap border-2 transition-all ${
-                  (role || 'all') === opt.value
-                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/10'
-                    : 'bg-transparent text-text-muted border-border hover:border-primary/30'
-                }`}
-              >
-                {opt.label}
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-        {profiles && profiles.length > 0 ? (
-          <UserTable profiles={profiles} currentUserId={user.id} />
-        ) : (
-          <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 bg-surface-2/50 rounded-[3rem] border border-dashed border-border px-8">
-            <div className="w-20 h-20 rounded-full bg-border/20 flex items-center justify-center text-text-muted/40">
-              <Users size={40} />
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-2xl font-serif text-text">Data pengguna tidak ditemukan</h3>
-              <p className="text-text-muted max-w-sm mx-auto leading-relaxed">
-                {q ? `Tidak ada pengguna yang cocok dengan kriteria pencarian "${q}".` : 'Belum ada pengguna terdaftar sama sekali.'}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="pt-20 border-t border-border flex flex-col items-center text-center gap-6">
-        <ShieldPlus size={48} className="text-primary opacity-20" />
-        <h4 className="text-xl font-serif text-text">Keamanan Dashboard apoteq</h4>
-        <p className="text-sm text-text-muted max-w-2xl mx-auto italic leading-relaxed">
-          Sebagai Administrator, persetujuan akun Anda adalah garis pertahanan pertama integritas platform. 
-          Pastikan Nomor SIPA dan kualifikasi institusi diperiksa sebelum mengaktifkan akun.
-        </p>
-      </div>
+  return <div className="space-y-10">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div><Badge variant="destructive" className="mb-4">Admin · Access Control</Badge><h1 className="text-4xl font-serif text-text">Pengguna & pengajuan reviewer</h1><p className="mt-2 text-text-muted">Admin dibuat secara internal; pendaftaran publik hanya untuk Apoteker Reviewer.</p></div>
+      <div className="flex items-center gap-4"><div className="text-right"><p className="text-xs uppercase tracking-widest text-text-muted">Menunggu review</p><p className="text-3xl font-bold text-error">{pendingCount}</p></div><BadgeCheck className="text-primary" size={34} /></div>
     </div>
-  )
+
+    <Card className="border-none bg-surface-2/40 rounded-3xl"><CardContent className="p-6 space-y-5">
+      <form className="relative"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} /><input name="q" defaultValue={q} placeholder="Cari nama, email, atau institusi" className="w-full rounded-xl border border-border bg-surface py-3 pl-12 pr-4 outline-none focus:border-primary" /><input type="hidden" name="role" value={role} /><input type="hidden" name="status" value={status} /></form>
+      <div className="flex flex-wrap gap-2">{roleOptions.map(([value, label]) => <Link key={value} href={hrefFor({ role: value })} className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wider ${role === value ? 'bg-primary text-white border-primary' : 'border-border text-text-muted'}`}>{label}</Link>)}</div>
+      <div className="flex flex-wrap gap-2">{statusOptions.map(([value, label]) => <Link key={value} href={hrefFor({ status: value })} className={`rounded-full border px-4 py-2 text-xs font-semibold ${status === value ? 'bg-text text-white border-text' : 'border-border text-text-muted'}`}>{label}</Link>)}</div>
+    </CardContent></Card>
+
+    {profiles.length ? <UserTable profiles={profiles} currentUserId={currentAdmin.id} /> : <div className="rounded-3xl border border-dashed border-border p-20 text-center text-text-muted"><Users className="mx-auto mb-5 opacity-30" size={40} />Tidak ada pengguna yang cocok dengan filter.</div>}
+    <div className="pt-10 border-t border-border text-center"><ShieldPlus className="mx-auto mb-4 text-primary opacity-30" size={42} /><p className="mx-auto max-w-2xl text-sm text-text-muted">Periksa nomor profesi dan institusi sebelum mengaktifkan reviewer. Setiap keputusan disimpan di audit log.</p></div>
+  </div>
 }

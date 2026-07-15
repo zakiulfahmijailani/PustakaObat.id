@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ChevronRight, Edit3, Eye, FileText, Pill, Plus, Search } from 'lucide-react'
 import { requireActiveProfile } from '@/lib/auth/server'
+import { queryNeon } from '@/lib/neon/server'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -11,13 +12,19 @@ export const dynamic = 'force-dynamic'
 
 export default async function MyDrugsPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
   const { status, q } = await searchParams
-  const { supabase, profile } = await requireActiveProfile(['pharmacist', 'verifier', 'admin'])
-  let query = supabase.from('drugs').select('*, drug_categories(name)').order('updated_at', { ascending: false })
-  if (profile.role === 'pharmacist') query = query.eq('submitted_by', profile.id)
-  if (status && status !== 'all') query = query.eq('status', status)
-  if (q) query = query.ilike('name', `%${q}%`)
-  const { data, error } = await query
-  const drugs = (data || []) as unknown as DrugWithCategory[]
+  const { profile } = await requireActiveProfile(['admin'])
+  const parameters: unknown[] = []
+  const conditions: string[] = []
+  if (status && status !== 'all') { parameters.push(status); conditions.push(`status = $${parameters.length}`) }
+  if (q) { parameters.push(`%${q}%`); conditions.push(`name ILIKE $${parameters.length}`) }
+  let drugs: DrugWithCategory[] = []
+  let error: Error | null = null
+  try {
+    const rows = await queryNeon<Drug>(`SELECT * FROM public.drugs ${conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''} ORDER BY updated_at DESC`, parameters)
+    drugs = rows.map((drug) => ({ ...drug, drug_categories: null }))
+  } catch (queryError) {
+    error = queryError instanceof Error ? queryError : new Error('Unknown query error')
+  }
 
   const statusOptions = [
     { label: 'Semua Status', value: 'all' }, { label: 'Draft', value: 'draft' },
@@ -28,8 +35,8 @@ export default async function MyDrugsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-10">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-        <div><h1 className="text-3xl font-serif text-text">Manajemen Monografi</h1><p className="mt-1 text-text-muted">{profile.role === 'pharmacist' ? 'Kelola draft dan monografi yang Anda susun.' : 'Kelola seluruh monografi lokal Apoteq.'}</p></div>
-        {(profile.role === 'pharmacist' || profile.role === 'admin') && <Button size="lg" asChild><Link href="/dashboard/obat/new"><Plus size={20} /> Buat Draft Baru</Link></Button>}
+        <div><h1 className="text-3xl font-serif text-text">Manajemen Monografi</h1><p className="mt-1 text-text-muted">Kelola seluruh monografi lokal Apoteq.</p></div>
+        {profile.role === 'admin' && <Button size="lg" asChild><Link href="/dashboard/obat/new"><Plus size={20} /> Buat Draft Baru</Link></Button>}
       </div>
 
       <Card className="border-none bg-surface-2/40"><CardContent className="flex flex-col gap-6 p-6 md:flex-row md:p-8">

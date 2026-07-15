@@ -12,8 +12,12 @@ export interface Database {
       profiles: {
         Row: {
           id: string
+          email: string
           full_name: string | null
-          role: 'pharmacist' | 'verifier' | 'admin'
+          role: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          account_status: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
+          professional_license_number: string | null
+          phone: string | null
           sipa_number: string | null
           institution: string | null
           is_active: boolean
@@ -23,8 +27,12 @@ export interface Database {
         }
         Insert: {
           id: string
+          email: string
           full_name?: string | null
-          role?: 'pharmacist' | 'verifier' | 'admin'
+          role?: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          account_status?: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
+          professional_license_number?: string | null
+          phone?: string | null
           sipa_number?: string | null
           institution?: string | null
           is_active?: boolean
@@ -34,8 +42,12 @@ export interface Database {
         }
         Update: {
           id?: string
+          email?: string
           full_name?: string | null
-          role?: 'pharmacist' | 'verifier' | 'admin'
+          role?: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          account_status?: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
+          professional_license_number?: string | null
+          phone?: string | null
           sipa_number?: string | null
           institution?: string | null
           is_active?: boolean

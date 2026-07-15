@@ -5,16 +5,17 @@ import { WHO_BPOM_DISCLAIMER } from './constants'
 import { normalizeWhoSearchQuery } from './queries'
 
 describe('WHO authorization policy', () => {
-  it('allows pharmacy staff to review but blocks public users', () => {
-    expect(canReviewWho('pharmacist')).toBe(true)
-    expect(canReviewWho('verifier')).toBe(true)
+  it('allows approved reviewers and admins but blocks legacy and public roles', () => {
+    expect(canReviewWho('reviewer')).toBe(true)
     expect(canReviewWho('admin')).toBe(true)
+    expect(canReviewWho('pharmacist')).toBe(false)
+    expect(canReviewWho('verifier')).toBe(false)
     expect(canReviewWho(null)).toBe(false)
   })
 
   it('reserves catalog administration for admins', () => {
     expect(canAdminWho('admin')).toBe(true)
-    expect(canAdminWho('pharmacist')).toBe(false)
+    expect(canAdminWho('reviewer')).toBe(false)
   })
 })
 

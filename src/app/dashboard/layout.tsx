@@ -5,7 +5,6 @@ import {
   Pill, 
   MessageSquare, 
   Users, 
-  Shield, 
   History, 
   BookOpenCheck,
   Database,
@@ -33,30 +32,21 @@ export default async function DashboardLayout({
 }) {
   const { profile } = await requireActiveProfile()
 
-  const pharmacistNav: NavItem[] = [
+  const reviewerNav: NavItem[] = [
     { title: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { title: 'Obat Saya', href: '/dashboard/obat', icon: Pill },
     { title: 'Review Data WHO', href: '/dashboard/who', icon: BookOpenCheck },
-    { title: 'Tanya Farmasis', href: '/dashboard/tanya', icon: MessageSquare },
-  ]
-
-  const verifierNav: NavItem[] = [
-    { title: 'Queue Verifikasi', href: '/dashboard/verifikasi', icon: Shield },
-    { title: 'Semua Obat', href: '/dashboard/obat', icon: Pill },
   ]
 
   const adminNav: NavItem[] = [
+    { title: 'Kelola Monografi', href: '/dashboard/obat', icon: Pill },
+    { title: 'Tanya Farmasis', href: '/dashboard/tanya', icon: MessageSquare },
     { title: 'User Management', href: '/dashboard/admin/users', icon: Users },
     { title: 'Audit Logs', href: '/dashboard/admin/audit', icon: History },
     { title: 'Kelola Data WHO', href: '/dashboard/admin/who', icon: Database },
     { title: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
   ]
 
-  const navItems = profile.role === 'admin' 
-    ? [...pharmacistNav, ...verifierNav, ...adminNav]
-    : profile.role === 'verifier'
-    ? [...pharmacistNav, ...verifierNav]
-    : pharmacistNav
+  const navItems = profile.role === 'admin' ? [...reviewerNav, ...adminNav] : reviewerNav
 
   return (
     <div className="min-h-screen bg-surface flex">
@@ -89,12 +79,9 @@ export default async function DashboardLayout({
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{profile.role}</p>
             </div>
           </div>
-          <Button variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-all font-bold uppercase tracking-widest text-[10px]" asChild>
-            <Link href="/">
-              <LogOut size={16} />
-              Keluar Sesi
-            </Link>
-          </Button>
+          <form action="/api/auth/logout" method="post">
+            <Button type="submit" variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-all font-bold uppercase tracking-widest text-[10px]"><LogOut size={16} />Keluar Sesi</Button>
+          </form>
         </div>
       </aside>
 
