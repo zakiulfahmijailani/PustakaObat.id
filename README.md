@@ -44,3 +44,10 @@ npm run who:validate
 ```
 
 Database migration, import credentials, role behavior, routes, provenance, and the BPOM limitation are documented in [docs/who-data-import.md](docs/who-data-import.md).
+
+## Staff authentication
+
+Reviewer and admin authentication uses Google OAuth through Auth.js, with users,
+provider accounts, sessions, application profiles, roles, and approval status
+stored in Neon. Setup, migration order, Google callback URLs, and admin
+preauthorization are documented in [docs/neon-auth.md](docs/neon-auth.md).

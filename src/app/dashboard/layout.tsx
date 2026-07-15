@@ -8,7 +8,6 @@ import {
   History, 
   BookOpenCheck,
   Database,
-  LogOut,
   User,
   Settings,
   Bell,
@@ -18,6 +17,7 @@ import {
 import { Logo } from '@/components/layout/Logo'
 import { Button } from '@/components/ui/Button'
 import { requireActiveProfile } from '@/lib/auth/server'
+import { LogoutButton } from '@/components/auth/LogoutButton'
 
 interface NavItem {
   title: string
@@ -79,9 +79,7 @@ export default async function DashboardLayout({
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{profile.role}</p>
             </div>
           </div>
-          <form action="/api/auth/logout" method="post">
-            <Button type="submit" variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-all font-bold uppercase tracking-widest text-[10px]"><LogOut size={16} />Keluar Sesi</Button>
-          </form>
+          <LogoutButton variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-all font-bold uppercase tracking-widest text-[10px]">Keluar Sesi</LogoutButton>
         </div>
       </aside>
 

@@ -1,9 +1,10 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Clock, ShieldAlert, LogOut, Mail } from 'lucide-react'
+import { Clock, ShieldAlert, Mail } from 'lucide-react'
 import { Logo } from '@/components/layout/Logo'
 import Link from 'next/link'
+import { LogoutButton } from '@/components/auth/LogoutButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,12 +64,7 @@ export default function PendingApprovalPage() {
                 Hubungi Admin
               </Link>
             </Button>
-            <form action="/api/auth/logout" method="post" className="w-full">
-              <Button variant="ghost" className="w-full text-text-muted hover:text-error" type="submit">
-                <LogOut className="mr-2 h-4 w-4" />
-                Keluar
-              </Button>
-            </form>
+            <LogoutButton className="w-full text-text-muted hover:text-error" />
           </CardFooter>
         </Card>
 

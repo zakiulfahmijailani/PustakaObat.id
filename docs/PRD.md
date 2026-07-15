@@ -194,13 +194,13 @@ Pain points:
 4. User membuka detail obat
 5. User membaca informasi obat dan disclaimer
 
-## 9.2 Pharmacist registrasi
-1. Pharmacist membuka halaman register
-2. Mengisi nama, email, password, role, SIPA, instansi
-3. Sistem membuat akun dan profile
-4. Akun masuk status pending approval
-5. Admin approve akun
-6. Pharmacist login dan masuk dashboard
+## 9.2 Apoteker Reviewer registrasi
+1. Apoteker membuka halaman register
+2. Login dengan akun Google yang emailnya terverifikasi
+3. Melengkapi nama, identitas profesi/STRA, SIPA, dan institusi
+4. Sistem membuat profil reviewer dengan status pending approval
+5. Admin menyetujui akun
+6. Reviewer login dengan Google dan masuk dashboard
 
 ## 9.3 Pharmacist membuat draft obat
 1. Pharmacist login
@@ -277,21 +277,19 @@ Harus memiliki:
 ## 10.2 Authentication
 
 ### F5. Register
-Role yang bisa register:
-- pharmacist
-- verifier
+Registrasi publik hanya untuk role `reviewer`. Role `admin` harus
+dipraotorisasi melalui proses bootstrap/internal.
 
 Field minimal:
 - full name
-- email
-- password
-- role
+- email Google terverifikasi
 - institution
-- SIPA number (untuk pharmacist; bisa mandatory atau semi-mandatory sesuai kebijakan)
+- identitas profesi/STRA
+- SIPA number (opsional sesuai kebijakan)
 
 ### F6. Login
 Harus mendukung:
-- email/password login
+- Google OAuth melalui Auth.js
 - redirect berdasarkan role
 - error messaging
 - pending approval handling

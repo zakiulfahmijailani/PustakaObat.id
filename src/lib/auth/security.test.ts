@@ -1,18 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { createSessionToken, getSafeRedirectForAccount, hashSessionToken, normalizeEmail } from './security'
-import { reviewerRegistrationSchema } from './schemas'
+import { getSafeRedirectForAccount, normalizeEmail } from './security'
+import { reviewerOnboardingSchema } from './schemas'
 
 describe('Neon authentication security helpers', () => {
   it('normalizes email addresses deterministically', () => {
     expect(normalizeEmail('  Reviewer@Apoteq.ID ')).toBe('reviewer@apoteq.id')
-  })
-
-  it('generates opaque tokens and stores a stable hash', () => {
-    const token = createSessionToken()
-    expect(token.length).toBeGreaterThan(32)
-    expect(hashSessionToken(token)).toMatch(/^[a-f0-9]{64}$/)
-    expect(hashSessionToken(token)).not.toBe(token)
   })
 
   it('routes account states without trusting a client role', () => {
@@ -23,11 +16,9 @@ describe('Neon authentication security helpers', () => {
     expect(getSafeRedirectForAccount('suspended', 'reviewer')).toBe('/account/suspended')
   })
 
-  it('requires a strong reviewer password and professional identity', () => {
-    const valid = reviewerRegistrationSchema.safeParse({
+  it('requires professional identity without accepting password or role input', () => {
+    const valid = reviewerOnboardingSchema.safeParse({
       fullName: 'Ayu Reviewer, Apt.',
-      email: 'ayu@example.com',
-      password: 'Reviewer2026',
       institution: 'Apotek Contoh',
       professionalLicenseNumber: 'STRA-12345',
       sipaNumber: '',
@@ -35,10 +26,8 @@ describe('Neon authentication security helpers', () => {
     })
     expect(valid.success).toBe(true)
 
-    const invalid = reviewerRegistrationSchema.safeParse({
+    const invalid = reviewerOnboardingSchema.safeParse({
       fullName: 'Ayu Reviewer, Apt.',
-      email: 'ayu@example.com',
-      password: 'weak',
       institution: 'Apotek Contoh',
       professionalLicenseNumber: '',
     })
@@ -51,5 +40,29 @@ describe('Neon authentication security helpers', () => {
     expect(migration).toContain("Legacy account requires credential rotation")
     expect(migration).not.toContain('auth.uid()')
     expect(migration).not.toContain('service_role')
+  })
+
+  it('migrates password sessions to Auth.js database sessions without deleting rollback data', () => {
+    const migration = readFileSync('database/migrations/005_google_auth_neon.sql', 'utf8')
+    expect(migration).toContain('RENAME TO legacy_password_sessions')
+    expect(migration).toContain('CREATE TABLE IF NOT EXISTS public.users')
+    expect(migration).toContain('CREATE TABLE IF NOT EXISTS public.accounts')
+    expect(migration).toContain('CREATE TABLE IF NOT EXISTS public.sessions')
+    expect(migration).toContain('auth_user_id')
+    expect(migration).toContain("auth_provider = 'google'")
+    expect(migration).not.toContain('DROP TABLE')
+  })
+
+  it('enables only verified Google OAuth and retires password endpoints', () => {
+    const authConfig = readFileSync('src/auth.ts', 'utf8')
+    const loginRoute = readFileSync('src/app/api/auth/login/route.ts', 'utf8')
+    const registerRoute = readFileSync('src/app/api/auth/register/route.ts', 'utf8')
+
+    expect(authConfig).toContain("Google({")
+    expect(authConfig).toContain('googleProfile.email_verified')
+    expect(authConfig).toContain('PostgresAdapter')
+    expect(authConfig).not.toContain('Credentials(')
+    expect(loginRoute).toContain('status: 410')
+    expect(registerRoute).toContain('status: 410')
   })
 })

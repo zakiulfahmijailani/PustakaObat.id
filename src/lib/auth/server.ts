@@ -1,13 +1,14 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
 import { queryNeon } from '@/lib/neon/server'
-import { AUTH_COOKIE_NAME, SESSION_TTL_SECONDS, type AccountStatus, type StaffRole } from './constants'
-import { createSessionToken, getSafeRedirectForAccount, hashSessionToken } from './security'
+import { type AccountStatus, type StaffRole } from './constants'
+import { getSafeRedirectForAccount, normalizeEmail } from './security'
 
 export interface AuthProfile {
   id: string
+  auth_user_id: number
   email: string
   full_name: string
   role: StaffRole | 'pharmacist' | 'verifier'
@@ -22,21 +23,97 @@ export interface AuthProfile {
   updated_at: string
 }
 
-interface SessionRow extends AuthProfile {
-  session_id: string
-  expires_at: string
+interface GoogleIdentity {
+  authUserId: number
+  email: string
+  name: string
+  image: string | null
 }
 
-export async function getAuthenticatedProfile() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value
-  if (!token) return null
+const PROFILE_COLUMNS = `
+  p.id,
+  p.auth_user_id,
+  p.email,
+  p.full_name,
+  p.role::text AS role,
+  p.account_status,
+  p.is_active,
+  p.institution,
+  p.sipa_number,
+  p.professional_license_number,
+  p.phone,
+  p.avatar_url,
+  p.created_at,
+  p.updated_at
+`
 
-  const rows = await queryNeon<SessionRow>(`
+function parseAuthUserId(value: string) {
+  if (!/^\d+$/.test(value)) throw new Error('Invalid Auth.js user identifier.')
+  return Number(value)
+}
+
+export async function getGoogleIdentity(): Promise<GoogleIdentity | null> {
+  const session = await auth()
+  if (!session?.user?.id || !session.user.email) return null
+
+  return {
+    authUserId: parseAuthUserId(session.user.id),
+    email: normalizeEmail(session.user.email),
+    name: session.user.name?.trim() || 'Pengguna Apoteq',
+    image: session.user.image || null,
+  }
+}
+
+async function findProfileByAuthUserId(authUserId: number) {
+  const rows = await queryNeon<AuthProfile>(`
+    SELECT ${PROFILE_COLUMNS}
+    FROM public.profiles p
+    WHERE p.auth_user_id = $1
+    LIMIT 1
+  `, [authUserId])
+
+  return rows[0] || null
+}
+
+export async function linkExistingProfile(identity: GoogleIdentity) {
+  const linked = await findProfileByAuthUserId(identity.authUserId)
+  if (linked) return linked
+
+  const candidates = await queryNeon<{ id: string; auth_user_id: number | null }>(`
+    SELECT id, auth_user_id
+    FROM public.profiles
+    WHERE lower(email) = $1
+    LIMIT 1
+  `, [identity.email])
+  const candidate = candidates[0]
+
+  if (!candidate) return null
+  if (candidate.auth_user_id && candidate.auth_user_id !== identity.authUserId) {
+    throw new Error('Google identity conflict for an existing Apoteq profile.')
+  }
+
+  const rows = await queryNeon<AuthProfile>(`
+    WITH linked AS (
+      UPDATE public.profiles p
+      SET auth_user_id = $1,
+          auth_provider = 'google',
+          auth_linked_at = COALESCE(auth_linked_at, now()),
+          avatar_url = COALESCE(avatar_url, $3),
+          last_login_at = now()
+      WHERE p.id = $2
+        AND (p.auth_user_id IS NULL OR p.auth_user_id = $1)
+      RETURNING p.*
+    ), audit AS (
+      INSERT INTO public.audit_logs (
+        user_id, action, resource_type, resource_id, metadata
+      )
+      SELECT id, 'GOOGLE_AUTH_PROFILE_LINKED', 'profile', id,
+        jsonb_build_object('auth_user_id', auth_user_id, 'provider', 'google')
+      FROM linked
+    )
     SELECT
-      s.id AS session_id,
-      s.expires_at,
       p.id,
+      p.auth_user_id,
       p.email,
       p.full_name,
       p.role::text AS role,
@@ -49,21 +126,24 @@ export async function getAuthenticatedProfile() {
       p.avatar_url,
       p.created_at,
       p.updated_at
-    FROM public.sessions s
-    JOIN public.profiles p ON p.id = s.user_id
-    WHERE s.token_hash = $1
-      AND s.revoked_at IS NULL
-      AND s.expires_at > now()
-    LIMIT 1
-  `, [hashSessionToken(token)])
+    FROM linked p
+  `, [identity.authUserId, candidate.id, identity.image])
 
-  const profile = rows[0]
+  return rows[0] || null
+}
+
+export async function getAuthenticatedProfile(options: { linkByVerifiedEmail?: boolean } = {}) {
+  const identity = await getGoogleIdentity()
+  if (!identity) return null
+
+  let profile: AuthProfile | null = await findProfileByAuthUserId(identity.authUserId)
+  if (!profile && options.linkByVerifiedEmail) profile = await linkExistingProfile(identity)
   if (!profile) return null
 
   return {
-    user: { id: profile.id, email: profile.email },
+    user: { id: profile.id, authUserId: identity.authUserId, email: profile.email },
     profile,
-    session: { id: profile.session_id, expiresAt: profile.expires_at },
+    session: { provider: 'google' as const },
   }
 }
 
@@ -76,8 +156,11 @@ export async function getActiveProfile() {
 }
 
 export async function requireActiveProfile(allowedRoles?: StaffRole[]) {
-  const session = await getAuthenticatedProfile()
-  if (!session) redirect('/login')
+  const identity = await getGoogleIdentity()
+  if (!identity) redirect('/login')
+
+  const session = await getAuthenticatedProfile({ linkByVerifiedEmail: true })
+  if (!session) redirect('/register/complete')
 
   const { profile } = session
   if (!profile.is_active || profile.account_status !== 'active') {
@@ -88,38 +171,4 @@ export async function requireActiveProfile(allowedRoles?: StaffRole[]) {
   if (allowedRoles && !allowedRoles.includes(profile.role as StaffRole)) redirect('/dashboard')
 
   return session
-}
-
-export async function createDatabaseSession(userId: string, metadata?: { ipAddress?: string | null; userAgent?: string | null }) {
-  const token = createSessionToken()
-  const tokenHash = hashSessionToken(token)
-
-  await queryNeon(`
-    INSERT INTO public.sessions (user_id, token_hash, expires_at, ip_address, user_agent)
-    VALUES ($1, $2, now() + interval '7 days', $3, $4)
-  `, [userId, tokenHash, metadata?.ipAddress || null, metadata?.userAgent || null])
-
-  const cookieStore = await cookies()
-  cookieStore.set(AUTH_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: SESSION_TTL_SECONDS,
-  })
-}
-
-export async function revokeCurrentSession() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value
-
-  if (token) {
-    await queryNeon(`
-      UPDATE public.sessions
-      SET revoked_at = now()
-      WHERE token_hash = $1 AND revoked_at IS NULL
-    `, [hashSessionToken(token)])
-  }
-
-  cookieStore.delete(AUTH_COOKIE_NAME)
 }

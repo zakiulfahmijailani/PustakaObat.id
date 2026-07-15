@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs'
 import { neon } from '@neondatabase/serverless'
 
 const getArg = (name) => {
@@ -8,38 +7,43 @@ const getArg = (name) => {
 
 const databaseUrl = process.env.DATABASE_URL
 const email = (getArg('email') || process.env.ADMIN_BOOTSTRAP_EMAIL || '').trim().toLowerCase()
-const password = process.env.ADMIN_BOOTSTRAP_PASSWORD || ''
 const fullName = (getArg('name') || process.env.ADMIN_BOOTSTRAP_NAME || 'Admin Apoteq').trim()
 
 if (!databaseUrl) throw new Error('DATABASE_URL is required.')
 if (!email || !email.includes('@')) throw new Error('Provide --email or ADMIN_BOOTSTRAP_EMAIL.')
-if (password.length < 14 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-  throw new Error('ADMIN_BOOTSTRAP_PASSWORD must be at least 14 characters and include uppercase, lowercase, and a number.')
-}
 
 const sql = neon(databaseUrl)
-const passwordHash = await bcrypt.hash(password, 12)
 const rows = await sql`
-  WITH upserted AS (
+  WITH updated AS (
+    UPDATE public.profiles
+    SET full_name = ${fullName},
+        role = 'admin'::public.user_role,
+        account_status = 'active',
+        is_active = true,
+        approved_at = now(),
+        rejected_reason = NULL
+    WHERE lower(email) = ${email}
+    RETURNING id, email, full_name
+  ), inserted AS (
     INSERT INTO public.profiles (
       email, password_hash, full_name, role, account_status, is_active, approved_at
-    ) VALUES (
-      ${email}, ${passwordHash}, ${fullName}, 'admin'::public.user_role, 'active', true, now()
     )
-    ON CONFLICT (email) DO UPDATE SET
-      password_hash = EXCLUDED.password_hash,
-      full_name = EXCLUDED.full_name,
-      role = 'admin'::public.user_role,
-      account_status = 'active',
-      is_active = true,
-      approved_at = now()
+    SELECT ${email}, NULL, ${fullName}, 'admin'::public.user_role, 'active', true, now()
+    WHERE NOT EXISTS (SELECT 1 FROM updated)
     RETURNING id, email, full_name
+  ), upserted AS (
+    SELECT * FROM updated
+    UNION ALL
+    SELECT * FROM inserted
   ), audit AS (
     INSERT INTO public.audit_logs (user_id, action, resource_type, resource_id, metadata)
-    SELECT id, 'BOOTSTRAP_ADMIN', 'profile', id, jsonb_build_object('email', email) FROM upserted
+    SELECT id, 'BOOTSTRAP_GOOGLE_ADMIN', 'profile', id,
+      jsonb_build_object('email', email, 'auth_provider', 'google')
+    FROM upserted
   )
   SELECT id, email, full_name FROM upserted
 `
 
-console.log(`Admin ready: ${rows[0].email} (${rows[0].full_name})`)
+console.log(`Google admin preauthorized: ${rows[0].email} (${rows[0].full_name})`)
+console.log('The profile will link only after this verified Google email signs in.')
 
