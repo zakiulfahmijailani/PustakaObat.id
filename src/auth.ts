@@ -26,8 +26,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
       updateAge: 60 * 60 * 24,
     },
     pages: {
-      signIn: '/login',
-      error: '/login',
+      signIn: '/masuk',
+      error: '/masuk',
     },
     trustHost: true,
     callbacks: {

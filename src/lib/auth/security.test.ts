@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { getSafeRedirectForAccount, normalizeEmail } from './security'
+import { getUnlinkedAccountDestination, parseAuthIntent } from './intent'
 import { reviewerOnboardingSchema } from './schemas'
 
 describe('Neon authentication security helpers', () => {
@@ -9,11 +10,24 @@ describe('Neon authentication security helpers', () => {
   })
 
   it('routes account states without trusting a client role', () => {
-    expect(getSafeRedirectForAccount('active', 'reviewer')).toBe('/dashboard')
-    expect(getSafeRedirectForAccount('active', 'admin')).toBe('/dashboard')
+    expect(getSafeRedirectForAccount('active', 'reviewer')).toBe('/reviewer/dashboard')
+    expect(getSafeRedirectForAccount('active', 'admin')).toBe('/admin/dashboard')
     expect(getSafeRedirectForAccount('active', 'pharmacist')).toBe('/pending-approval')
     expect(getSafeRedirectForAccount('needs_revision', 'reviewer')).toBe('/account/needs-revision')
     expect(getSafeRedirectForAccount('suspended', 'reviewer')).toBe('/account/suspended')
+  })
+
+  it('uses auth intent only to route unlinked Google identities', () => {
+    expect(parseAuthIntent('reviewer_login')).toBe('reviewer_login')
+    expect(parseAuthIntent('reviewer_register')).toBe('reviewer_register')
+    expect(parseAuthIntent('admin_login')).toBe('admin_login')
+    expect(parseAuthIntent('admin')).toBeNull()
+    expect(parseAuthIntent({ role: 'admin' })).toBeNull()
+
+    expect(getUnlinkedAccountDestination('reviewer_login')).toBe('/reviewer/not-registered')
+    expect(getUnlinkedAccountDestination('reviewer_register')).toBe('/reviewer/register/complete')
+    expect(getUnlinkedAccountDestination('admin_login')).toBe('/admin/access-denied')
+    expect(getUnlinkedAccountDestination(null)).toBe('/masuk')
   })
 
   it('requires professional identity without accepting password or role input', () => {
@@ -64,5 +78,34 @@ describe('Neon authentication security helpers', () => {
     expect(authConfig).not.toContain('Credentials(')
     expect(loginRoute).toContain('status: 410')
     expect(registerRoute).toContain('status: 410')
+  })
+
+  it('keeps reviewer and admin entry points separate without trusting intent as role', () => {
+    const intentRoute = readFileSync('src/app/api/auth/intent/route.ts', 'utf8')
+    const postLoginRoute = readFileSync('src/app/auth/post-login/route.ts', 'utf8')
+    const authServer = readFileSync('src/lib/auth/server.ts', 'utf8')
+
+    expect(intentRoute).toContain('httpOnly: true')
+    expect(intentRoute).toContain("sameSite: 'lax'")
+    expect(postLoginRoute).toContain('getSafeRedirectForAccount')
+    expect(postLoginRoute).toContain('getUnlinkedAccountDestination')
+    expect(authServer).toContain("requireActiveProfile(['reviewer', 'admin'], '/reviewer/not-registered')")
+    expect(authServer).toContain("requireActiveProfile(['admin'], '/admin/access-denied')")
+    expect(intentRoute).not.toContain('profiles.role')
+  })
+
+  it('preauthorizes admins without silently promoting an existing reviewer', () => {
+    const bootstrap = readFileSync('scripts/bootstrap-admin.mjs', 'utf8')
+    const onboarding = readFileSync('src/app/api/auth/reviewer-onboarding/route.ts', 'utf8')
+    const adminUsers = readFileSync('src/app/api/admin/users/route.ts', 'utf8')
+
+    expect(bootstrap).toContain("hasFlag('promote-existing-reviewer')")
+    expect(bootstrap).toContain("existing[0].role !== 'admin'")
+    expect(bootstrap).not.toContain('INSERT INTO public.users')
+    expect(bootstrap).not.toContain('INSERT INTO public.accounts')
+    expect(bootstrap).not.toContain('INSERT INTO public.sessions')
+    expect(onboarding).toContain("'reviewer'::public.user_role, false, 'pending_review'")
+    expect(adminUsers).toContain("session.profile.role !== 'admin'")
+    expect(adminUsers).toContain("WHERE id = $1 AND role::text = 'reviewer'")
   })
 })

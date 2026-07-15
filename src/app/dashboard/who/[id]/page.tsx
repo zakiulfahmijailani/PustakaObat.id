@@ -18,7 +18,7 @@ export default async function WhoReviewDetailPage({ params }: { params: Promise<
 
   return (
     <div className="space-y-8">
-      <Link href="/dashboard/who" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke antrean</Link>
+      <Link href="/reviewer/medicines" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke antrean</Link>
       <div className="grid gap-8 xl:grid-cols-[1fr_380px]">
         <div className="space-y-6">
           <Card className="rounded-3xl"><CardContent className="space-y-6 p-8">

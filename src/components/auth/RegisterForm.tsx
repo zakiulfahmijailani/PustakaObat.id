@@ -10,11 +10,11 @@ export function RegisterForm() {
         <CardDescription>Mulai dengan akun Google. Setelah itu lengkapi identitas profesi untuk diperiksa Admin Apoteq.</CardDescription>
       </CardHeader>
       <CardContent>
-        <GoogleAuthButton label="Daftar sebagai Reviewer dengan Google" />
+        <GoogleAuthButton label="Daftar sebagai Reviewer dengan Google" intent="reviewer_register" />
         <div className="mt-6 rounded-2xl border border-border bg-surface-2 p-4 text-sm leading-relaxed text-text-muted">Pendaftaran ini tidak langsung memberikan akses reviewer. Akun baru selalu berstatus <strong>pending review</strong> sampai disetujui admin.</div>
       </CardContent>
       <CardFooter className="flex justify-center pb-8 pt-0 text-center">
-        <p className="text-sm text-text-muted">Sudah punya akun? <Link href="/login" className="font-semibold text-primary hover:underline">Masuk di sini</Link></p>
+        <p className="text-sm text-text-muted">Sudah punya akun? <Link href="/reviewer/login" className="font-semibold text-primary hover:underline">Masuk di sini</Link></p>
       </CardFooter>
     </Card>
   )

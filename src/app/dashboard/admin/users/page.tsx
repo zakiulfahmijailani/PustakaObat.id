@@ -53,7 +53,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   const hrefFor = (next: { role?: string; status?: string }) => {
     const search = new URLSearchParams({ role: next.role || role, status: next.status || status })
     if (q) search.set('q', q)
-    return `/dashboard/admin/users?${search}`
+    return `/admin/users?${search}`
   }
 
   return <div className="space-y-10">

@@ -175,7 +175,7 @@ export const DrugForm = ({ initialData, categories, mode = 'create', userId }: D
         resource_id: drugId,
         metadata: { name: values.name, status, section_count: sectionPayload.length },
       })
-      router.push('/dashboard/obat')
+      router.push('/admin/medicines')
       router.refresh()
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Gagal menyimpan data. Silakan coba lagi.')

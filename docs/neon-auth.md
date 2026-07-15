@@ -14,6 +14,45 @@ account.
 - Protected access requires both `account_status = 'active'` and
   `is_active = true`. The browser never supplies the trusted role.
 
+## Role-specific entry points
+
+Google remains a single OAuth provider. Apoteq separates the user experience
+with short-lived auth intent rather than separate identity systems:
+
+```text
+/masuk                     choose a staff workspace
+/reviewer/login            existing reviewer sign-in
+/reviewer/register         reviewer self-registration
+/reviewer/register/complete professional onboarding
+/admin/login               preauthorized admin sign-in only
+```
+
+The `apoteq_auth_intent` cookie is HTTP-only, SameSite Lax, and expires after
+ten minutes. It can route an unlinked Google identity to reviewer onboarding,
+the reviewer not-registered screen, or the admin access-denied screen. It
+cannot set or promote a role. Once a profile exists, `profiles.role` and
+`profiles.account_status` from Neon always determine the destination.
+
+Active workspaces are intentionally separate:
+
+```text
+/reviewer/dashboard
+/reviewer/medicines
+/reviewer/history
+/reviewer/profile
+
+/admin/dashboard
+/admin/medicines
+/admin/users
+/admin/imports
+/admin/audit
+/admin/settings
+```
+
+Admin routes require an active Admin profile. Reviewer routes accept an active
+Reviewer or Admin so an Admin can perform review work without receiving a
+second role.
+
 ## Environment variables
 
 Set these values locally and in Vercel. None of them may use a `NEXT_PUBLIC_`
@@ -79,12 +118,28 @@ npm run admin:bootstrap -- --email admin@example.com --name "Admin Apoteq"
 The first verified Google sign-in using that exact email links the Auth.js user
 to the active admin profile. A different Google email cannot claim the role.
 
+The bootstrap command writes only the application profile and audit record.
+Auth.js continues to own `users`, `accounts`, and `sessions`; do not insert into
+those tables manually. If the email already belongs to a Reviewer, the command
+stops instead of silently promoting the account. After reviewing the existing
+Reviewer application and history, an intentional promotion requires:
+
+```powershell
+npm run admin:bootstrap -- --email reviewer@example.com --name "Admin Apoteq" --promote-existing-reviewer
+```
+
+Public Google registration can only create `role = reviewer`,
+`account_status = pending_review`, and `is_active = false`. Reviewer activation
+is performed by an active Admin from `/admin/users` and is enforced again by
+the server API before Neon is updated.
+
 ## Reviewer flow
 
-1. The reviewer opens `/register` and chooses Google.
+1. The reviewer opens `/reviewer/register` and chooses Google.
 2. Auth.js stores the Google user, account, and session in Neon.
 3. `/auth/post-login` links an existing profile by verified email, or redirects
-   a new user to `/register/complete`.
+   a new registration to `/reviewer/register/complete`. Reviewer login does
+   not silently create an application.
 4. Professional data creates a reviewer profile and application as pending.
 5. Admin decisions remain server-enforced and written to `audit_logs`.
 

@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import type { AuthIntent } from '@/lib/auth/intent'
 
-export function GoogleAuthButton({ label }: { label: string }) {
+export function GoogleAuthButton({ label, intent }: { label: string; intent: AuthIntent }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,6 +15,13 @@ export function GoogleAuthButton({ label }: { label: string }) {
     setError(null)
 
     try {
+      const intentResponse = await fetch('/api/auth/intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intent }),
+      })
+      if (!intentResponse.ok) throw new Error('Unable to save authentication intent.')
+
       await signIn('google', { redirectTo: '/auth/post-login' })
     } catch {
       setError('Login Google belum dapat dimulai. Silakan coba lagi.')
@@ -31,4 +39,3 @@ export function GoogleAuthButton({ label }: { label: string }) {
     </div>
   )
 }
-

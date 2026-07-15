@@ -38,7 +38,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   `, parameters)
 
   const actions = ['all', 'LOGIN', 'REGISTER_REVIEWER', 'REVIEWER_ACCOUNT_APPROVE', 'REVIEWER_ACCOUNT_REJECT', 'REVIEWER_ACCOUNT_NEEDS_REVISION', 'REVIEW_WHO_MEDICINE', 'UPDATE_WHO_MEDICINE', 'BOOTSTRAP_ADMIN']
-  const actionHref = (value: string) => `/dashboard/admin/audit?action=${encodeURIComponent(value)}${q ? `&q=${encodeURIComponent(q)}` : ''}`
+  const actionHref = (value: string) => `/admin/audit?action=${encodeURIComponent(value)}${q ? `&q=${encodeURIComponent(q)}` : ''}`
 
   return <div className="space-y-10">
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6"><div><Badge variant="destructive" className="mb-4">Security & Compliance</Badge><h1 className="text-4xl font-serif text-text">Audit aktivitas Neon</h1><p className="mt-2 text-text-muted">Login, keputusan akun, dan perubahan data penting dicatat di server.</p></div><Database className="text-primary opacity-30" size={38} /></div>

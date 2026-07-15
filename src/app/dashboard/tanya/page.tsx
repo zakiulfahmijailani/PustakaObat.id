@@ -73,7 +73,7 @@ export default async function QuestionInboxPage({
             {statusOptions.map((opt) => (
               <Link 
                 key={opt.value}
-                href={`/dashboard/tanya?status=${opt.value}${q ? `&q=${q}` : ''}`}
+                href={`/admin/questions?status=${opt.value}${q ? `&q=${q}` : ''}`}
                 className={`flex items-center gap-3 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap border-2 transition-all ${
                   (status || 'all') === opt.value
                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/10'
@@ -104,7 +104,7 @@ export default async function QuestionInboxPage({
             </div>
             {!q && (
               <Button variant="outline" className="rounded-full px-8 h-12" asChild>
-                <Link href="/dashboard">Kembali ke Ringkasan</Link>
+                <Link href="/admin/dashboard">Kembali ke Ringkasan</Link>
               </Button>
             )}
           </div>

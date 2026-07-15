@@ -16,7 +16,7 @@ export function LogoutButton({ className, variant = 'ghost', children = 'Keluar'
       disabled={loading}
       onClick={async () => {
         setLoading(true)
-        await signOut({ redirectTo: '/login' })
+        await signOut({ redirectTo: '/masuk' })
       }}
     >
       {loading ? <Loader2 className="animate-spin" size={16} /> : <LogOut size={16} />}
@@ -24,4 +24,3 @@ export function LogoutButton({ className, variant = 'ghost', children = 'Keluar'
     </Button>
   )
 }
-

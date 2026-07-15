@@ -78,7 +78,7 @@ export const Navbar = () => {
           </button>
           
           <Link 
-            href="/login" 
+            href="/masuk"
             className="px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors shadow-sm"
           >
             Masuk
@@ -124,7 +124,7 @@ export const Navbar = () => {
             ))}
             <div className="h-px w-full bg-border" />
             <Link 
-              href="/login" 
+              href="/masuk"
               onClick={() => setIsOpen(false)}
               className="w-full py-4 text-center rounded-xl bg-primary text-white font-semibold"
             >

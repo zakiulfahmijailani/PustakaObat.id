@@ -155,12 +155,15 @@ export async function getActiveProfile() {
   return session
 }
 
-export async function requireActiveProfile(allowedRoles?: StaffRole[]) {
+export async function requireActiveProfile(
+  allowedRoles?: StaffRole[],
+  missingProfileDestination = '/masuk',
+) {
   const identity = await getGoogleIdentity()
-  if (!identity) redirect('/login')
+  if (!identity) redirect('/masuk')
 
   const session = await getAuthenticatedProfile({ linkByVerifiedEmail: true })
-  if (!session) redirect('/register/complete')
+  if (!session) redirect(missingProfileDestination)
 
   const { profile } = session
   if (!profile.is_active || profile.account_status !== 'active') {
@@ -168,7 +171,19 @@ export async function requireActiveProfile(allowedRoles?: StaffRole[]) {
   }
 
   if (!['reviewer', 'admin'].includes(profile.role)) redirect('/account/setup-required')
-  if (allowedRoles && !allowedRoles.includes(profile.role as StaffRole)) redirect('/dashboard')
+  if (allowedRoles && !allowedRoles.includes(profile.role as StaffRole)) {
+    redirect(getSafeRedirectForAccount(profile.account_status, profile.role))
+  }
 
   return session
 }
+
+export function requireReviewer() {
+  return requireActiveProfile(['reviewer', 'admin'], '/reviewer/not-registered')
+}
+
+export function requireAdmin() {
+  return requireActiveProfile(['admin'], '/admin/access-denied')
+}
+
+export const requireReviewerOrAdmin = requireReviewer

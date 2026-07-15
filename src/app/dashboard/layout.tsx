@@ -33,17 +33,17 @@ export default async function DashboardLayout({
   const { profile } = await requireActiveProfile()
 
   const reviewerNav: NavItem[] = [
-    { title: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { title: 'Review Data WHO', href: '/dashboard/who', icon: BookOpenCheck },
+    { title: 'Overview', href: '/reviewer/dashboard', icon: LayoutDashboard },
+    { title: 'Review Data WHO', href: '/reviewer/medicines', icon: BookOpenCheck },
   ]
 
   const adminNav: NavItem[] = [
-    { title: 'Kelola Monografi', href: '/dashboard/obat', icon: Pill },
-    { title: 'Tanya Farmasis', href: '/dashboard/tanya', icon: MessageSquare },
-    { title: 'User Management', href: '/dashboard/admin/users', icon: Users },
-    { title: 'Audit Logs', href: '/dashboard/admin/audit', icon: History },
-    { title: 'Kelola Data WHO', href: '/dashboard/admin/who', icon: Database },
-    { title: 'System Settings', href: '/dashboard/admin/settings', icon: Settings },
+    { title: 'Kelola Monografi', href: '/admin/medicines', icon: Pill },
+    { title: 'Tanya Farmasis', href: '/admin/questions', icon: MessageSquare },
+    { title: 'User Management', href: '/admin/users', icon: Users },
+    { title: 'Audit Logs', href: '/admin/audit', icon: History },
+    { title: 'Kelola Data WHO', href: '/admin/imports', icon: Database },
+    { title: 'System Settings', href: '/admin/settings', icon: Settings },
   ]
 
   const navItems = profile.role === 'admin' ? [...reviewerNav, ...adminNav] : reviewerNav
