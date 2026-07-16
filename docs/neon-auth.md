@@ -44,6 +44,7 @@ Active workspaces are intentionally separate:
 /admin/dashboard
 /admin/medicines
 /admin/users
+/admin/admins
 /admin/imports
 /admin/audit
 /admin/settings
@@ -132,6 +133,23 @@ Public Google registration can only create `role = reviewer`,
 `account_status = pending_review`, and `is_active = false`. Reviewer activation
 is performed by an active Admin from `/admin/users` and is enforced again by
 the server API before Neon is updated.
+
+## Admin Management
+
+An active Admin can preauthorize another Google email from
+`/admin/admins`. The page writes only to the application `profiles` and
+`audit_logs` tables. Auth.js remains responsible for creating the matching
+`users`, `accounts`, and `sessions` rows when that exact Google email signs in
+for the first time.
+
+The browser submits only a full name and email. The protected server endpoint
+sets the trusted role and status itself, requires same-origin mutation and an
+active Admin session, and records the acting Admin in the audit log. If the
+email already belongs to a Reviewer, the operation returns a conflict instead
+of silently promoting the account.
+
+The CLI bootstrap remains available for recovery or first-Admin setup, when no
+Admin can access the dashboard.
 
 ## Reviewer flow
 

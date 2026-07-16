@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { getSafeRedirectForAccount, normalizeEmail } from './security'
 import { getUnlinkedAccountDestination, parseAuthIntent } from './intent'
-import { reviewerOnboardingSchema } from './schemas'
+import { adminPreauthorizationSchema, reviewerOnboardingSchema } from './schemas'
 
 describe('Neon authentication security helpers', () => {
   it('normalizes email addresses deterministically', () => {
@@ -107,5 +107,29 @@ describe('Neon authentication security helpers', () => {
     expect(onboarding).toContain("'reviewer'::public.user_role, false, 'pending_review'")
     expect(adminUsers).toContain("session.profile.role !== 'admin'")
     expect(adminUsers).toContain("WHERE id = $1 AND role::text = 'reviewer'")
+  })
+
+  it('keeps Admin Management server-controlled and reviewer-safe', () => {
+    const valid = adminPreauthorizationSchema.safeParse({
+      fullName: 'Admin Baru',
+      email: '  Admin.Baru@Example.com ',
+    })
+    expect(valid.success).toBe(true)
+    if (valid.success) expect(valid.data.email).toBe('admin.baru@example.com')
+
+    expect(adminPreauthorizationSchema.safeParse({
+      fullName: 'A',
+      email: 'bukan-email',
+    }).success).toBe(false)
+
+    const adminManagement = readFileSync('src/app/api/admin/admins/route.ts', 'utf8')
+    expect(adminManagement).toContain('isSameOriginMutation(request)')
+    expect(adminManagement).toContain("session.profile.role !== 'admin'")
+    expect(adminManagement).toContain("existing[0].role !== 'admin'")
+    expect(adminManagement).toContain("'admin'::public.user_role")
+    expect(adminManagement).toContain("'ADMIN_PREAUTHORIZED'")
+    expect(adminManagement).not.toContain('INSERT INTO public.users')
+    expect(adminManagement).not.toContain('INSERT INTO public.accounts')
+    expect(adminManagement).not.toContain('INSERT INTO public.sessions')
   })
 })

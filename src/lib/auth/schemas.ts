@@ -24,3 +24,8 @@ export const adminUserActionSchema = z.object({
     context.addIssue({ code: 'custom', path: ['note'], message: 'Catatan wajib diisi untuk tindakan ini.' })
   }
 })
+
+export const adminPreauthorizationSchema = z.object({
+  fullName: z.string().trim().min(3, 'Nama lengkap minimal 3 karakter').max(150),
+  email: z.string().trim().email('Email Google tidak valid').max(320).transform((value) => value.toLowerCase()),
+})
