@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import { Database, Globe2, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
-import { WhoMedicineCard } from '@/components/drug/WhoMedicineCard'
+import { BookOpenCheck, Database, Globe2, Languages, Search, ShieldCheck, Stethoscope } from 'lucide-react'
 import { CatalogPagination } from '@/components/drug/CatalogPagination'
+import { MedicineHeroArt } from '@/components/drug/MedicineHeroArt'
+import { MonographLibraryRow, WhoLibraryRow } from '@/components/drug/MedicineLibraryRow'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { AWARE_CATEGORIES, WHO_PAGE_SIZE } from '@/lib/who/constants'
-import { getPublicWhoMedicines } from '@/lib/who/queries'
+import { getPublicLocalDrugs, getPublicWhoMedicines } from '@/lib/who/queries'
 
 interface SearchParams {
   q?: string
@@ -16,9 +17,19 @@ interface SearchParams {
 
 export const dynamic = 'force-dynamic'
 
+const trustItems = [
+  { icon: ShieldCheck, title: 'Sumber resmi', copy: 'WHO dan sumber primer terkurasi' },
+  { icon: BookOpenCheck, title: 'Ditinjau apoteker', copy: 'Jejak verifikasi tampil transparan' },
+  { icon: Languages, title: 'Bahasa Indonesia', copy: 'Disusun agar mudah dipahami' },
+  { icon: Stethoscope, title: 'Edukasi kesehatan', copy: 'Mendukung konsultasi profesional' },
+]
+
 export default async function DrugSearchPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const filters = await searchParams
-  const { medicines, count, page, error } = await getPublicWhoMedicines(filters)
+  const [{ medicines, count, page, error }, monographs] = await Promise.all([
+    getPublicWhoMedicines(filters),
+    getPublicLocalDrugs(filters.q),
+  ])
   const first = count ? (page - 1) * WHO_PAGE_SIZE + 1 : 0
   const last = Math.min(page * WHO_PAGE_SIZE, count)
 
@@ -30,71 +41,106 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
     return query ? `/obat?${query}` : '/obat'
   }
 
+  const hasFilters = Boolean(filters.q || filters.aware || filters.essential)
+
   return (
-    <div className="container space-y-10 px-4 pb-24">
-      <section className="grid gap-8 border-b border-border pb-10 pt-8 lg:grid-cols-[1fr_420px] lg:items-end">
-        <div className="max-w-3xl space-y-5">
-          <Badge className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest">WHO Medicine Catalog</Badge>
-          <h1 className="text-4xl font-serif leading-tight text-text md:text-6xl">
-            Informasi obat dari sumber <span className="italic text-primary">resmi WHO.</span>
+    <div className="container px-4 pb-24">
+      <section className="grid gap-8 pb-6 pt-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+        <div className="max-w-2xl">
+          <Badge className="mb-5 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]">Pustaka informasi obat Apoteq</Badge>
+          <h1 className="max-w-xl text-4xl font-serif leading-[1.08] tracking-tight text-text md:text-6xl">
+            Pusat rujukan <span className="text-primary">informasi obat</span> untuk Indonesia.
           </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-text-muted">
-            Telusuri WHO Electronic Essential Medicines List dan klasifikasi antibiotik AWaRe. Status BPOM belum tersedia pada katalog ini.
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-text-muted md:text-lg">
+            Cari nama obat untuk membaca informasi penting dalam Bahasa Indonesia, bersumber jelas, dan diterbitkan melalui peninjauan apoteker.
+          </p>
+
+          <form action="/obat" method="get" className="mt-7 flex max-w-xl overflow-hidden rounded-xl border-2 border-text bg-surface shadow-[0_4px_0_var(--color-text)] focus-within:ring-4 focus-within:ring-primary/10">
+            <label htmlFor="medicine-search" className="sr-only">Cari nama obat</label>
+            <Search className="ml-4 mt-4 shrink-0 text-text-muted" size={20} aria-hidden="true" />
+            <input id="medicine-search" name="q" defaultValue={filters.q} placeholder="Cari nama obat, misalnya amoxicillin" className="min-w-0 flex-1 bg-transparent px-3 py-4 text-base outline-none placeholder:text-text-muted/70" />
+            {filters.aware && <input type="hidden" name="aware" value={filters.aware} />}
+            {filters.essential && <input type="hidden" name="essential" value={filters.essential} />}
+            <button type="submit" className="bg-primary px-6 font-semibold text-white hover:bg-primary-hover">Cari</button>
+          </form>
+          <p className="mt-4 text-sm text-text-muted">
+            Contoh: <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=amoxicillin">amoxicillin</Link>,{' '}
+            <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=paracetamol">paracetamol</Link>, atau{' '}
+            <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=metformin">metformin</Link>.
           </p>
         </div>
-        <form action="/obat" method="get" className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
-          <input name="q" defaultValue={filters.q} placeholder="Cari nama obat, misalnya amoxicillin" className="w-full rounded-2xl border border-border bg-surface py-4 pl-12 pr-4 shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-          {filters.aware && <input type="hidden" name="aware" value={filters.aware} />}
-          {filters.essential && <input type="hidden" name="essential" value={filters.essential} />}
-        </form>
+        <MedicineHeroArt />
       </section>
 
-      <div className="grid gap-10 lg:grid-cols-[250px_1fr]">
-        <aside className="space-y-7">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text">
-            <SlidersHorizontal size={18} className="text-primary" /> Filter sumber
+      <section className="my-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Keunggulan pustaka obat">
+        {trustItems.map(({ icon: Icon, title, copy }) => (
+          <div key={title} className="flex gap-3 rounded-xl border border-border bg-surface p-4">
+            <Icon className="mt-0.5 shrink-0 text-primary" size={22} aria-hidden="true" />
+            <div><p className="text-sm font-bold text-text">{title}</p><p className="mt-1 text-xs leading-relaxed text-text-muted">{copy}</p></div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Link href={filterHref({ aware: undefined, essential: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${!filters.aware && !filters.essential ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>Semua obat WHO</Link>
-            <Link href={filterHref({ essential: 'true', aware: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${filters.essential === 'true' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>WHO Essential Medicines</Link>
-            {AWARE_CATEGORIES.map((category) => (
-              <Link key={category} href={filterHref({ aware: category, essential: undefined })} className={`rounded-xl px-4 py-3 text-sm font-semibold ${filters.aware === category ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface-2'}`}>AWaRe · {category}</Link>
-            ))}
-          </div>
-          <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6">
-            <Globe2 className="mb-4 text-primary" size={28} />
-            <p className="text-sm font-bold text-text">Data WHO, bukan BPOM</p>
-            <p className="mt-2 text-xs leading-relaxed text-text-muted">Katalog ini tidak menyatakan registrasi atau ketersediaan obat di Indonesia.</p>
-          </div>
-        </aside>
+        ))}
+      </section>
 
-        <section className="space-y-8" aria-live="polite">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-text-muted">{count ? `Menampilkan ${first}–${last} dari ${count} obat` : 'Belum ada hasil yang dapat ditampilkan'}</p>
-            {(filters.q || filters.aware || filters.essential) && <Button variant="outline" size="sm" asChild><Link href="/obat">Reset filter</Link></Button>}
+      <section className="mt-12" aria-live="polite">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-text pb-3">
+          <div>
+            <h2 className="font-serif text-3xl font-semibold text-text">Daftar Obat</h2>
+            <p className="mt-1 text-sm text-text-muted">Monografi terbit ditampilkan lebih dahulu; profil WHO menjadi katalog sumber pendukung.</p>
           </div>
+          <span className="font-mono text-xs uppercase tracking-wider text-text-muted">
+            {monographs.length} monografi · {count} profil WHO
+          </span>
+        </div>
 
-          {error ? (
-            <div className="rounded-[2rem] border border-dashed border-border bg-surface-2/50 px-8 py-20 text-center">
-              <Database className="mx-auto mb-5 text-text-muted/40" size={42} />
-              <h2 className="text-2xl font-serif text-text">Katalog WHO belum tersambung</h2>
-              <p className="mx-auto mt-3 max-w-lg text-text-muted">Data perlu diimpor ke Supabase terlebih dahulu. Kalkulator dan fitur publik lain tetap dapat digunakan.</p>
-            </div>
-          ) : medicines.length ? (
-            <>
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{medicines.map((medicine) => <WhoMedicineCard key={medicine.id} medicine={medicine} />)}</div>
-              <CatalogPagination page={page} count={count} pathname="/obat" params={{ q: filters.q, aware: filters.aware, essential: filters.essential }} />
-            </>
-          ) : (
-            <div className="rounded-[2rem] border border-dashed border-border bg-surface-2/50 px-8 py-20 text-center">
-              <ShieldCheck className="mx-auto mb-5 text-text-muted/40" size={42} />
-              <h2 className="text-2xl font-serif text-text">Obat tidak ditemukan</h2>
-              <p className="mx-auto mt-3 max-w-lg text-text-muted">Periksa ejaan nama generik atau coba kategori WHO yang lain.</p>
-            </div>
-          )}
-        </section>
-      </div>
+        <div className="flex flex-wrap items-center gap-2 border-b border-border py-4">
+          <span className="mr-1 text-xs font-bold uppercase tracking-widest text-text-muted">Filter WHO</span>
+          <Link href={filterHref({ aware: undefined, essential: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${!filters.aware && !filters.essential ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Semua</Link>
+          <Link href={filterHref({ essential: 'true', aware: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filters.essential === 'true' ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Essential Medicines</Link>
+          {AWARE_CATEGORIES.map((category) => (
+            <Link key={category} href={filterHref({ aware: category, essential: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filters.aware === category ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>AWaRe · {category}</Link>
+          ))}
+          {hasFilters && <Button variant="ghost" size="sm" asChild className="ml-auto"><Link href="/obat">Reset pencarian</Link></Button>}
+        </div>
+
+        {error ? (
+          <div className="rounded-xl border border-dashed border-border bg-surface-2/50 px-8 py-16 text-center">
+            <Database className="mx-auto mb-4 text-text-muted/40" size={38} />
+            <h2 className="text-2xl font-serif text-text">Pustaka belum tersambung</h2>
+            <p className="mx-auto mt-2 max-w-lg text-text-muted">Sumber data obat sedang tidak tersedia. Silakan coba kembali beberapa saat lagi.</p>
+          </div>
+        ) : (
+          <>
+            {page === 1 && monographs.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2 px-3 pb-1 pt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary"><BookOpenCheck size={16} /> Monografi terverifikasi</div>
+                {monographs.map((drug) => <MonographLibraryRow key={drug.id} drug={drug} />)}
+              </div>
+            )}
+
+            {medicines.length > 0 ? (
+              <div className="mt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-3 pb-1 pt-5">
+                  <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-text-muted"><Globe2 size={16} /> Katalog sumber WHO</p>
+                  <p className="text-xs text-text-muted">Menampilkan {first}–{last} dari {count}</p>
+                </div>
+                {medicines.map((medicine) => <WhoLibraryRow key={medicine.id} medicine={medicine} />)}
+                <div className="mt-8"><CatalogPagination page={page} count={count} pathname="/obat" params={{ q: filters.q, aware: filters.aware, essential: filters.essential }} /></div>
+              </div>
+            ) : monographs.length === 0 ? (
+              <div className="px-8 py-16 text-center">
+                <Globe2 className="mx-auto mb-4 text-text-muted/40" size={38} />
+                <h2 className="text-2xl font-serif text-text">Obat tidak ditemukan</h2>
+                <p className="mx-auto mt-2 max-w-lg text-text-muted">Periksa ejaan nama generik atau coba istilah pencarian yang lebih singkat.</p>
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
+
+      <aside className="mt-12 flex gap-4 rounded-xl border border-primary/25 bg-primary/5 p-5 text-sm leading-relaxed text-text-muted">
+        <ShieldCheck className="mt-0.5 shrink-0 text-primary" size={22} />
+        <p><strong className="text-text">Informasi untuk edukasi.</strong> Pustaka ini tidak menggantikan pemeriksaan, diagnosis, resep, atau konsultasi dengan dokter dan apoteker.</p>
+      </aside>
     </div>
   )
 }

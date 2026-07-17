@@ -1,6 +1,37 @@
 import { isNeonConfigured, queryNeon } from '@/lib/neon/server'
 import { WHO_PAGE_SIZE } from './constants'
-import type { Drug, DrugMonographSection, WhoImportRun, WhoMedicine, WhoMedicineVerification } from '@/types'
+import type { WhoImportRun, WhoMedicine, WhoMedicineVerification } from '@/types'
+
+export interface PublicMonographSummary {
+  id: string
+  name: string
+  generic_name: string | null
+  display_name: string
+  slug: string
+  brand_names: string[]
+  drug_class: string | null
+  dosage_form: string | null
+  strength: string | null
+  bpom_reg_number: string | null
+  atc_code: string | null
+  summary: string | null
+  published_at: string | null
+  updated_at: string
+  reviewer_name: string | null
+  reviewer_license: string | null
+  reviewed_at: string | null
+}
+
+export interface PublicMonographSection {
+  id: string
+  section_type: string
+  content: string
+  approved_at: string | null
+}
+
+export interface PublicMonograph extends PublicMonographSummary {
+  sections: PublicMonographSection[]
+}
 
 export function normalizeWhoSearchQuery(value: string | undefined) {
   return String(value ?? '')
@@ -33,7 +64,12 @@ export async function getPublicWhoMedicines(filters: PublicMedicineFilters) {
   if (!isNeonConfigured()) return unavailable({ medicines: [] as WhoMedicine[], count: 0, page })
 
   try {
-    const conditions = ["is_active = true", "publication_status = 'published'"]
+    const conditions = [
+      "is_active = true",
+      "publication_status = 'published'",
+      "(drug_id is null or not exists (select 1 from public.drugs d where d.id = who_medicines.drug_id and d.status = 'published'))",
+      "normalized_name <> 'aware group'",
+    ]
     const parameters: unknown[] = []
     const normalizedQuery = normalizeWhoSearchQuery(filters.q)
     if (normalizedQuery) {
@@ -66,7 +102,7 @@ export async function getPublicWhoMedicineBySlug(slug: string) {
   if (!isNeonConfigured()) return unavailable({ medicine: null as WhoMedicine | null })
   try {
     const rows = await queryNeon<WhoMedicine>(
-      "select * from public.who_medicines where slug = $1 and is_active = true and publication_status = 'published' limit 1",
+      "select * from public.who_medicines where slug = $1 and is_active = true and publication_status = 'published' and normalized_name <> 'aware group' limit 1",
       [slug],
     )
     return { medicine: rows[0] || null, error: null }
@@ -78,15 +114,120 @@ export async function getPublicWhoMedicineBySlug(slug: string) {
 export async function getPublicLocalDrugBySlug(slug: string) {
   if (!isNeonConfigured()) return null
   try {
-    const drugs = await queryNeon<Drug>('select * from public.drugs where slug = $1 and status = $2 limit 1', [slug, 'published'])
+    const drugs = await queryNeon<PublicMonographSummary>(
+      `select
+        d.id,
+        d.name,
+        d.generic_name,
+        coalesce(nullif(d.generic_name, ''), d.name) as display_name,
+        trim(both '-' from regexp_replace(lower(coalesce(nullif(d.generic_name, ''), d.name)), '[^a-z0-9]+', '-', 'g')) as slug,
+        d.brand_names,
+        d.category as drug_class,
+        d.dosage_form,
+        d.strength,
+        d.bpom_reg_number,
+        d.atc_code,
+        left(indication.content, 320) as summary,
+        d.published_at,
+        d.updated_at,
+        reviewer.full_name as reviewer_name,
+        coalesce(reviewer.sipa_number, reviewer.professional_license_number) as reviewer_license,
+        latest_review.reviewed_at
+      from public.drugs d
+      left join lateral (
+        select content
+        from public.drug_monograph_sections
+        where drug_id = d.id and section_type = 'indication' and status = 'published'
+        order by approved_at desc nulls last, updated_at desc
+        limit 1
+      ) indication on true
+      left join lateral (
+        select approved_by, approved_at as reviewed_at
+        from public.drug_monograph_sections
+        where drug_id = d.id and status = 'published' and approved_by is not null
+        order by approved_at desc nulls last, updated_at desc
+        limit 1
+      ) latest_review on true
+      left join public.profiles reviewer on reviewer.id = latest_review.approved_by
+      where d.status = 'published'
+        and trim(both '-' from regexp_replace(lower(coalesce(nullif(d.generic_name, ''), d.name)), '[^a-z0-9]+', '-', 'g')) = $1
+      limit 1`,
+      [slug],
+    )
     if (!drugs[0]) return null
-    const sections = await queryNeon<DrugMonographSection>(
-      'select * from public.drug_monograph_sections where drug_id = $1 order by created_at',
+    const sections = await queryNeon<PublicMonographSection>(
+      `select id, section_type::text, content, approved_at
+       from public.drug_monograph_sections
+       where drug_id = $1 and status = 'published'
+       order by case section_type::text
+         when 'indication' then 1
+         when 'dosage' then 2
+         when 'contraindication' then 3
+         when 'warnings' then 4
+         when 'side_effects' then 5
+         when 'mechanism_of_action' then 6
+         when 'storage' then 7
+         else 99 end, created_at`,
       [drugs[0].id],
     )
-    return { ...drugs[0], sections }
+    return { ...drugs[0], sections } satisfies PublicMonograph
   } catch {
     return null
+  }
+}
+
+export async function getPublicLocalDrugs(searchQuery?: string) {
+  if (!isNeonConfigured()) return [] as PublicMonographSummary[]
+  try {
+    const normalizedQuery = normalizeWhoSearchQuery(searchQuery)
+    const parameters: unknown[] = []
+    const searchCondition = normalizedQuery
+      ? `and lower(concat_ws(' ', d.name, d.generic_name, array_to_string(d.brand_names, ' '))) like $1`
+      : ''
+    if (normalizedQuery) parameters.push(`%${normalizedQuery}%`)
+
+    return await queryNeon<PublicMonographSummary>(
+      `select
+        d.id,
+        d.name,
+        d.generic_name,
+        coalesce(nullif(d.generic_name, ''), d.name) as display_name,
+        trim(both '-' from regexp_replace(lower(coalesce(nullif(d.generic_name, ''), d.name)), '[^a-z0-9]+', '-', 'g')) as slug,
+        d.brand_names,
+        d.category as drug_class,
+        d.dosage_form,
+        d.strength,
+        d.bpom_reg_number,
+        d.atc_code,
+        left(indication.content, 320) as summary,
+        d.published_at,
+        d.updated_at,
+        reviewer.full_name as reviewer_name,
+        coalesce(reviewer.sipa_number, reviewer.professional_license_number) as reviewer_license,
+        latest_review.reviewed_at
+      from public.drugs d
+      left join lateral (
+        select content
+        from public.drug_monograph_sections
+        where drug_id = d.id and section_type = 'indication' and status = 'published'
+        order by approved_at desc nulls last, updated_at desc
+        limit 1
+      ) indication on true
+      left join lateral (
+        select approved_by, approved_at as reviewed_at
+        from public.drug_monograph_sections
+        where drug_id = d.id and status = 'published' and approved_by is not null
+        order by approved_at desc nulls last, updated_at desc
+        limit 1
+      ) latest_review on true
+      left join public.profiles reviewer on reviewer.id = latest_review.approved_by
+      where d.status = 'published' ${searchCondition}
+      order by display_name asc
+      limit 100`,
+      parameters,
+    )
+  } catch {
+    return [] as PublicMonographSummary[]
   }
 }
 
