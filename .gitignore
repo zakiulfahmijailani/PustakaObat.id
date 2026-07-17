@@ -48,3 +48,8 @@ next-env.d.ts
 !/data/imports/who/prepared/.gitkeep
 __pycache__/
 *.py[cod]
+
+# Monograph v2.2 handoff contains raw source evidence. Keep it local and import
+# it only into the authenticated Neon staging tables.
+/data/imports/website_export/
+/data/imports/apoteq_website_export_v2_2_codex.zip

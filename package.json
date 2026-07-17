@@ -13,6 +13,10 @@
     "who:validate": "node scripts/import-who-data.mjs --dry-run",
     "who:import": "node scripts/import-who-data.mjs --apply",
     "who:upload": "node scripts/import-who-data.mjs --apply",
+    "staging:validate": "node scripts/staging/import-monograph-staging.mjs --dry-run",
+    "staging:migrate": "node scripts/staging/apply-migration.mjs",
+    "staging:import": "node scripts/staging/import-monograph-staging.mjs --apply",
+    "staging:verify": "node scripts/staging/verify-staging.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {

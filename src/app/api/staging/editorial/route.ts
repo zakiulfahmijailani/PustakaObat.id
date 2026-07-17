@@ -1,0 +1,47 @@
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { getActiveProfile } from '@/lib/auth/server'
+import { isSameOriginMutation } from '@/lib/auth/request'
+import { reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
+
+const drugKey = z.string().regex(/^DRUG_[A-Z0-9]+$/)
+const requestSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('select_pilot'), drugKey }),
+  z.object({
+    action: z.literal('save_draft'),
+    drugKey,
+    sectionType: z.string().trim().min(1).max(80).regex(/^[a-z0-9_]+$/),
+    contentIndonesian: z.string().trim().min(40).max(30000),
+  }),
+  z.object({ action: z.literal('submit_draft'), draftId: z.string().uuid() }),
+  z.object({
+    action: z.literal('review_draft'),
+    draftId: z.string().uuid(),
+    decision: z.enum(['approve', 'changes_requested']),
+    note: z.string().trim().max(4000).nullable().optional(),
+  }).superRefine((value, context) => {
+    if (value.decision === 'changes_requested' && !value.note) {
+      context.addIssue({ code: 'custom', path: ['note'], message: 'Catatan wajib untuk permintaan perubahan.' })
+    }
+  }),
+])
+
+export async function POST(request: Request) {
+  if (!isSameOriginMutation(request)) return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
+  const session = await getActiveProfile()
+  if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
+  if (!['reviewer', 'admin'].includes(session.profile.role)) return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
+
+  const parsed = requestSchema.safeParse(await request.json().catch(() => null))
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request.' }, { status: 400 })
+
+  try {
+    const body = parsed.data
+    if (body.action === 'select_pilot') return NextResponse.json({ concept: await selectPilotDrug(body.drugKey, session.user.id) })
+    if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
+    if (body.action === 'submit_draft') return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
+    return NextResponse.json({ draft: await reviewEditorialDraft(body.draftId, body.decision, body.note || null, session.user.id) })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to update staging editorial workflow.' }, { status: 500 })
+  }
+}

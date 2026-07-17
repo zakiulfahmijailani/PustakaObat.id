@@ -1,4 +1,4 @@
-import { Activity, Database, FileText, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users } from 'lucide-react'
+import { Activity, Database, FileText, FlaskConical, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users } from 'lucide-react'
 import { StaffShell, type StaffNavItem } from '@/components/dashboard/StaffShell'
 import { requireAdmin } from '@/lib/auth/server'
 
@@ -9,6 +9,7 @@ const navItems: StaffNavItem[] = [
   { title: 'Reviewer & User', href: '/admin/users', icon: Users },
   { title: 'Admin Management', href: '/admin/admins', icon: ShieldCheck },
   { title: 'Import WHO', href: '/admin/imports', icon: Database },
+  { title: 'Monografi Staging', href: '/admin/staging', icon: FlaskConical },
   { title: 'Audit Aktivitas', href: '/admin/audit', icon: Activity },
   { title: 'Pengaturan', href: '/admin/settings', icon: Settings },
 ]
