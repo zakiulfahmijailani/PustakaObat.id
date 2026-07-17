@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getActiveProfile } from '@/lib/auth/server'
 import { isSameOriginMutation } from '@/lib/auth/request'
-import { reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
+import { publishApprovedMonograph, reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
 
 const drugKey = z.string().regex(/^DRUG_[A-Z0-9]+$/)
 const requestSchema = z.discriminatedUnion('action', [
@@ -14,6 +14,7 @@ const requestSchema = z.discriminatedUnion('action', [
     contentIndonesian: z.string().trim().min(40).max(30000),
   }),
   z.object({ action: z.literal('submit_draft'), draftId: z.string().uuid() }),
+  z.object({ action: z.literal('publish_monograph'), drugKey }),
   z.object({
     action: z.literal('review_draft'),
     draftId: z.string().uuid(),
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     if (body.action === 'select_pilot') return NextResponse.json({ concept: await selectPilotDrug(body.drugKey, session.user.id) })
     if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
     if (body.action === 'submit_draft') return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
+    if (body.action === 'publish_monograph') return NextResponse.json({ publication: await publishApprovedMonograph(body.drugKey, session.user.id) })
     return NextResponse.json({ draft: await reviewEditorialDraft(body.draftId, body.decision, body.note || null, session.user.id) })
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to update staging editorial workflow.' }, { status: 500 })

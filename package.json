@@ -15,6 +15,7 @@
     "who:upload": "node scripts/import-who-data.mjs --apply",
     "staging:validate": "node scripts/staging/import-monograph-staging.mjs --dry-run",
     "staging:migrate": "node scripts/staging/apply-migration.mjs",
+    "monograph:publish:migrate": "node scripts/staging/apply-migration.mjs 007_monograph_publication.sql",
     "staging:import": "node scripts/staging/import-monograph-staging.mjs --apply",
     "staging:verify": "node scripts/staging/verify-staging.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"

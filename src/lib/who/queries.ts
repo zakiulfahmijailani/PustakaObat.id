@@ -29,8 +29,15 @@ export interface PublicMonographSection {
   approved_at: string | null
 }
 
+export interface PublicMonographSource {
+  source_name: string
+  source_document_id: string
+  source_url: string | null
+}
+
 export interface PublicMonograph extends PublicMonographSummary {
   sections: PublicMonographSection[]
+  sources: PublicMonographSource[]
 }
 
 export function normalizeWhoSearchQuery(value: string | undefined) {
@@ -121,7 +128,7 @@ export async function getPublicLocalDrugBySlug(slug: string) {
         d.generic_name,
         coalesce(nullif(d.generic_name, ''), d.name) as display_name,
         trim(both '-' from regexp_replace(lower(coalesce(nullif(d.generic_name, ''), d.name)), '[^a-z0-9]+', '-', 'g')) as slug,
-        d.brand_names,
+        coalesce(d.brand_names, '{}'::text[]) as brand_names,
         d.category as drug_class,
         d.dosage_form,
         d.strength,
@@ -155,22 +162,39 @@ export async function getPublicLocalDrugBySlug(slug: string) {
       [slug],
     )
     if (!drugs[0]) return null
-    const sections = await queryNeon<PublicMonographSection>(
-      `select id, section_type::text, content, approved_at
-       from public.drug_monograph_sections
-       where drug_id = $1 and status = 'published'
-       order by case section_type::text
-         when 'indication' then 1
-         when 'dosage' then 2
-         when 'contraindication' then 3
-         when 'warnings' then 4
-         when 'side_effects' then 5
-         when 'mechanism_of_action' then 6
-         when 'storage' then 7
-         else 99 end, created_at`,
-      [drugs[0].id],
-    )
-    return { ...drugs[0], sections } satisfies PublicMonograph
+    const [sections, sources] = await Promise.all([
+      queryNeon<PublicMonographSection>(
+        `select id, section_type::text, content, approved_at
+         from public.drug_monograph_sections
+         where drug_id = $1 and status = 'published'
+         order by case section_type::text
+           when 'indication' then 1
+           when 'dosage' then 2
+           when 'contraindication' then 3
+           when 'warnings' then 4
+           when 'side_effects' then 5
+           when 'drug_interactions' then 6
+           when 'pregnancy' then 7
+           when 'specific_populations' then 8
+           when 'mechanism_of_action' then 9
+           when 'mechanism' then 9
+           when 'clinical_pharmacology' then 10
+           when 'pharmacokinetics' then 11
+           when 'how_supplied' then 12
+           when 'storage' then 13
+           else 99 end, created_at`,
+        [drugs[0].id],
+      ),
+      queryNeon<PublicMonographSource>(
+        `select distinct s.source_name, s.source_document_id, s.source_url
+         from public.monograph_publications p
+         join public.monograph_publication_sources s on s.publication_id = p.id
+         where p.drug_id = $1
+         order by s.source_name, s.source_document_id`,
+        [drugs[0].id],
+      ),
+    ])
+    return { ...drugs[0], sections, sources } satisfies PublicMonograph
   } catch {
     return null
   }
@@ -193,7 +217,7 @@ export async function getPublicLocalDrugs(searchQuery?: string) {
         d.generic_name,
         coalesce(nullif(d.generic_name, ''), d.name) as display_name,
         trim(both '-' from regexp_replace(lower(coalesce(nullif(d.generic_name, ''), d.name)), '[^a-z0-9]+', '-', 'g')) as slug,
-        d.brand_names,
+        coalesce(d.brand_names, '{}'::text[]) as brand_names,
         d.category as drug_class,
         d.dosage_form,
         d.strength,

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, FlaskConical, Send, Save, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
-import type { EditorialDraft } from '@/lib/staging/types'
+import type { EditorialDraft, MonographPublication } from '@/lib/staging/types'
 
 const SECTION_LABELS: Record<string, string> = {
   indication: 'Indikasi', dosage: 'Dosis dan penggunaan', warnings: 'Peringatan', side_effects: 'Efek samping',
@@ -14,6 +14,8 @@ const SECTION_LABELS: Record<string, string> = {
   storage: 'Penyimpanan', how_supplied: 'Sediaan', contraindication: 'Kontraindikasi',
 }
 
+const REQUIRED_PUBLICATION_SECTIONS = ['indication', 'dosage', 'side_effects', 'contraindication', 'warnings']
+
 async function mutate(payload: Record<string, unknown>) {
   const response = await fetch('/api/staging/editorial', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
   const result = await response.json()
@@ -21,7 +23,7 @@ async function mutate(payload: Record<string, unknown>) {
   return result
 }
 
-export function StagingEditorialForm({ drugKey, isPilot, availableSections, drafts }: { drugKey: string; isPilot: boolean; availableSections: string[]; drafts: EditorialDraft[] }) {
+export function StagingEditorialForm({ drugKey, isPilot, availableSections, drafts, publication, actorId }: { drugKey: string; isPilot: boolean; availableSections: string[]; drafts: EditorialDraft[]; publication: MonographPublication | null; actorId: string }) {
   const router = useRouter()
   const sections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections])
   const [sectionType, setSectionType] = useState(sections[0] || 'indication')
@@ -30,6 +32,9 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
   const [note, setNote] = useState('')
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const approvedSections = new Set(drafts.filter((draft) => draft.status === 'pharmacist_approved' && draft.reviewed_by && draft.reviewed_at).map((draft) => draft.section_type))
+  const missingRequiredSections = REQUIRED_PUBLICATION_SECTIONS.filter((section) => !approvedSections.has(section))
+  const canPublish = !publication && missingRequiredSections.length === 0
 
   const run = async (payload: Record<string, unknown>, success: string) => {
     setPending(true); setMessage(null)
@@ -58,11 +63,24 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
       {currentDraft?.status === 'submitted' && (
         <div className="space-y-4 rounded-2xl border border-warning/30 bg-warning/5 p-5">
           <p className="font-bold text-text">Review apoteker</p>
-          <Textarea label="Catatan review" value={note} onChange={(event) => setNote(event.target.value)} disabled={pending} helperText="Catatan wajib bila meminta perubahan." />
-          <div className="flex flex-wrap gap-3"><Button type="button" disabled={pending} onClick={() => run({ action: 'review_draft', draftId: currentDraft.id, decision: 'approve', note }, 'Draf disetujui apoteker, tetapi tetap belum layak publikasi.')}><CheckCircle2 size={17} />Setujui draf</Button><Button type="button" variant="outline" disabled={pending || !note.trim()} onClick={() => run({ action: 'review_draft', draftId: currentDraft.id, decision: 'changes_requested', note }, 'Draf dikembalikan untuk perbaikan.')}><Undo2 size={17} />Minta perubahan</Button></div>
+          {currentDraft.authored_by === actorId ? <p className="text-sm text-text-muted">Draf Anda sedang menunggu peninjauan oleh apoteker lain.</p> : <><Textarea label="Catatan review" value={note} onChange={(event) => setNote(event.target.value)} disabled={pending} helperText="Catatan wajib bila meminta perubahan." />
+          <div className="flex flex-wrap gap-3"><Button type="button" disabled={pending} onClick={() => run({ action: 'review_draft', draftId: currentDraft.id, decision: 'approve', note }, 'Draf disetujui apoteker, tetapi tetap belum layak publikasi.')}><CheckCircle2 size={17} />Setujui draf</Button><Button type="button" variant="outline" disabled={pending || !note.trim()} onClick={() => run({ action: 'review_draft', draftId: currentDraft.id, decision: 'changes_requested', note }, 'Draf dikembalikan untuk perbaikan.')}><Undo2 size={17} />Minta perubahan</Button></div></>}
         </div>
       )}
       {currentDraft && <p className="text-sm text-text-muted">Status: <strong>{currentDraft.status.replaceAll('_', ' ')}</strong> · versi {currentDraft.version} · publication_eligible=false</p>}
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+        <p className="font-bold text-text">Terbitkan monografi publik</p>
+        <p className="mt-1 text-sm leading-relaxed text-text-muted">Publikasi hanya memindahkan draf Bahasa Indonesia yang telah disetujui ke pustaka publik. Evidence sumber tetap tersembunyi.</p>
+        {publication ? (
+          <p className="mt-3 text-sm font-medium text-success">Monografi ini telah diterbitkan dengan {publication.published_section_count} bagian.</p>
+        ) : (
+          <>
+            <p className="mt-3 text-sm text-text-muted">Bagian inti: {REQUIRED_PUBLICATION_SECTIONS.map((section) => SECTION_LABELS[section]).join(', ')}.</p>
+            {missingRequiredSections.length > 0 && <p className="mt-2 text-sm text-warning">Masih menunggu persetujuan: {missingRequiredSections.map((section) => SECTION_LABELS[section]).join(', ')}.</p>}
+            <Button type="button" className="mt-4" disabled={pending || !canPublish} onClick={() => run({ action: 'publish_monograph', drugKey }, 'Monografi diterbitkan ke pustaka publik.')}><CheckCircle2 size={17} />Terbitkan monografi</Button>
+          </>
+        )}
+      </div>
       {message && <p role="status" className="rounded-xl bg-surface-2 p-4 text-sm text-text">{message}</p>}
     </div>
   )

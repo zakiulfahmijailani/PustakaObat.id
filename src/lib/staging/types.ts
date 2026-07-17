@@ -82,3 +82,12 @@ export interface EditorialEvent {
   metadata: Record<string, unknown>
   created_at: string
 }
+
+export interface MonographPublication {
+  id: string
+  drug_key: string
+  drug_id: string
+  published_by: string
+  published_at: string
+  published_section_count: number
+}

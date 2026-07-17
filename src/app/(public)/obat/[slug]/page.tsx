@@ -16,9 +16,13 @@ const sectionLabels: Record<string, string> = {
   drug_interactions: 'Interaksi obat',
   warnings: 'Peringatan dan perhatian',
   pregnancy_category: 'Kehamilan dan menyusui',
+  pregnancy: 'Kehamilan dan menyusui',
+  specific_populations: 'Anak, lansia, dan populasi khusus',
   mechanism: 'Mekanisme kerja',
   mechanism_of_action: 'Mekanisme kerja',
+  clinical_pharmacology: 'Farmakologi klinis',
   pharmacokinetics: 'Farmakokinetik',
+  how_supplied: 'Bentuk dan kekuatan sediaan',
   storage: 'Penyimpanan dan penanganan',
   references: 'Referensi',
 }
@@ -107,6 +111,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
             <section id="sumber" className="mt-5 rounded-xl border border-border border-l-[6px] border-l-text bg-surface p-6 scroll-mt-28">
               <div className="flex gap-3"><FileCheck2 className="mt-0.5 shrink-0 text-primary" size={22} /><div className="min-w-0"><h2 className="font-serif text-xl font-semibold text-text">Sumber &amp; versi dokumen</h2><p className="mt-2 text-sm leading-relaxed text-text-muted">Konten yang tampil adalah versi monografi yang telah diterbitkan Apoteq. Setiap pembaruan wajib melewati peninjauan kembali sebelum tampil kepada publik.</p>
                 <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-[160px_1fr]"><dt className="font-semibold text-text">Pembaruan terakhir</dt><dd className="text-text-muted">{formatDate(localDrug.updated_at)}</dd>{localDrug.bpom_reg_number && <><dt className="font-semibold text-text">Nomor registrasi BPOM</dt><dd className="text-text-muted">{localDrug.bpom_reg_number}</dd></>}{localDrug.atc_code && <><dt className="font-semibold text-text">Kode ATC</dt><dd className="text-text-muted">{localDrug.atc_code}</dd></>}</dl>
+                {localDrug.sources.length > 0 && <div className="mt-5"><p className="font-semibold text-text">Dokumen sumber</p><ul className="mt-2 space-y-1.5 text-sm text-text-muted">{localDrug.sources.map((source) => <li key={`${source.source_name}-${source.source_document_id}`}>{source.source_url ? <a href={source.source_url} target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-4">{source.source_name} · {source.source_document_id}</a> : <span>{source.source_name} · {source.source_document_id}</span>}</li>)}</ul></div>}
                 {medicine?.official_source_url && <a href={medicine.official_source_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">Buka sumber WHO <ArrowUpRight size={16} /></a>}
               </div></div>
             </section>

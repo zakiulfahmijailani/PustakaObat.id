@@ -69,7 +69,7 @@ export async function reviewEditorialDraft(draftId: string, decision: 'approve' 
       update public.monograph_editorial_drafts
       set status = $2, reviewed_by = $4::uuid, reviewed_at = now(), reviewer_note = nullif(trim($3), ''),
           publication_eligible = false, updated_at = now()
-      where id = $1::uuid and status = 'submitted'
+      where id = $1::uuid and status = 'submitted' and authored_by is distinct from $4::uuid
       returning *
     ), audited as (
       insert into public.monograph_editorial_events (draft_id, drug_key, actor_id, action, metadata)
@@ -78,6 +78,15 @@ export async function reviewEditorialDraft(draftId: string, decision: 'approve' 
       from reviewed
     ) select * from reviewed
   `, [draftId, status, note || '', actorId, action])
-  if (!rows[0]) throw new Error('Only submitted drafts can be reviewed.')
+  if (!rows[0]) throw new Error('Only another reviewer can review a submitted draft.')
+  return rows[0]
+}
+
+export async function publishApprovedMonograph(drugKey: string, actorId: string) {
+  const rows = await queryNeon<{ drug_id: string; publication_id: string; published_sections: number }>(
+    'select * from public.publish_approved_monograph($1, $2::uuid)',
+    [drugKey, actorId],
+  )
+  if (!rows[0]) throw new Error('The approved monograph could not be published.')
   return rows[0]
 }
