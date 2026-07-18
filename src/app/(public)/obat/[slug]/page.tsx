@@ -133,7 +133,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
       <header className="rounded-xl border border-border border-l-[6px] border-l-primary bg-surface px-6 py-7 md:px-8">
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Profil Obat · Sumber WHO</p>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-5">
-          <div><h1 className="font-serif text-4xl font-bold leading-tight text-text md:text-5xl">{displayName}</h1>{medicine!.editorial_name && medicine!.editorial_name !== medicine!.medicine_name && <p className="mt-1 text-sm text-text-muted">Nama sumber WHO: {medicine!.medicine_name}</p>}</div>
+          <div><h1 className="font-serif text-4xl font-bold leading-tight text-text md:text-5xl">{displayName}</h1>{displayName !== medicine!.medicine_name && <p className="mt-1 text-sm text-text-muted">Nama sumber WHO: {medicine!.medicine_name}</p>}</div>
           {medicine!.verification_status === 'verified' ? <Badge variant="success" className="border border-success/30 px-3 py-1"><BadgeCheck className="mr-1" size={13} /> Ditinjau Apoteq</Badge> : <Badge variant="secondary" className="border border-border px-3 py-1"><ShieldQuestion className="mr-1" size={13} /> Profil sumber WHO</Badge>}
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
@@ -146,7 +146,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
       </header>
 
       <section className="mt-5 rounded-xl border border-warning/30 bg-warning/5 p-5">
-        <div className="flex gap-3"><CircleAlert className="mt-0.5 shrink-0 text-warning" size={22} /><div><h2 className="font-bold text-text">Informasi klinis sedang disiapkan</h2><p className="mt-1 text-sm leading-relaxed text-text-muted">Dosis, indikasi, interaksi, kontraindikasi, dan penggunaan pada kehamilan belum tersedia sebagai monografi terverifikasi. Jangan gunakan profil sumber ini sebagai panduan terapi.</p></div></div>
+        <div className="flex gap-3"><CircleAlert className="mt-0.5 shrink-0 text-warning" size={22} /><div><h2 className="font-bold text-text">{medicine!.has_indonesian_draft ? 'Monografi Bahasa Indonesia sedang ditinjau apoteker' : 'Informasi klinis sedang disiapkan'}</h2><p className="mt-1 text-sm leading-relaxed text-text-muted">{medicine!.has_indonesian_draft ? 'Kandidat konten tersedia di ruang kerja editorial, tetapi belum ditampilkan karena belum melalui peninjauan apoteker. Dosis, indikasi, interaksi, kontraindikasi, dan penggunaan pada kehamilan belum tersedia sebagai monografi terverifikasi.' : 'Dosis, indikasi, interaksi, kontraindikasi, dan penggunaan pada kehamilan belum tersedia sebagai monografi terverifikasi.'} Jangan gunakan profil sumber ini sebagai panduan terapi.</p></div></div>
       </section>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">

@@ -13,7 +13,7 @@ const SECTION_LABELS: Record<string, string> = {
 
 export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string; basePath: string }) {
   const session = await requireReviewer()
-  const { concept, evidence, sources, drafts, events, publication, error } = await getStagedDrugForStaff(drugKey)
+  const { concept, evidence, sources, drafts, candidates, events, publication, error } = await getStagedDrugForStaff(drugKey)
   if (error || !concept) notFound()
   const evidenceBySection = Object.entries(Object.groupBy(evidence, (item) => item.section_type)).sort(([left], [right]) => left.localeCompare(right))
 
@@ -35,7 +35,7 @@ export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string
 
       {publication && <section className="rounded-3xl border border-success/30 bg-success/5 p-6"><div className="flex items-start gap-3"><BadgeCheck className="mt-0.5 shrink-0 text-success" size={22} /><div><h2 className="font-serif text-2xl text-text">Monografi telah diterbitkan</h2><p className="mt-2 text-sm leading-relaxed text-text-muted">Versi publik berisi {publication.published_section_count} bagian yang telah disetujui. Evidence staging tetap tersembunyi dan tidak menjadi konten publik.</p><Link href={`/obat/${concept.slug}`} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary">Buka monografi publik <ArrowUpRight size={16} /></Link></div></div></section>}
 
-      <Card className="border-primary/20"><CardHeader><CardTitle>Editorial Bahasa Indonesia</CardTitle></CardHeader><CardContent><StagingEditorialForm drugKey={concept.drug_key} isPilot={concept.is_pilot} availableSections={evidenceBySection.map(([section]) => section)} drafts={drafts} publication={publication} actorId={session.user.id} /></CardContent></Card>
+      <Card className="border-primary/20"><CardHeader><CardTitle>Editorial Bahasa Indonesia</CardTitle></CardHeader><CardContent><StagingEditorialForm drugKey={concept.drug_key} isPilot={concept.is_pilot} availableSections={evidenceBySection.map(([section]) => section)} drafts={drafts} aiCandidates={candidates} publication={publication} actorId={session.user.id} /></CardContent></Card>
 
       <section className="space-y-4"><div><h2 className="font-serif text-3xl text-text">Coverage & evidence</h2><p className="mt-1 text-sm text-text-muted">Seluruh source_text hanya dirender di workspace terautentikasi ini.</p></div>{evidenceBySection.map(([section, records]) => <Card key={section}><CardHeader><div className="flex items-center justify-between gap-4"><CardTitle>{SECTION_LABELS[section] || section}</CardTitle><Badge variant="warning">{records?.length || 0} unreviewed</Badge></div></CardHeader><CardContent className="space-y-4">{records?.map((item) => <details key={item.evidence_id} className="rounded-2xl border border-border bg-surface-2 p-5"><summary className="cursor-pointer font-bold text-text">{item.source_name} · {item.source_section}</summary><div className="mt-4 flex flex-wrap gap-2"><Badge variant="outline">{item.ingredient_match_status}</Badge>{item.product_specific && <Badge variant="warning">Product-specific</Badge>}<Badge variant="destructive">Not public-ready</Badge></div><p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-text-muted">{item.source_text}</p><p className="mt-4 text-xs text-text-muted">Evidence ID {item.evidence_id} · publication_eligible=false</p></details>)}</CardContent></Card>)}</section>
 

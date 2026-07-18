@@ -22,6 +22,7 @@
     "indonesian:migrate": "node scripts/staging/apply-migration.mjs 008_indonesian_staging_v1.sql",
     "indonesian:import": "node scripts/staging/import-indonesian-package.mjs --apply",
     "indonesian:verify": "node scripts/staging/verify-indonesian.mjs",
+    "indonesian:publish-search:migrate": "node scripts/staging/apply-migration.mjs 009_public_indonesian_search.sql",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {

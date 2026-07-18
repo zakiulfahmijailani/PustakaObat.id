@@ -40,6 +40,16 @@ export interface PublicMonograph extends PublicMonographSummary {
   sources: PublicMonographSource[]
 }
 
+/**
+ * A WHO profile enriched with the safe, public-facing portion of the
+ * Indonesian editorial pipeline. It intentionally contains no clinical draft
+ * text or evidence: those records stay inside the authenticated workbench.
+ */
+export type PublicWhoMedicine = WhoMedicine & {
+  preferred_name_indonesian: string | null
+  has_indonesian_draft: boolean
+}
+
 export function normalizeWhoSearchQuery(value: string | undefined) {
   return String(value ?? '')
     .normalize('NFKD')
@@ -51,8 +61,8 @@ export function normalizeWhoSearchQuery(value: string | undefined) {
     .trim()
 }
 
-export function displayMedicineName(medicine: Pick<WhoMedicine, 'medicine_name' | 'editorial_name'>) {
-  return medicine.editorial_name || medicine.medicine_name
+export function displayMedicineName(medicine: Pick<WhoMedicine, 'medicine_name' | 'editorial_name'> & { preferred_name_indonesian?: string | null }) {
+  return medicine.preferred_name_indonesian || medicine.editorial_name || medicine.medicine_name
 }
 
 export interface PublicMedicineFilters {
@@ -68,48 +78,82 @@ function unavailable<T>(fallback: T) {
 
 export async function getPublicWhoMedicines(filters: PublicMedicineFilters) {
   const page = Math.max(1, Number.parseInt(filters.page || '1', 10) || 1)
-  if (!isNeonConfigured()) return unavailable({ medicines: [] as WhoMedicine[], count: 0, page })
+  if (!isNeonConfigured()) return unavailable({ medicines: [] as PublicWhoMedicine[], count: 0, page })
 
   try {
     const conditions = [
-      "is_active = true",
-      "publication_status = 'published'",
-      "(drug_id is null or not exists (select 1 from public.drugs d where d.id = who_medicines.drug_id and d.status = 'published'))",
-      "normalized_name <> 'aware group'",
+      "w.is_active = true",
+      "w.publication_status = 'published'",
+      "(w.drug_id is null or not exists (select 1 from public.drugs d where d.id = w.drug_id and d.status = 'published'))",
+      "w.normalized_name <> 'aware group'",
     ]
     const parameters: unknown[] = []
     const normalizedQuery = normalizeWhoSearchQuery(filters.q)
     if (normalizedQuery) {
       parameters.push(`%${normalizedQuery}%`)
-      conditions.push(`normalized_name ilike $${parameters.length}`)
+      conditions.push(`(
+        w.normalized_name ilike $${parameters.length}
+        or exists (
+          select 1
+          from public.drug_search_aliases a
+          join public.drug_search_localizations l on l.drug_key = a.drug_key
+          where a.normalized_alias ilike $${parameters.length}
+            and l.canonical_name = trim(regexp_replace(lower(w.normalized_name), '[^a-z0-9]+', ' ', 'g'))
+        )
+      )`)
     }
     if (filters.aware) {
       parameters.push(filters.aware)
-      conditions.push(`aware_category = $${parameters.length}`)
+      conditions.push(`w.aware_category = $${parameters.length}`)
     }
-    if (filters.essential === 'true') conditions.push('is_who_eeml = true')
+    if (filters.essential === 'true') conditions.push('w.is_who_eeml = true')
 
     const where = conditions.join(' and ')
     const countRows = await queryNeon<{ count: string }>(
-      `select count(*)::text as count from public.who_medicines where ${where}`,
+      `select count(*)::text as count from public.who_medicines w where ${where}`,
       parameters,
     )
     parameters.push(WHO_PAGE_SIZE, (page - 1) * WHO_PAGE_SIZE)
-    const medicines = await queryNeon<WhoMedicine>(
-      `select * from public.who_medicines where ${where} order by medicine_name asc limit $${parameters.length - 1} offset $${parameters.length}`,
+    const medicines = await queryNeon<PublicWhoMedicine>(
+      `select w.*, localization.preferred_name_indonesian,
+          coalesce(localization.has_indonesian_draft, false) as has_indonesian_draft
+       from public.who_medicines w
+       left join lateral (
+         select l.preferred_name_indonesian,
+           l.has_monograph_under_review as has_indonesian_draft
+         from public.drug_search_localizations l
+         where l.canonical_name = trim(regexp_replace(lower(w.normalized_name), '[^a-z0-9]+', ' ', 'g'))
+         limit 1
+       ) localization on true
+       where ${where}
+       order by
+         case when localization.preferred_name_indonesian is not null then 0 else 1 end,
+         w.medicine_name asc
+       limit $${parameters.length - 1} offset $${parameters.length}`,
       parameters,
     )
     return { medicines, count: Number(countRows[0]?.count || 0), page, error: null }
   } catch (error) {
-    return { medicines: [] as WhoMedicine[], count: 0, page, error }
+    return { medicines: [] as PublicWhoMedicine[], count: 0, page, error }
   }
 }
 
 export async function getPublicWhoMedicineBySlug(slug: string) {
-  if (!isNeonConfigured()) return unavailable({ medicine: null as WhoMedicine | null })
+  if (!isNeonConfigured()) return unavailable({ medicine: null as PublicWhoMedicine | null })
   try {
-    const rows = await queryNeon<WhoMedicine>(
-      "select * from public.who_medicines where slug = $1 and is_active = true and publication_status = 'published' and normalized_name <> 'aware group' limit 1",
+    const rows = await queryNeon<PublicWhoMedicine>(
+      `select w.*, localization.preferred_name_indonesian,
+          coalesce(localization.has_indonesian_draft, false) as has_indonesian_draft
+       from public.who_medicines w
+       left join lateral (
+         select l.preferred_name_indonesian,
+           l.has_monograph_under_review as has_indonesian_draft
+         from public.drug_search_localizations l
+         where l.canonical_name = trim(regexp_replace(lower(w.normalized_name), '[^a-z0-9]+', ' ', 'g'))
+         limit 1
+       ) localization on true
+       where w.slug = $1 and w.is_active = true and w.publication_status = 'published' and w.normalized_name <> 'aware group'
+       limit 1`,
       [slug],
     )
     return { medicine: rows[0] || null, error: null }

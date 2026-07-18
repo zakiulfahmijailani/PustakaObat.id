@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getActiveProfile } from '@/lib/auth/server'
 import { isSameOriginMutation } from '@/lib/auth/request'
-import { publishApprovedMonograph, reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
+import { createEditorialDraftFromAiCandidate, publishApprovedMonograph, reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
 
 const drugKey = z.string().regex(/^DRUG_[A-Z0-9]+$/)
 const requestSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('select_pilot'), drugKey }),
+  z.object({ action: z.literal('create_from_ai_candidate'), drugKey, sectionType: z.string().trim().min(1).max(80).regex(/^[a-z0-9_]+$/) }),
   z.object({
     action: z.literal('save_draft'),
     drugKey,
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
   try {
     const body = parsed.data
     if (body.action === 'select_pilot') return NextResponse.json({ concept: await selectPilotDrug(body.drugKey, session.user.id) })
+    if (body.action === 'create_from_ai_candidate') return NextResponse.json({ draft: await createEditorialDraftFromAiCandidate(body.drugKey, body.sectionType, session.user.id) })
     if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
     if (body.action === 'submit_draft') return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
     if (body.action === 'publish_monograph') return NextResponse.json({ publication: await publishApprovedMonograph(body.drugKey, session.user.id) })

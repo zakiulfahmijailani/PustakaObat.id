@@ -45,6 +45,50 @@ export async function saveEditorialDraft(drugKey: string, sectionType: string, c
   return rows[0]
 }
 
+export async function createEditorialDraftFromAiCandidate(drugKey: string, sectionType: string, actorId: string) {
+  const rows = await queryNeon<EditorialDraft>(`
+    with candidate as (
+      select c.drug_key, c.section_type, c.content_indonesian, c.generation_method,
+        jsonb_array_length(c.automatic_qc_issues) as automatic_qc_issue_count
+      from public.monograph_staging_indonesian_drafts c
+      join public.monograph_staging_drugs s on s.drug_key = c.drug_key
+      where c.drug_key = $1 and c.section_type = $2
+        and c.review_status = 'draft_ai' and c.requires_pharmacist_review = true
+        and c.publication_eligible = false and c.is_public = false
+        and s.public_status = 'hidden' and s.publication_eligible = false
+    ), saved as (
+      insert into public.monograph_editorial_drafts (drug_key, section_type, content_indonesian, authored_by)
+      select drug_key, section_type, content_indonesian, $3::uuid from candidate
+      on conflict (drug_key, section_type) do update set
+        content_indonesian = excluded.content_indonesian,
+        authored_by = excluded.authored_by,
+        status = 'draft', version = public.monograph_editorial_drafts.version + 1,
+        submitted_at = null, reviewed_by = null, reviewed_at = null, reviewer_note = null,
+        publication_eligible = false, updated_at = now()
+      where public.monograph_editorial_drafts.status in ('draft', 'changes_requested')
+      returning *, (xmax = 0) as was_created
+    ), audited as (
+      insert into public.monograph_editorial_events (draft_id, drug_key, actor_id, action, metadata)
+      select saved.id, saved.drug_key, $3::uuid,
+        case when saved.was_created then 'DRAFT_CREATED' else 'DRAFT_UPDATED' end,
+        jsonb_build_object(
+          'section_type', saved.section_type,
+          'version', saved.version,
+          'origin', 'indonesian_ai_candidate',
+          'generation_method', candidate.generation_method,
+          'automatic_qc_issue_count', candidate.automatic_qc_issue_count,
+          'publication_eligible', false
+        )
+      from saved join candidate using (drug_key, section_type)
+    )
+    select id, drug_key, section_type, content_indonesian, status, version, authored_by,
+      submitted_at, reviewed_by, reviewed_at, reviewer_note, publication_eligible, created_at, updated_at
+    from saved
+  `, [drugKey, sectionType, actorId])
+  if (!rows[0]) throw new Error('Kandidat AI tidak tersedia atau draf tidak dapat ditimpa setelah dikirim untuk review.')
+  return rows[0]
+}
+
 export async function submitEditorialDraft(draftId: string, actorId: string) {
   const rows = await queryNeon<EditorialDraft>(`
     with submitted as (

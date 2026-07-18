@@ -112,6 +112,8 @@ export async function importPackage(dataDirectory = DEFAULT_DATA_DIRECTORY) {
       const record = { drug_key: row.drug_id, section_type: row.section_type, title_indonesian: row.title_indonesian, content_indonesian: row.content_indonesian, source_evidence_ids: JSON.stringify(row.source_evidence_ids), missing_information: row.missing_information || '', safety_notes: row.safety_notes || '', automatic_qc_issues: JSON.stringify(row.automatic_qc_issues || []), generation_method: row.generation_method, review_status: row.review_status, requires_pharmacist_review: true, publication_eligible: false, is_public: false, pipeline_version: row.pipeline_version, row_checksum: rowChecksum(row) }
       const action = await upsert(client, 'monograph_staging_indonesian_drafts', Object.keys(record), Object.values(record), ['drug_key', 'section_type']); stats.drafts[action] += 1
     }
+    const searchProjection = await client.query("select to_regprocedure('public.refresh_indonesian_public_search_index()') as function_name")
+    if (searchProjection.rows[0]?.function_name) await client.query('select public.refresh_indonesian_public_search_index()')
     await client.query('commit')
     return { stats, manifest: validated.manifest }
   } catch (error) { await client.query('rollback').catch(() => undefined); throw error } finally { await client.end() }

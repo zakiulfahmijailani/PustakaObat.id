@@ -73,6 +73,17 @@ export interface EditorialDraft {
   updated_at: string
 }
 
+/** A hidden AI candidate that a staff member may turn into an editable draft. */
+export interface IndonesianCandidateDraft {
+  drug_key: string
+  section_type: string
+  title_indonesian: string
+  content_indonesian: string
+  safety_notes: string
+  automatic_qc_issues: unknown[]
+  generation_method: string
+}
+
 export interface EditorialEvent {
   id: string
   draft_id: string | null

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, FlaskConical, Send, Save, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
-import type { EditorialDraft, MonographPublication } from '@/lib/staging/types'
+import type { EditorialDraft, IndonesianCandidateDraft, MonographPublication } from '@/lib/staging/types'
 
 const SECTION_LABELS: Record<string, string> = {
   indication: 'Indikasi', dosage: 'Dosis dan penggunaan', warnings: 'Peringatan', side_effects: 'Efek samping',
@@ -23,11 +23,12 @@ async function mutate(payload: Record<string, unknown>) {
   return result
 }
 
-export function StagingEditorialForm({ drugKey, isPilot, availableSections, drafts, publication, actorId }: { drugKey: string; isPilot: boolean; availableSections: string[]; drafts: EditorialDraft[]; publication: MonographPublication | null; actorId: string }) {
+export function StagingEditorialForm({ drugKey, isPilot, availableSections, drafts, aiCandidates, publication, actorId }: { drugKey: string; isPilot: boolean; availableSections: string[]; drafts: EditorialDraft[]; aiCandidates: IndonesianCandidateDraft[]; publication: MonographPublication | null; actorId: string }) {
   const router = useRouter()
   const sections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections])
   const [sectionType, setSectionType] = useState(sections[0] || 'indication')
   const currentDraft = drafts.find((draft) => draft.section_type === sectionType)
+  const currentCandidate = aiCandidates.find((candidate) => candidate.section_type === sectionType)
   const [contentBySection, setContentBySection] = useState<Record<string, string>>(Object.fromEntries(drafts.map((draft) => [draft.section_type, draft.content_indonesian])))
   const [note, setNote] = useState('')
   const [pending, setPending] = useState(false)
@@ -57,6 +58,7 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
         <Textarea label="Draf asli Bahasa Indonesia" value={contentBySection[sectionType] || ''} onChange={(event) => setContentBySection((current) => ({ ...current, [sectionType]: event.target.value }))} disabled={pending || currentDraft?.status === 'submitted' || currentDraft?.status === 'pharmacist_approved'} className="min-h-64" helperText="Tulis teks editorial orisinal. Jangan salin source_text mentah atau menerjemahkannya secara otomatis." />
       </div>
       <div className="flex flex-wrap gap-3">
+        {!currentDraft && currentCandidate && <Button type="button" variant="outline" disabled={pending} onClick={() => { setContentBySection((current) => ({ ...current, [sectionType]: currentCandidate.content_indonesian })); run({ action: 'create_from_ai_candidate', drugKey, sectionType }, 'Kandidat AI disalin sebagai draf editorial. Periksa dan edit sebelum mengirimkannya untuk review.') }}><Save size={17} />Gunakan kandidat AI sebagai draf</Button>}
         <Button type="button" disabled={pending || (contentBySection[sectionType] || '').trim().length < 40 || currentDraft?.status === 'submitted' || currentDraft?.status === 'pharmacist_approved'} onClick={() => run({ action: 'save_draft', drugKey, sectionType, contentIndonesian: contentBySection[sectionType] || '' }, 'Draf tersimpan dan audit trail diperbarui.')}><Save size={17} />Simpan draf</Button>
         {currentDraft && ['draft', 'changes_requested'].includes(currentDraft.status) && <Button type="button" variant="outline" disabled={pending} onClick={() => run({ action: 'submit_draft', draftId: currentDraft.id }, 'Draf dikirim untuk review apoteker.')}><Send size={17} />Kirim untuk review</Button>}
       </div>
@@ -68,6 +70,7 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
         </div>
       )}
       {currentDraft && <p className="text-sm text-text-muted">Status: <strong>{currentDraft.status.replaceAll('_', ' ')}</strong> · versi {currentDraft.version} · publication_eligible=false</p>}
+      {!currentDraft && currentCandidate && <p className="text-sm text-warning">Kandidat AI tersedia untuk bagian ini. Kandidat tidak tampil kepada publik dan wajib diperiksa serta diedit apoteker.</p>}
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
         <p className="font-bold text-text">Terbitkan monografi publik</p>
         <p className="mt-1 text-sm leading-relaxed text-text-muted">Publikasi hanya memindahkan draf Bahasa Indonesia yang telah disetujui ke pustaka publik. Evidence sumber tetap tersembunyi.</p>

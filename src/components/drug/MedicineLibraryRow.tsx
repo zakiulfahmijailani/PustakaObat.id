@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { ArrowUpRight, BadgeCheck, BookOpenText, Globe2, ShieldQuestion } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
-import { displayMedicineName, type PublicMonographSummary } from '@/lib/who/queries'
-import type { WhoMedicine } from '@/types'
+import { displayMedicineName, type PublicMonographSummary, type PublicWhoMedicine } from '@/lib/who/queries'
 
 const awareVariants = {
   Access: 'success',
@@ -39,7 +38,7 @@ export function MonographLibraryRow({ drug }: { drug: PublicMonographSummary }) 
   )
 }
 
-export function WhoLibraryRow({ medicine }: { medicine: WhoMedicine }) {
+export function WhoLibraryRow({ medicine }: { medicine: PublicWhoMedicine }) {
   return (
     <article className="group border-b border-border px-2 py-5 last:border-b-0 md:px-3">
       <div className="flex items-start gap-4">
@@ -56,9 +55,12 @@ export function WhoLibraryRow({ medicine }: { medicine: WhoMedicine }) {
             ) : (
               <Badge variant="secondary"><ShieldQuestion className="mr-1" size={12} /> Profil sumber WHO</Badge>
             )}
+            {medicine.has_indonesian_draft && <Badge variant="warning">Monografi sedang ditinjau</Badge>}
           </div>
           <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
-            Metadata WHO tersedia. Monografi klinis Bahasa Indonesia belum diterbitkan untuk obat ini.
+            {medicine.has_indonesian_draft
+              ? 'Monografi Bahasa Indonesia sedang ditinjau apoteker. Profil WHO tetap tersedia sebagai katalog sumber.'
+              : 'Metadata WHO tersedia. Monografi klinis Bahasa Indonesia belum diterbitkan untuk obat ini.'}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {medicine.is_who_eeml && <Badge>WHO Essential Medicine</Badge>}
