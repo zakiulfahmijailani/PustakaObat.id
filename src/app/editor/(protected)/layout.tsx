@@ -1,12 +1,11 @@
-import { BookOpenText, FilePenLine, LayoutDashboard, RotateCcw } from 'lucide-react'
 import { StaffShell, type StaffNavItem } from '@/components/dashboard/StaffShell'
 import { requireEditor } from '@/lib/auth/server'
 
 const navItems: StaffNavItem[] = [
-  { title: 'Beranda', href: '/editor/dashboard', icon: LayoutDashboard },
-  { title: 'Konten Saya', href: '/editor/content', icon: FilePenLine },
-  { title: 'Perlu Revisi', href: '/editor/revisions', icon: RotateCcw },
-  { title: 'Panduan Gaya', href: '/editor/style-guide', icon: BookOpenText },
+  { title: 'Beranda', href: '/editor/dashboard', icon: 'layout-dashboard' },
+  { title: 'Konten Saya', href: '/editor/content', icon: 'file-pen-line' },
+  { title: 'Perlu Revisi', href: '/editor/revisions', icon: 'rotate-ccw' },
+  { title: 'Panduan Gaya', href: '/editor/style-guide', icon: 'book-open-text' },
 ]
 
 export default async function EditorLayout({ children }: { children: React.ReactNode }) {

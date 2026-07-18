@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { ElementType, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { ExternalLink, Repeat2, User } from 'lucide-react'
 import { Logo } from '@/components/layout/Logo'
 import { LogoutButton } from '@/components/auth/LogoutButton'
@@ -9,8 +9,25 @@ import { StaffNavigation } from '@/components/dashboard/StaffNavigation'
 export interface StaffNavItem {
   title: string
   href: string
-  icon: ElementType
+  icon: StaffNavIcon
 }
+
+export type StaffNavIcon =
+  | 'activity'
+  | 'book-open-check'
+  | 'book-open-text'
+  | 'database'
+  | 'file-pen-line'
+  | 'file-text'
+  | 'flask-conical'
+  | 'history'
+  | 'layout-dashboard'
+  | 'message-square'
+  | 'rotate-ccw'
+  | 'settings'
+  | 'shield-check'
+  | 'user-round'
+  | 'users'
 
 export function StaffShell({
   children,

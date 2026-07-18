@@ -85,7 +85,7 @@ export const Navbar = () => {
             href="/masuk"
             className="ml-1 inline-flex min-h-11 items-center rounded-full border border-primary/20 bg-primary/5 px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
           >
-            Masuk profesional
+            Login
           </Link>
         </div>
 
@@ -132,7 +132,7 @@ export const Navbar = () => {
               href="/masuk"
               className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 text-center font-semibold text-white"
             >
-              Masuk ke ruang profesional
+              Login
             </Link>
           </div>
           </div>

@@ -1,13 +1,12 @@
-import { BookOpenCheck, FlaskConical, History, LayoutDashboard, UserRound } from 'lucide-react'
 import { StaffShell, type StaffNavItem } from '@/components/dashboard/StaffShell'
 import { requireReviewer } from '@/lib/auth/server'
 
 const navItems: StaffNavItem[] = [
-  { title: 'Ringkasan', href: '/reviewer/dashboard', icon: LayoutDashboard },
-  { title: 'Antrean WHO', href: '/reviewer/medicines', icon: BookOpenCheck },
-  { title: 'Monografi Staging', href: '/reviewer/staging', icon: FlaskConical },
-  { title: 'Riwayat Saya', href: '/reviewer/history', icon: History },
-  { title: 'Profil Profesi', href: '/reviewer/profile', icon: UserRound },
+  { title: 'Ringkasan', href: '/reviewer/dashboard', icon: 'layout-dashboard' },
+  { title: 'Antrean WHO', href: '/reviewer/medicines', icon: 'book-open-check' },
+  { title: 'Monografi Staging', href: '/reviewer/staging', icon: 'flask-conical' },
+  { title: 'Riwayat Saya', href: '/reviewer/history', icon: 'history' },
+  { title: 'Profil Profesi', href: '/reviewer/profile', icon: 'user-round' },
 ]
 
 export default async function ReviewerLayout({ children }: { children: React.ReactNode }) {

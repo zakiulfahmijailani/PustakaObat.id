@@ -1,17 +1,16 @@
-import { Activity, Database, FilePenLine, FileText, LayoutDashboard, MessageSquare, Settings, ShieldCheck, Users } from 'lucide-react'
 import { StaffShell, type StaffNavItem } from '@/components/dashboard/StaffShell'
 import { requireAdmin } from '@/lib/auth/server'
 
 const navItems: StaffNavItem[] = [
-  { title: 'Ringkasan', href: '/admin/dashboard', icon: LayoutDashboard },
-  { title: 'Data Obat', href: '/admin/medicines', icon: FileText },
-  { title: 'Tanya Farmasis', href: '/admin/questions', icon: MessageSquare },
-  { title: 'Reviewer & User', href: '/admin/users', icon: Users },
-  { title: 'Editor', href: '/admin/editors', icon: FilePenLine },
-  { title: 'Admin Management', href: '/admin/admins', icon: ShieldCheck },
-  { title: 'Import WHO', href: '/admin/imports', icon: Database },
-  { title: 'Audit Aktivitas', href: '/admin/audit', icon: Activity },
-  { title: 'Pengaturan', href: '/admin/settings', icon: Settings },
+  { title: 'Ringkasan', href: '/admin/dashboard', icon: 'layout-dashboard' },
+  { title: 'Data Obat', href: '/admin/medicines', icon: 'file-text' },
+  { title: 'Tanya Farmasis', href: '/admin/questions', icon: 'message-square' },
+  { title: 'Reviewer & User', href: '/admin/users', icon: 'users' },
+  { title: 'Editor', href: '/admin/editors', icon: 'file-pen-line' },
+  { title: 'Admin Management', href: '/admin/admins', icon: 'shield-check' },
+  { title: 'Import WHO', href: '/admin/imports', icon: 'database' },
+  { title: 'Audit Aktivitas', href: '/admin/audit', icon: 'activity' },
+  { title: 'Pengaturan', href: '/admin/settings', icon: 'settings' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
