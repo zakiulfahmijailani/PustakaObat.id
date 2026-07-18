@@ -1,5 +1,5 @@
 import { PublicPageSkeleton } from '@/components/ui/PageSkeleton'
 
-export default function MedicineCatalogLoading() {
+export default function PublicLoading() {
   return <PublicPageSkeleton />
 }

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   FileWarning,
   Info,
+  LoaderCircle,
   Printer,
   ShieldAlert,
 } from "lucide-react";
@@ -106,6 +107,7 @@ function Field({
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : helper ? `${id}-helper` : undefined}
+        inputMode={inputProps.type === "number" ? "decimal" : inputProps.inputMode}
         className={`min-h-11 w-full rounded-xl border bg-background px-3 py-2.5 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${error ? "border-error" : "border-border focus-visible:border-primary"}`}
         {...inputProps}
       />
@@ -218,8 +220,8 @@ function EvaluationCard({ target }: { target: RecommendationEvaluation }) {
   );
 }
 
-export function NeonatalCalculator() {
-  const [tab, setTab] = useState<Tab>("recommendation");
+export function NeonatalCalculator({ initialMode = "recommendation" }: { initialMode?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialMode);
   const [patientForm, setPatientForm] = useState(initialPatientForm);
   const [patientErrors, setPatientErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<CalculatorResult | null>(null);
@@ -227,6 +229,8 @@ export function NeonatalCalculator() {
   const [evaluationErrors, setEvaluationErrors] = useState<Record<string, string>>({});
   const [evaluation, setEvaluation] = useState<RegimenEvaluationResult | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const resultContainerRef = useRef<HTMLDivElement>(null);
   const recommendationTabRef = useRef<HTMLButtonElement>(null);
   const evaluationTabRef = useRef<HTMLButtonElement>(null);
   const batchTabRef = useRef<HTMLButtonElement>(null);
@@ -266,7 +270,7 @@ export function NeonatalCalculator() {
     setPatientErrors((current) => ({ ...current, [key]: "" }));
   };
 
-  const calculate = () => {
+  const calculate = async () => {
     const candidate: PatientInput = {
       patientLabel: patientForm.patientLabel || undefined,
       antibiotic: patientForm.antibiotic,
@@ -293,11 +297,21 @@ export function NeonatalCalculator() {
     if (!validated.success) {
       setPatientErrors(issuesByField(validated.issues));
       setResult(null);
+      const firstField = validated.issues[0]?.field;
+      const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label" };
+      window.requestAnimationFrame(() => document.getElementById(fieldIds[firstField] ?? firstField)?.focus());
       return;
     }
     setPatientErrors({});
-    setResult(calculateRecommendations(validated.data));
-    setEvaluation(null);
+    setIsCalculating(true);
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+    try {
+      setResult(calculateRecommendations(validated.data));
+      setEvaluation(null);
+      window.requestAnimationFrame(() => resultContainerRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }));
+    } finally {
+      setIsCalculating(false);
+    }
   };
 
   const runEvaluation = () => {
@@ -368,7 +382,13 @@ export function NeonatalCalculator() {
         <div><strong className="block text-warning">Batasan keselamatan klinis</strong>{CLINICAL_DISCLAIMER}</div>
       </div>
 
-      <div className="mb-6 flex gap-2 rounded-2xl border border-border bg-surface p-1.5 print-hide" role="tablist" aria-label="Mode kalkulator">
+      <ol className="mb-4 grid gap-2 text-sm sm:grid-cols-3 print-hide" aria-label="Alur penggunaan kalkulator">
+        <li className={`rounded-xl border p-3 ${tab === "recommendation" ? "border-primary bg-primary/5" : "border-border bg-surface"}`}><span className="font-bold text-primary">01</span><span className="ml-2 font-semibold text-text">Data & rekomendasi</span></li>
+        <li className={`rounded-xl border p-3 ${tab === "evaluation" ? "border-primary bg-primary/5" : "border-border bg-surface"}`}><span className="font-bold text-primary">02</span><span className="ml-2 font-semibold text-text">Evaluasi aktual</span></li>
+        <li className={`rounded-xl border p-3 ${tab === "batch" ? "border-primary bg-primary/5" : "border-border bg-surface"}`}><span className="font-bold text-primary">03</span><span className="ml-2 font-semibold text-text">Banyak pasien</span></li>
+      </ol>
+
+      <div className="mb-6 grid gap-2 rounded-2xl border border-border bg-surface p-1.5 sm:grid-cols-3 print-hide" role="tablist" aria-label="Mode kalkulator">
         <button ref={recommendationTabRef} id="recommendation-tab" type="button" role="tab" tabIndex={tab === "recommendation" ? 0 : -1} aria-selected={tab === "recommendation"} aria-controls="recommendation-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("recommendation")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "recommendation" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Rekomendasi Dosis</button>
         <button ref={evaluationTabRef} id="evaluation-tab" type="button" role="tab" tabIndex={tab === "evaluation" ? 0 : -1} aria-selected={tab === "evaluation"} aria-controls="evaluation-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("evaluation")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "evaluation" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Evaluasi Pemberian</button>
         <button ref={batchTabRef} id="batch-tab" type="button" role="tab" tabIndex={tab === "batch" ? 0 : -1} aria-selected={tab === "batch"} aria-controls="batch-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("batch")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "batch" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Evaluasi Batch</button>
@@ -409,11 +429,11 @@ export function NeonatalCalculator() {
                   ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
                 ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && patientForm.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={patientForm[key]} onChange={(event) => updatePatient(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
               </fieldset>
-              <Button type="button" onClick={calculate} className="min-h-12 rounded-xl"><Calculator size={18} />Hitung rekomendasi</Button>
+              <Button type="button" onClick={() => void calculate()} disabled={isCalculating} className="min-h-12 rounded-xl">{isCalculating ? <LoaderCircle className="animate-spin" size={18} /> : <Calculator size={18} />}{isCalculating ? "Menghitung…" : "Hitung rekomendasi"}</Button>
             </div>
           </div>
 
-          <div>
+          <div ref={resultContainerRef} className="scroll-mt-28">
             {!result ? (
               <div className="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-8 text-center print-hide"><div><FileWarning className="mx-auto text-text-muted" aria-hidden="true" /><h2 className="mt-3 text-xl font-semibold text-text">Belum ada hasil aktif</h2><p className="mt-2 max-w-md text-sm text-text-muted">Isi data kasus dan hitung rekomendasi. Data ginjal yang tidak tersedia akan ditandai, bukan dianggap normal.</p></div></div>
             ) : (

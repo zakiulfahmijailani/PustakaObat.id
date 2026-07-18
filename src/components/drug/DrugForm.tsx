@@ -192,7 +192,7 @@ export const DrugForm = ({ initialData, categories, mode = 'create', userId }: D
             {mode === 'create' ? 'Buat Draft Monografi' : `Edit: ${initialData?.name}`}
           </h2>
           <div className="flex items-center gap-4">
-            <Badge variant="outline" className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest border-primary/20 text-primary bg-primary/5">
+            <Badge variant="outline" className="px-3 py-1 text-xs uppercase font-bold tracking-wide border-primary/20 text-primary bg-primary/5">
               Draft Mode
             </Badge>
             <div className="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-widest">

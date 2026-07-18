@@ -12,14 +12,14 @@ const awareVariants = {
 
 export function MonographLibraryRow({ drug }: { drug: PublicMonographSummary }) {
   return (
-    <article className="group border-b border-border px-2 py-5 last:border-b-0 md:px-3">
+    <article className="group relative border-b border-border px-2 py-5 transition-colors last:border-b-0 hover:bg-primary/[0.035] focus-within:bg-primary/[0.035] md:px-3">
       <div className="flex items-start gap-4">
         <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <BookOpenText size={21} aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/obat/${drug.slug}`} className="font-serif text-xl font-semibold capitalize text-text decoration-1 underline-offset-4 hover:text-primary hover:underline">
+            <Link href={`/obat/${drug.slug}`} className="before:absolute before:inset-0 font-serif text-xl font-semibold capitalize text-text decoration-1 underline-offset-4 hover:text-primary hover:underline">
               {drug.display_name}
             </Link>
             <Badge variant="success"><BadgeCheck className="mr-1" size={12} /> Diverifikasi apoteker</Badge>
@@ -32,7 +32,7 @@ export function MonographLibraryRow({ drug }: { drug: PublicMonographSummary }) 
             {drug.dosage_form && <><span aria-hidden="true">·</span><span>{drug.dosage_form}</span></>}
           </div>
         </div>
-        <ArrowUpRight className="mt-2 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={19} aria-hidden="true" />
+        <ArrowUpRight className="pointer-events-none mt-2 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={19} aria-hidden="true" />
       </div>
     </article>
   )
@@ -40,14 +40,14 @@ export function MonographLibraryRow({ drug }: { drug: PublicMonographSummary }) 
 
 export function WhoLibraryRow({ medicine }: { medicine: PublicWhoMedicine }) {
   return (
-    <article className="group border-b border-border px-2 py-5 last:border-b-0 md:px-3">
+    <article className="group relative border-b border-border px-2 py-5 transition-colors last:border-b-0 hover:bg-primary/[0.035] focus-within:bg-primary/[0.035] md:px-3">
       <div className="flex items-start gap-4">
         <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-muted ring-1 ring-border">
           <Globe2 size={21} aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/obat/${medicine.slug}`} className="font-serif text-xl font-semibold text-text decoration-1 underline-offset-4 hover:text-primary hover:underline">
+            <Link href={`/obat/${medicine.slug}`} className="before:absolute before:inset-0 font-serif text-xl font-semibold text-text decoration-1 underline-offset-4 hover:text-primary hover:underline">
               {displayMedicineName(medicine)}
             </Link>
             {medicine.verification_status === 'verified' ? (
@@ -68,7 +68,7 @@ export function WhoLibraryRow({ medicine }: { medicine: PublicWhoMedicine }) {
             {medicine.is_not_on_eml && <Badge variant="outline">Tidak tercantum di EML</Badge>}
           </div>
         </div>
-        <ArrowUpRight className="mt-2 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={19} aria-hidden="true" />
+        <ArrowUpRight className="pointer-events-none mt-2 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={19} aria-hidden="true" />
       </div>
     </article>
   )

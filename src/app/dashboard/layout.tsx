@@ -64,7 +64,7 @@ export default async function DashboardLayout({
               className="flex items-center gap-4 px-5 py-4 rounded-2xl text-text-muted hover:text-primary hover:bg-primary/5 transition-all group"
             >
               <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="font-bold uppercase tracking-widest text-[10px]">{item.title}</span>
+              <span className="font-bold uppercase tracking-wide text-xs">{item.title}</span>
             </Link>
           ))}
         </nav>
@@ -76,10 +76,10 @@ export default async function DashboardLayout({
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-text truncate">{profile.full_name}</p>
-              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{profile.role}</p>
+              <p className="text-xs font-bold text-text-muted uppercase tracking-wide">{profile.role}</p>
             </div>
           </div>
-          <LogoutButton variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-all font-bold uppercase tracking-widest text-[10px]">Keluar Sesi</LogoutButton>
+          <LogoutButton variant="outline" className="w-full rounded-2xl h-12 gap-3 border-border hover:bg-error/5 hover:text-error hover:border-error/20 transition-colors font-bold uppercase tracking-wide text-xs">Keluar Sesi</LogoutButton>
         </div>
       </aside>
 

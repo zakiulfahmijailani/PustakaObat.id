@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "Clinical decision support lokal dan deterministik untuk rekomendasi serta evaluasi regimen gentamisin, amikasin, dan vankomisin pada neonatus.",
 };
 
-export default function CalculatorPage() {
-  return <NeonatalCalculator />;
+export default async function CalculatorPage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
+  const { mode } = await searchParams;
+  const initialMode = mode === "evaluation" || mode === "batch" ? mode : "recommendation";
+  return <NeonatalCalculator initialMode={initialMode} />;
 }

@@ -22,7 +22,7 @@ export const DrugCard = ({ drug }: DrugCardProps) => {
               <Pill size={24} />
             </div>
             {drug.status === 'published' && (
-              <Badge variant="success" className="bg-success/5 border-success/10 text-[10px] uppercase font-bold py-1">
+              <Badge variant="success" className="bg-success/5 border-success/10 text-xs uppercase font-bold py-1">
                 <CheckCircle2 size={12} className="mr-1" />
                 Diverifikasi
               </Badge>
@@ -45,7 +45,7 @@ export const DrugCard = ({ drug }: DrugCardProps) => {
           </div>
 
           <div className="mt-8 pt-4 border-t border-border/50 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
               {drug.drug_categories?.name || 'Umum'}
             </span>
             <div className="flex items-center gap-1 text-primary font-bold text-xs group-hover:translate-x-1 transition-transform">

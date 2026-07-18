@@ -50,7 +50,7 @@ export default async function VerificationQueuePage({
     <div className="space-y-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden">
         <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-          <Badge variant="warning" className="px-5 py-2 rounded-full uppercase text-[10px] font-bold tracking-widest bg-warning/5 border-warning/10 text-warning mb-4">
+          <Badge variant="warning" className="px-5 py-2 rounded-full uppercase text-xs font-bold tracking-wide bg-warning/5 border-warning/10 text-warning mb-4">
             Akses Verifikator
           </Badge>
           <h2 className="text-3xl font-serif text-text leading-tight font-semibold">Antrean Verifikasi Monografi</h2>
@@ -60,7 +60,7 @@ export default async function VerificationQueuePage({
         </div>
         <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-700">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Kapasitas Queue</span>
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wide">Kapasitas Queue</span>
             <span className="text-2xl font-bold text-text">{drugs?.length || 0}</span>
           </div>
           <div className="w-px h-10 bg-border" />

@@ -22,8 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="id" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${plusJakartaSans.variable} antialiased selection:bg-primary/20 selection:text-primary`}>
+        <a href="#main-content" className="skip-link">Lewati navigasi</a>
         {children}
       </body>
     </html>

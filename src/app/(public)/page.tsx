@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { ArrowRight, BookOpenCheck, Languages, Search, ShieldCheck, Stethoscope } from 'lucide-react'
+import { ArrowRight, BookOpenCheck, Calculator, ClipboardCheck, Languages, Search, ShieldCheck, Stethoscope, TableProperties } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/layout/Logo'
+import { MedicineSearchForm } from '@/components/drug/MedicineSearchForm'
 
 const principles = [
   { icon: Languages, title: 'Bahasa yang mudah dipahami', copy: 'Penjelasan dirancang untuk membantu masyarakat memahami informasi obat, tanpa menghilangkan konteks pentingnya.' },
@@ -16,13 +17,20 @@ const steps = [
   { number: '03', title: 'Periksa sumber & status', copy: 'Lihat sumber informasi serta status peninjauan sebelum menggunakannya sebagai bahan edukasi.' },
 ]
 
+const userPaths = [
+  { icon: Search, title: 'Cari informasi obat', copy: 'Temukan monografi dan sumber resmi obat.', href: '/obat', label: 'Untuk semua pengguna' },
+  { icon: Calculator, title: 'Rekomendasi dosis', copy: 'Hitung rekomendasi antibiotik neonatus.', href: '/kalkulator', label: 'Alat klinis' },
+  { icon: ClipboardCheck, title: 'Evaluasi pemberian', copy: 'Bandingkan regimen aktual dengan rekomendasi.', href: '/kalkulator?mode=evaluation', label: 'Alat klinis' },
+  { icon: TableProperties, title: 'Evaluasi banyak pasien', copy: 'Proses hingga 1.000 kasus melalui satu file Excel.', href: '/kalkulator?mode=batch', label: 'Alat klinis' },
+]
+
 export default function HomePage() {
   return (
     <div className="overflow-hidden pb-24">
       <section className="relative isolate px-4 pb-20 pt-10 md:pb-28 md:pt-16">
         <div className="absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(ellipse_at_top,_rgba(20,83,45,0.12),_transparent_68%)]" />
         <div className="container max-w-5xl text-center">
-          <Badge className="border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Pustaka Obat Indonesia</Badge>
+          <Badge className="border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-primary">Pustaka Obat Indonesia</Badge>
           <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-bold leading-[1.08] text-text sm:text-5xl md:text-7xl">
             Kenali obat Anda, dengan informasi yang <span className="text-primary">jelas.</span>
           </h1>
@@ -30,13 +38,24 @@ export default function HomePage() {
             PustakaObat.id membantu Anda memahami informasi obat dalam Bahasa Indonesia, dengan sumber yang dapat ditelusuri dan proses peninjauan yang transparan.
           </p>
 
-          <form action="/obat" method="get" className="mx-auto mt-9 flex max-w-3xl items-center rounded-2xl border border-border bg-surface p-2 shadow-[0_18px_50px_-20px_rgba(20,83,45,0.35)] focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10">
-            <label htmlFor="home-medicine-search" className="sr-only">Cari nama obat</label>
-            <Search className="ml-4 shrink-0 text-primary" size={22} aria-hidden="true" />
-            <input id="home-medicine-search" name="q" type="search" placeholder="Cari obat, misalnya Amoksisilin atau Amoxicillin" className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-text-muted sm:text-base" />
-            <Button type="submit" className="h-12 shrink-0 px-5 sm:px-7">Cari <span className="hidden sm:inline">obat</span><ArrowRight size={17} /></Button>
-          </form>
-          <p className="mt-4 text-sm text-text-muted">Coba: <Link href="/obat?q=amoxicillin" className="font-semibold text-primary underline underline-offset-4">amoxicillin</Link>, <Link href="/obat?q=paracetamol" className="font-semibold text-primary underline underline-offset-4">paracetamol</Link>, atau <Link href="/obat?q=metformin" className="font-semibold text-primary underline underline-offset-4">metformin</Link>.</p>
+          <MedicineSearchForm prominent className="mx-auto mt-9 max-w-3xl text-left" />
+        </div>
+      </section>
+
+      <section className="container px-4 pb-8" aria-labelledby="choose-path-title">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Mulai dari kebutuhan Anda</p><h2 id="choose-path-title" className="mt-2 text-2xl font-bold text-text md:text-3xl">Apa yang ingin Anda lakukan?</h2></div>
+          <p className="max-w-md text-sm leading-6 text-text-muted">Informasi publik dan alat klinis dipisahkan agar konteks penggunaannya tetap jelas.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {userPaths.map(({ icon: Icon, title, copy, href, label }) => (
+            <Link key={title} href={href} className="group rounded-2xl border border-border bg-surface p-5 shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5">
+              <div className="flex items-start justify-between gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon size={22} aria-hidden="true" /></span><span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-text-muted">{label}</span></div>
+              <h3 className="mt-5 text-lg font-bold text-text group-hover:text-primary">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-text-muted">{copy}</p>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary">Buka <ArrowRight size={16} aria-hidden="true" /></span>
+            </Link>
+          ))}
         </div>
       </section>
 

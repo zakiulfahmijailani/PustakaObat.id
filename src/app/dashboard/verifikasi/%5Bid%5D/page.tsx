@@ -88,7 +88,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="warning" className="px-6 py-2 rounded-full uppercase text-[10px] font-bold tracking-widest border-warning/20 text-warning bg-warning/5">
+          <Badge variant="warning" className="px-6 py-2 rounded-full uppercase text-xs font-bold tracking-wide border-warning/20 text-warning bg-warning/5">
             Menunggu Verifikasi
           </Badge>
           <Button variant="outline" className="rounded-xl h-12 px-6 gap-2 border-border" asChild>
@@ -105,10 +105,10 @@ export default async function ReviewDetailPage({ params }: PageProps) {
           <div className="space-y-8 p-10 md:p-14 bg-surface-2/40 rounded-[3rem] border border-border/50">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="default" className="px-5 py-2 rounded-full uppercase text-[10px] font-bold tracking-widest bg-primary/5 border-primary/20 text-primary">
+                <Badge variant="default" className="px-5 py-2 rounded-full uppercase text-xs font-bold tracking-wide bg-primary/5 border-primary/20 text-primary">
                   {drug.drug_class || 'Golongan Obat'}
                 </Badge>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-border text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-border text-xs font-bold text-text-muted uppercase tracking-wide">
                   <Pill size={14} className="text-primary" />
                   {drug.drug_categories?.name || 'UMUM'}
                 </div>

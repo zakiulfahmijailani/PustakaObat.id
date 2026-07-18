@@ -93,7 +93,7 @@ export const QuestionList = ({ questions, userId: _userId }: QuestionListProps) 
                   <p className="text-lg font-serif text-text leading-relaxed line-clamp-2">
                     &quot;{q.question_text}&quot;
                   </p>
-                  <div className="flex items-center gap-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                  <div className="flex items-center gap-4 text-xs font-bold text-text-muted uppercase tracking-wide">
                     <span>{new Date(q.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     {q.asker_email && (
                       <span className="flex items-center gap-1.5 lowercase">
@@ -137,7 +137,7 @@ export const QuestionList = ({ questions, userId: _userId }: QuestionListProps) 
                           onChange={(e) => setAnswer(e.target.value)}
                         />
                         <div className="flex justify-end items-center gap-4">
-                          <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest max-w-[300px] text-right leading-relaxed">
+                          <p className="text-xs text-text-muted font-bold uppercase tracking-wide max-w-[300px] text-right leading-relaxed">
                             Jawaban akan dipublikasikan ke halaman publik PustakaObat.id segera setelah terikirim.
                           </p>
                           <Button 

@@ -21,7 +21,7 @@ export default async function PublicQuestionPage() {
     <div className="container px-4 pb-32 space-y-24">
       {/* Search Header */}
       <section className="pt-10 flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <Badge variant="default" className="px-5 py-2 rounded-full uppercase text-[10px] font-bold tracking-widest bg-primary/5 border-primary/20 text-primary">
+        <Badge variant="default" className="px-5 py-2 rounded-full uppercase text-xs font-bold tracking-wide bg-primary/5 border-primary/20 text-primary">
           Konsultasi Informasi Obat
         </Badge>
         <h1 className="text-4xl md:text-7xl font-serif text-text leading-[1.1]">
@@ -69,7 +69,7 @@ export default async function PublicQuestionPage() {
                         </span>
                       </div>
                       {q.drug && (
-                        <Link href={`/obat/${q.drug.slug}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold text-primary uppercase tracking-widest hover:bg-primary/10 transition-colors">
+                        <Link href={`/obat/${q.drug.slug}`} className="flex min-h-11 items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-xs font-bold text-primary uppercase tracking-wide hover:bg-primary/10 transition-colors">
                           <Pill size={12} />
                           {q.drug.name}
                         </Link>

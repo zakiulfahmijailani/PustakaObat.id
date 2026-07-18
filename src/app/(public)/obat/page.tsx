@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpenCheck, Database, Globe2, Languages, Search, ShieldCheck, Stethoscope } from 'lucide-react'
+import { BookOpenCheck, CircleHelp, Database, Globe2, Languages, ShieldCheck, Stethoscope } from 'lucide-react'
 import { CatalogPagination } from '@/components/drug/CatalogPagination'
 import { MedicineHeroArt } from '@/components/drug/MedicineHeroArt'
 import { MonographLibraryRow, WhoLibraryRow } from '@/components/drug/MedicineLibraryRow'
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { AWARE_CATEGORIES, WHO_PAGE_SIZE } from '@/lib/who/constants'
 import { getPublicLocalDrugs, getPublicWhoMedicines } from '@/lib/who/queries'
+import { MedicineSearchForm } from '@/components/drug/MedicineSearchForm'
 
 interface SearchParams {
   q?: string
@@ -47,7 +48,7 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
     <div className="container px-4 pb-24">
       <section className="grid gap-8 pb-6 pt-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div className="max-w-2xl">
-          <Badge className="mb-5 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]">PustakaObat.id · Pustaka Obat Indonesia</Badge>
+          <Badge className="mb-5 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-xs uppercase tracking-[0.12em]">PustakaObat.id · Pustaka Obat Indonesia</Badge>
           <h1 className="max-w-xl text-4xl font-serif leading-[1.08] tracking-tight text-text md:text-6xl">
             Pusat rujukan <span className="text-primary">informasi obat</span> untuk Indonesia.
           </h1>
@@ -55,19 +56,7 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
             Cari nama obat untuk membaca informasi penting dalam Bahasa Indonesia, bersumber jelas, dan diterbitkan melalui peninjauan apoteker.
           </p>
 
-          <form action="/obat" method="get" className="mt-7 flex max-w-xl overflow-hidden rounded-xl border-2 border-text bg-surface shadow-[0_4px_0_var(--color-text)] focus-within:ring-4 focus-within:ring-primary/10">
-            <label htmlFor="medicine-search" className="sr-only">Cari nama obat</label>
-            <Search className="ml-4 mt-4 shrink-0 text-text-muted" size={20} aria-hidden="true" />
-            <input id="medicine-search" name="q" defaultValue={filters.q} placeholder="Cari nama obat, misalnya amoxicillin" className="min-w-0 flex-1 bg-transparent px-3 py-4 text-base outline-none placeholder:text-text-muted/70" />
-            {filters.aware && <input type="hidden" name="aware" value={filters.aware} />}
-            {filters.essential && <input type="hidden" name="essential" value={filters.essential} />}
-            <button type="submit" className="bg-primary px-6 font-semibold text-white hover:bg-primary-hover">Cari</button>
-          </form>
-          <p className="mt-4 text-sm text-text-muted">
-            Contoh: <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=amoxicillin">amoxicillin</Link>,{' '}
-            <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=paracetamol">paracetamol</Link>, atau{' '}
-            <Link className="font-medium text-primary underline underline-offset-4" href="/obat?q=metformin">metformin</Link>.
-          </p>
+          <MedicineSearchForm className="mt-7 max-w-xl" defaultValue={filters.q} aware={filters.aware} essential={filters.essential} />
         </div>
         <MedicineHeroArt />
       </section>
@@ -81,7 +70,7 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
         ))}
       </section>
 
-      <section className="mt-12" aria-live="polite">
+      <section className="mt-12" aria-live="polite" aria-busy="false">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-text pb-3">
           <div>
             <h2 className="font-serif text-3xl font-semibold text-text">Daftar Obat</h2>
@@ -94,13 +83,18 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
 
         <div className="flex flex-wrap items-center gap-2 border-b border-border py-4">
           <span className="mr-1 text-xs font-bold uppercase tracking-widest text-text-muted">Filter WHO</span>
-          <Link href={filterHref({ aware: undefined, essential: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${!filters.aware && !filters.essential ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Semua</Link>
-          <Link href={filterHref({ essential: 'true', aware: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filters.essential === 'true' ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Essential Medicines</Link>
+          <Link href={filterHref({ aware: undefined, essential: undefined })} aria-current={!filters.aware && !filters.essential ? 'page' : undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${!filters.aware && !filters.essential ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Semua</Link>
+          <Link href={filterHref({ essential: 'true', aware: undefined })} title="Daftar obat esensial Organisasi Kesehatan Dunia" aria-current={filters.essential === 'true' ? 'page' : undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${filters.essential === 'true' ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>Obat esensial WHO</Link>
           {AWARE_CATEGORIES.map((category) => (
-            <Link key={category} href={filterHref({ aware: category, essential: undefined })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${filters.aware === category ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>AWaRe · {category}</Link>
+            <Link key={category} href={filterHref({ aware: category, essential: undefined })} title={`Kategori antibiotik WHO AWaRe: ${category}`} aria-current={filters.aware === category ? 'page' : undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${filters.aware === category ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:border-primary hover:text-primary'}`}>AWaRe · {category}</Link>
           ))}
           {hasFilters && <Button variant="ghost" size="sm" asChild className="ml-auto"><Link href="/obat">Reset pencarian</Link></Button>}
         </div>
+
+        <details className="border-b border-border py-3 text-sm text-text-muted">
+          <summary className="flex min-h-11 w-fit items-center gap-2 rounded-lg px-2 font-semibold text-primary"><CircleHelp size={17} /> Apa arti EML dan AWaRe?</summary>
+          <p className="max-w-3xl px-2 pb-2 leading-6"><strong className="text-text">EML</strong> adalah daftar obat esensial WHO. <strong className="text-text">AWaRe</strong> mengelompokkan antibiotik menjadi Access, Watch, dan Reserve untuk mendukung penggunaan antibiotik yang bertanggung jawab. Filter ini adalah referensi WHO, bukan rekomendasi terapi individual.</p>
+        </details>
 
         {error ? (
           <div className="rounded-xl border border-dashed border-border bg-surface-2/50 px-8 py-16 text-center">

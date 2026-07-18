@@ -46,7 +46,7 @@ export default async function QuestionInboxPage({
           </p>
         </div>
         <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-700">
-          <Badge variant="default" className="px-5 py-2.5 rounded-full text-[10px] uppercase font-bold tracking-widest bg-primary/5 border-primary/20 text-primary">
+          <Badge variant="default" className="px-5 py-2.5 rounded-full text-xs uppercase font-bold tracking-wide bg-primary/5 border-primary/20 text-primary">
             {questions?.filter(q => q.status === 'pending').length || 0} Pertanyaan Baru
           </Badge>
         </div>

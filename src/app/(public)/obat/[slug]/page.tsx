@@ -50,7 +50,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
         <Link href="/obat" className="print-hide mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke pustaka</Link>
 
         <header className="rounded-xl border border-border border-l-[6px] border-l-primary bg-surface px-6 py-7 md:px-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Monografi Obat · PustakaObat.id</p>
+          <p className="font-mono text-xs uppercase tracking-[0.12em] text-primary">Monografi Obat · PustakaObat.id</p>
           <div className="mt-3 flex flex-wrap items-start justify-between gap-5">
             <div>
               <h1 className="font-serif text-4xl font-bold capitalize leading-tight text-text md:text-5xl">{localDrug.display_name}</h1>
@@ -83,8 +83,18 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
           </section>
         )}
 
+        <details className="print-hide mt-5 rounded-xl border border-border bg-surface p-3 lg:hidden">
+          <summary className="flex min-h-11 items-center rounded-lg px-2 font-semibold text-primary">Lompat ke bagian monografi</summary>
+          <nav className="mt-2 grid gap-1" aria-label="Daftar isi monografi mobile">
+            {localDrug.sections.map((section, index) => (
+              <a key={section.id} href={`#${section.section_type}`} className="flex min-h-11 items-center rounded-lg px-3 text-sm text-text-muted hover:bg-primary/5 hover:text-primary"><span className="mr-2 font-mono text-xs text-primary">{String(index + 1).padStart(2, '0')}</span>{sectionLabels[section.section_type] || section.section_type}</a>
+            ))}
+            <a href="#sumber" className="flex min-h-11 items-center rounded-lg px-3 text-sm text-text-muted hover:bg-primary/5 hover:text-primary">Sumber dan versi</a>
+          </nav>
+        </details>
+
         <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr] lg:items-start">
-          <aside className="print-hide rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-28">
+          <aside className="print-hide hidden rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-28 lg:block">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">Daftar isi</p>
             <nav className="mt-4 flex flex-col gap-1.5" aria-label="Daftar isi monografi">
               {localDrug.sections.map((section, index) => (
@@ -100,7 +110,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
                 <div className="flex items-center gap-3 border-b border-border bg-surface-2 px-5 py-3">
                   <span className="font-mono text-xs font-semibold text-primary">{String(index + 1).padStart(2, '0')}</span>
                   <h2 className="flex-1 font-serif text-xl font-semibold text-text">{sectionLabels[section.section_type] || section.section_type}</h2>
-                  <Badge variant="success" className="text-[10px]">Bahasa Indonesia</Badge>
+                  <Badge variant="success" className="text-xs">Bahasa Indonesia</Badge>
                 </div>
                 <div className="px-5 py-5"><p className="whitespace-pre-wrap text-[15px] leading-7 text-text/90">{section.content}</p></div>
               </section>
@@ -131,7 +141,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
       <Link href="/obat" className="print-hide mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke pustaka</Link>
 
       <header className="rounded-xl border border-border border-l-[6px] border-l-primary bg-surface px-6 py-7 md:px-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Profil Obat · Sumber WHO</p>
+        <p className="font-mono text-xs uppercase tracking-[0.12em] text-primary">Profil Obat · Sumber WHO</p>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-5">
           <div><h1 className="font-serif text-4xl font-bold leading-tight text-text md:text-5xl">{displayName}</h1>{displayName !== medicine!.medicine_name && <p className="mt-1 text-sm text-text-muted">Nama sumber WHO: {medicine!.medicine_name}</p>}</div>
           {medicine!.verification_status === 'verified' ? <Badge variant="success" className="border border-success/30 px-3 py-1"><BadgeCheck className="mr-1" size={13} /> Ditinjau apoteker</Badge> : <Badge variant="secondary" className="border border-border px-3 py-1"><ShieldQuestion className="mr-1" size={13} /> Profil sumber WHO</Badge>}
