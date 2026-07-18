@@ -56,7 +56,7 @@ export const Navbar = () => {
             href="/masuk"
             className="ml-2 px-5 py-2.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-semibold hover:bg-primary hover:text-white transition-colors"
           >
-            Untuk tenaga kesehatan
+            Login
           </Link>
         </div>
 
@@ -96,7 +96,7 @@ export const Navbar = () => {
               onClick={() => setIsOpen(false)}
               className="w-full py-4 text-center rounded-xl bg-primary text-white font-semibold"
             >
-              Untuk tenaga kesehatan
+              Login
             </Link>
           </div>
         </div>
