@@ -39,7 +39,7 @@ export default async function DashboardLayout({
 
   const adminNav: NavItem[] = [
     { title: 'Kelola Monografi', href: '/admin/medicines', icon: Pill },
-    { title: 'Tanya Farmasis', href: '/admin/questions', icon: MessageSquare },
+    { title: 'Diskusi Internal', href: '/admin/discussions', icon: MessageSquare },
     { title: 'User Management', href: '/admin/users', icon: Users },
     { title: 'Audit Logs', href: '/admin/audit', icon: History },
     { title: 'Kelola Data WHO', href: '/admin/imports', icon: Database },

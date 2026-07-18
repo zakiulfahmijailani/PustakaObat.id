@@ -1,1 +1,5 @@
-export { default } from '@/app/dashboard/tanya/page'
+import { redirect } from 'next/navigation'
+
+export default function LegacyQuestionsPage() {
+  redirect('/admin/discussions')
+}

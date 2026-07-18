@@ -38,21 +38,6 @@ export interface Drug {
   sections?: { id: string; section_type: string; content: string }[]
 }
 
-export interface PublicQuestion {
-  id: string
-  question_text: string
-  asker_name: string | null
-  asker_email: string | null
-  drug_id: string | null
-  status: 'pending' | 'answered' | 'closed'
-  answered_by: string | null
-  answer_text: string | null
-  answered_at: string | null
-  is_published: boolean
-  created_at: string
-  drug?: { name: string }
-}
-
 export const MOCK_CATEGORIES: DrugCategory[] = [
   { id: '1', name: 'Antibiotik', slug: 'antibiotik', description: 'Obat untuk mengatasi infeksi bakteri.', created_at: new Date().toISOString() },
   { id: '2', name: 'Analgesik', slug: 'analgesik', description: 'Obat pereda nyeri dan demam.', created_at: new Date().toISOString() },
@@ -60,7 +45,6 @@ export const MOCK_CATEGORIES: DrugCategory[] = [
   { id: '4', name: 'Antivirus', slug: 'antivirus', description: 'Obat untuk infeksi virus.', created_at: new Date().toISOString() },
   { id: '5', name: 'Suplemen', slug: 'suplemen', description: 'Vitamin dan mineral tambahan.', created_at: new Date().toISOString() },
 ]
-
 export const MOCK_PROFILES: Profile[] = [
   { 
     id: 'user-1', 
@@ -174,36 +158,5 @@ export const MOCK_DRUGS: Drug[] = [
       { id: 's8', section_type: 'indication', content: 'Rhinitis alergi musiman dan kronis, urtikaria idiopatik kronis.' },
       { id: 's9', section_type: 'dosage', content: 'Dewasa & Anak > 6 th: 10 mg sekali sehari atau 5 mg dua kali sehari.' }
     ]
-  }
-]
-
-export const MOCK_QUESTIONS: PublicQuestion[] = [
-  {
-    id: 'q1',
-    question_text: 'Apakah Amoxicillin boleh diminum sesudah makan?',
-    asker_name: 'Rina',
-    asker_email: 'rina@example.com',
-    drug_id: 'd1',
-    status: 'answered',
-    answered_by: 'user-1',
-    answer_text: 'Amoxicillin sebaiknya diminum di awal makan untuk mengurangi rasa tidak nyaman pada perut, namun bisa juga diminum saat perut kosong.',
-    answered_at: new Date().toISOString(),
-    is_published: true,
-    created_at: new Date().toISOString(),
-    drug: { name: 'Amoxicillin' }
-  },
-  {
-    id: 'q2',
-    question_text: 'Berapa dosis maksimal Paracetamol untuk dewasa?',
-    asker_name: 'Bambang',
-    asker_email: 'bambang@example.com',
-    drug_id: 'd2',
-    status: 'pending',
-    answered_by: null,
-    answer_text: null,
-    answered_at: null,
-    is_published: false,
-    created_at: new Date().toISOString(),
-    drug: { name: 'Paracetamol' }
   }
 ]
