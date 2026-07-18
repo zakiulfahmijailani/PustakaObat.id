@@ -1,5 +1,26 @@
 # Neonatal Calculator Changelog
 
+## 2026-07-18 — local batch evaluation (rule version unchanged)
+
+### Batch workflow
+
+- Added an `Evaluasi Batch` tab with local `.xlsx` parsing, row-level validation, result preview, and downloadable result workbook.
+- Reused the existing deterministic recommendation and actual-regimen evaluation engine for every valid row; no parallel clinical formula was introduced.
+- Added a generated blank template with instructions, controlled antibiotic/boolean values, examples that are ignored automatically, and a 1,000-row limit.
+- Added traceable result sheets for summary, three recommendation sources, validation errors, input warnings, clinical warnings, and rule version.
+- Kept all workbook processing in browser memory with no upload, database write, analytics event, or external calculation service.
+
+### Supplied-workbook verification
+
+- Processed the supplied 170-row workbook end-to-end: all 170 rows received actual-regimen evaluation.
+- One row (`kode_pasien` 49, source row 50) contains a manual dose minimum greater than its maximum; the actual regimen is still evaluated and the invalid optional manual comparison is surfaced as a warning.
+
+### Verification
+
+- Added pure batch-engine tests and workbook round-trip tests.
+- `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` pass; unrelated pre-existing lint warnings remain.
+- Production dependency audit reports no known vulnerabilities.
+
 ## 2026-07-13 — production rule version `2026.07.13-production-2`
 
 ### Evaluation PDF action
