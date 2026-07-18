@@ -1,30 +1,29 @@
 @import "tailwindcss";
 
 /* 
- * apoteq Design System - Tailwind v4 
- * Colors from UX-GUIDELINES.md
+ * PustakaObat.id Design System - Tailwind v4
  */
 
 @theme {
   /* Core Colors */
-  --color-primary: #01696f;
-  --color-primary-hover: #0c4e54;
-  --color-background: #f7f6f2;
-  --color-surface: #f9f8f5;
-  --color-surface-2: #fbfbf9;
-  --color-border: #d4d1ca;
-  --color-text: #28251d;
-  --color-text-muted: #7a7974;
+  --color-primary: #14532d;
+  --color-primary-hover: #0f3d21;
+  --color-background: #faf9f5;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f1e9;
+  --color-border: #dfddd3;
+  --color-text: #17211b;
+  --color-text-muted: #667169;
 
   /* Status Colors */
-  --color-success: #2d6a4f;
-  --color-warning: #99582a;
-  --color-error: #780000;
-  --color-info: #0077b6;
+  --color-success: #287344;
+  --color-warning: #a76f24;
+  --color-error: #b4493f;
+  --color-info: #3f6f8f;
 
   /* Typography */
-  --font-serif: "Instrument Serif", serif;
-  --font-sans: "General Sans", "Inter", sans-serif;
+  --font-serif: var(--font-plus-jakarta), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, sans-serif;
 
   /* Radii */
   --radius-xs: 0.125rem;
@@ -37,13 +36,13 @@
 
 /* Dark Mode Overrides */
 [data-theme="dark"] {
-  --color-background: #171614;
-  --color-surface: #1c1b19;
-  --color-surface-2: #201f1d;
-  --color-border: #393836;
-  --color-text: #cdccca;
-  --color-text-muted: #797876;
-  --color-primary: #4f98a3;
+  --color-background: #142019;
+  --color-surface: #19271e;
+  --color-surface-2: #203127;
+  --color-border: #39483c;
+  --color-text: #f1f1e9;
+  --color-text-muted: #b7c0b6;
+  --color-primary: #87bd91;
   
   --color-success: #4da37b;
   --color-warning: #bc8a5f;
@@ -65,7 +64,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, .font-serif {
-  font-family: var(--font-serif);
+  font-family: var(--font-plus-jakarta), ui-sans-serif, sans-serif;
+  letter-spacing: -0.035em;
 }
 
 /* Custom Utilities */

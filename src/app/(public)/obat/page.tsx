@@ -47,7 +47,7 @@ export default async function DrugSearchPage({ searchParams }: { searchParams: P
     <div className="container px-4 pb-24">
       <section className="grid gap-8 pb-6 pt-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div className="max-w-2xl">
-          <Badge className="mb-5 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]">Pustaka informasi obat Apoteq</Badge>
+          <Badge className="mb-5 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]">PustakaObat.id · Pustaka Obat Indonesia</Badge>
           <h1 className="max-w-xl text-4xl font-serif leading-[1.08] tracking-tight text-text md:text-6xl">
             Pusat rujukan <span className="text-primary">informasi obat</span> untuk Indonesia.
           </h1>

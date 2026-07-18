@@ -88,7 +88,7 @@ export default async function PublicQuestionPage() {
                       </div>
                       <div>
                         <h4 className="text-base font-bold text-text mb-1">
-                          {q.answered_by_profile?.full_name || 'Apoteker apoteq'}
+                          {q.answered_by_profile?.full_name || 'Apoteker PustakaObat.id'}
                         </h4>
                         <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest">
                           <BadgeCheckIcon size={12} />
@@ -136,7 +136,7 @@ export default async function PublicQuestionPage() {
           <h3 className="text-2xl md:text-3xl font-serif text-text">Diskusi Terpercaya untuk Keamanan Anda.</h3>
           <p className="text-text-muted max-w-xl mx-auto leading-relaxed">
             Setiap jawaban diberikan oleh tenaga farmasi yang telah melalui proses verifikasi SIPA (Surat Izin Praktik Apoteker). 
-            Ini adalah bagian dari layanan publik apoteq untuk Indonesia.
+            Ini adalah bagian dari layanan publik PustakaObat.id untuk Indonesia.
           </p>
         </div>
       </section>

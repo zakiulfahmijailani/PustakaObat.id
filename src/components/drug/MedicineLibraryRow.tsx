@@ -51,7 +51,7 @@ export function WhoLibraryRow({ medicine }: { medicine: PublicWhoMedicine }) {
               {displayMedicineName(medicine)}
             </Link>
             {medicine.verification_status === 'verified' ? (
-              <Badge variant="success"><BadgeCheck className="mr-1" size={12} /> Ditinjau Apoteq</Badge>
+              <Badge variant="success"><BadgeCheck className="mr-1" size={12} /> Ditinjau apoteker</Badge>
             ) : (
               <Badge variant="secondary"><ShieldQuestion className="mr-1" size={12} /> Profil sumber WHO</Badge>
             )}

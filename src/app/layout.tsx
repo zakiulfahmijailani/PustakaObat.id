@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Instrument_Serif } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-serif",
+  variable: "--font-plus-jakarta",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "apoteq — Informasi Obat Terverifikasi",
-  description: "Informasi obat yang jelas, terverifikasi, dan mudah dipahami untuk masyarakat Indonesia.",
+  title: "PustakaObat.id — Pustaka Obat Indonesia",
+  description: "Informasi obat berbahasa Indonesia dengan sumber yang dapat ditelusuri dan status peninjauan yang transparan.",
 };
 
 export default function RootLayout({
@@ -20,14 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
-        {/* Fontshare General Sans CDN */}
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={`${instrumentSerif.variable} antialiased selection:bg-primary/20 selection:text-primary`}>
+      <body className={`${plusJakartaSans.variable} antialiased selection:bg-primary/20 selection:text-primary`}>
         {children}
       </body>
     </html>

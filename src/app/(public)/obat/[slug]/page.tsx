@@ -50,7 +50,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
         <Link href="/obat" className="print-hide mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke pustaka</Link>
 
         <header className="rounded-xl border border-border border-l-[6px] border-l-primary bg-surface px-6 py-7 md:px-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Monografi Obat · Apoteq</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Monografi Obat · PustakaObat.id</p>
           <div className="mt-3 flex flex-wrap items-start justify-between gap-5">
             <div>
               <h1 className="font-serif text-4xl font-bold capitalize leading-tight text-text md:text-5xl">{localDrug.display_name}</h1>
@@ -71,7 +71,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
 
           <div className="mt-5 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary">
             <BadgeCheck className="mr-2 inline" size={16} />
-            {localDrug.reviewer_name ? <>Diverifikasi oleh <strong>{localDrug.reviewer_name}</strong>{localDrug.reviewer_license ? ` (${localDrug.reviewer_license})` : ''}{reviewedAt ? ` pada ${reviewedAt}` : ''}.</> : <>Diterbitkan melalui alur editorial dan verifikasi Apoteq{reviewedAt ? ` pada ${reviewedAt}` : ''}.</>}
+            {localDrug.reviewer_name ? <>Diverifikasi oleh <strong>{localDrug.reviewer_name}</strong>{localDrug.reviewer_license ? ` (${localDrug.reviewer_license})` : ''}{reviewedAt ? ` pada ${reviewedAt}` : ''}.</> : <>Diterbitkan melalui alur editorial dan verifikasi PustakaObat.id{reviewedAt ? ` pada ${reviewedAt}` : ''}.</>}
           </div>
 
           <div className="mt-5"><PrintMonographButton /></div>
@@ -109,7 +109,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
             )}
 
             <section id="sumber" className="mt-5 rounded-xl border border-border border-l-[6px] border-l-text bg-surface p-6 scroll-mt-28">
-              <div className="flex gap-3"><FileCheck2 className="mt-0.5 shrink-0 text-primary" size={22} /><div className="min-w-0"><h2 className="font-serif text-xl font-semibold text-text">Sumber &amp; versi dokumen</h2><p className="mt-2 text-sm leading-relaxed text-text-muted">Konten yang tampil adalah versi monografi yang telah diterbitkan Apoteq. Setiap pembaruan wajib melewati peninjauan kembali sebelum tampil kepada publik.</p>
+              <div className="flex gap-3"><FileCheck2 className="mt-0.5 shrink-0 text-primary" size={22} /><div className="min-w-0"><h2 className="font-serif text-xl font-semibold text-text">Sumber &amp; versi dokumen</h2><p className="mt-2 text-sm leading-relaxed text-text-muted">Konten yang tampil adalah versi monografi yang telah diterbitkan PustakaObat.id. Setiap pembaruan wajib melewati peninjauan kembali sebelum tampil kepada publik.</p>
                 <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-[160px_1fr]"><dt className="font-semibold text-text">Pembaruan terakhir</dt><dd className="text-text-muted">{formatDate(localDrug.updated_at)}</dd>{localDrug.bpom_reg_number && <><dt className="font-semibold text-text">Nomor registrasi BPOM</dt><dd className="text-text-muted">{localDrug.bpom_reg_number}</dd></>}{localDrug.atc_code && <><dt className="font-semibold text-text">Kode ATC</dt><dd className="text-text-muted">{localDrug.atc_code}</dd></>}</dl>
                 {localDrug.sources.length > 0 && <div className="mt-5"><p className="font-semibold text-text">Dokumen sumber</p><ul className="mt-2 space-y-1.5 text-sm text-text-muted">{localDrug.sources.map((source) => <li key={`${source.source_name}-${source.source_document_id}`}>{source.source_url ? <a href={source.source_url} target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-4">{source.source_name} · {source.source_document_id}</a> : <span>{source.source_name} · {source.source_document_id}</span>}</li>)}</ul></div>}
                 {medicine?.official_source_url && <a href={medicine.official_source_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary">Buka sumber WHO <ArrowUpRight size={16} /></a>}
@@ -134,7 +134,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">Profil Obat · Sumber WHO</p>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-5">
           <div><h1 className="font-serif text-4xl font-bold leading-tight text-text md:text-5xl">{displayName}</h1>{displayName !== medicine!.medicine_name && <p className="mt-1 text-sm text-text-muted">Nama sumber WHO: {medicine!.medicine_name}</p>}</div>
-          {medicine!.verification_status === 'verified' ? <Badge variant="success" className="border border-success/30 px-3 py-1"><BadgeCheck className="mr-1" size={13} /> Ditinjau Apoteq</Badge> : <Badge variant="secondary" className="border border-border px-3 py-1"><ShieldQuestion className="mr-1" size={13} /> Profil sumber WHO</Badge>}
+          {medicine!.verification_status === 'verified' ? <Badge variant="success" className="border border-success/30 px-3 py-1"><BadgeCheck className="mr-1" size={13} /> Ditinjau apoteker</Badge> : <Badge variant="secondary" className="border border-border px-3 py-1"><ShieldQuestion className="mr-1" size={13} /> Profil sumber WHO</Badge>}
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {medicine!.is_who_eeml && <Badge>WHO Essential Medicine</Badge>}
