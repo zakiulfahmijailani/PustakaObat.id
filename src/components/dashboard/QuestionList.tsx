@@ -138,7 +138,7 @@ export const QuestionList = ({ questions, userId: _userId }: QuestionListProps) 
                         />
                         <div className="flex justify-end items-center gap-4">
                           <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest max-w-[300px] text-right leading-relaxed">
-                            Jawaban akan dipublikasikan ke halaman publik apoteq segera setelah terikirim.
+                            Jawaban akan dipublikasikan ke halaman publik PustakaObat.id segera setelah terikirim.
                           </p>
                           <Button 
                             className="rounded-full h-14 px-8 gap-3 shadow-xl shadow-primary/10" 

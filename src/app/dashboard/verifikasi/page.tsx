@@ -55,7 +55,7 @@ export default async function VerificationQueuePage({
           </Badge>
           <h2 className="text-3xl font-serif text-text leading-tight font-semibold">Antrean Verifikasi Monografi</h2>
           <p className="text-text-muted mt-1 leading-relaxed">
-            Review draft monografi obat sebelum dipublikasikan ke halaman publik apoteq.
+            Review draft monografi obat sebelum dipublikasikan ke halaman publik PustakaObat.id.
           </p>
         </div>
         <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-700">

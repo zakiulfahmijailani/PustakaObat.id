@@ -35,7 +35,7 @@ export default async function MyDrugsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-10">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-        <div><h1 className="text-3xl font-serif text-text">Manajemen Monografi</h1><p className="mt-1 text-text-muted">Kelola seluruh monografi lokal Apoteq.</p></div>
+        <div><h1 className="text-3xl font-serif text-text">Manajemen Monografi</h1><p className="mt-1 text-text-muted">Kelola seluruh monografi lokal PustakaObat.id.</p></div>
         {profile.role === 'admin' && <Button size="lg" asChild><Link href="/admin/medicines/new"><Plus size={20} /> Buat Draft Baru</Link></Button>}
       </div>
 

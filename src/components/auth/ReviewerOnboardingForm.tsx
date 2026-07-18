@@ -49,7 +49,7 @@ export function ReviewerOnboardingForm({ name, email }: { name: string; email: s
   }
 
   if (success) {
-    return <Card className="w-full max-w-lg border-none shadow-2xl"><CardContent className="flex flex-col items-center gap-5 py-12 text-center"><CheckCircle2 className="text-success" size={48} /><h2 className="text-2xl font-bold">Pengajuan berhasil dikirim</h2><p className="text-text-muted">Admin Apoteq akan memeriksa identitas profesi Anda.</p></CardContent></Card>
+    return <Card className="w-full max-w-lg border-none shadow-2xl"><CardContent className="flex flex-col items-center gap-5 py-12 text-center"><CheckCircle2 className="text-success" size={48} /><h2 className="text-2xl font-bold">Pengajuan berhasil dikirim</h2><p className="text-text-muted">Admin PustakaObat.id akan memeriksa identitas profesi Anda.</p></CardContent></Card>
   }
 
   return (
@@ -75,4 +75,3 @@ export function ReviewerOnboardingForm({ name, email }: { name: string; email: s
     </Card>
   )
 }
-

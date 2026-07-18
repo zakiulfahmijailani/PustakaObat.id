@@ -29,7 +29,7 @@ export default function PendingApprovalPage() {
             </div>
             <CardTitle className="text-3xl">Pendaftaran Sedang Ditinjau</CardTitle>
             <CardDescription className="text-base text-text-muted mt-2">
-              Akun apoteq Anda saat ini sedang menunggu persetujuan dari administrator.
+              Akun PustakaObat.id Anda saat ini sedang menunggu persetujuan dari administrator.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-8 pb-10 px-8">
@@ -37,7 +37,7 @@ export default function PendingApprovalPage() {
               <div className="p-4 rounded-2xl bg-surface-2 border border-border flex gap-4 text-sm leading-relaxed text-text">
                 <ShieldAlert className="text-primary shrink-0" size={20} />
                 <p>
-                  Untuk memastikan integritas informasi obat, setiap akun Apoteker Reviewer harus diperiksa secara manual oleh Admin Apoteq.
+                  Untuk memastikan integritas informasi obat, setiap akun Apoteker Reviewer harus diperiksa secara manual oleh Admin PustakaObat.id.
                 </p>
               </div>
               

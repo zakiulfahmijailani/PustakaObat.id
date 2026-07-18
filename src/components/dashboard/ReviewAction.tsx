@@ -147,7 +147,7 @@ export const ReviewAction = ({ drugId, drugName, userId }: ReviewActionProps) =>
       <CardFooter className="px-10 py-6 bg-surface-2 border-t border-border flex items-center gap-4">
         <Shield size={24} className="text-primary opacity-30" />
         <p className="text-[10px] text-text-muted font-bold tracking-widest uppercase leading-relaxed">
-          Tindakan ini akan tercatat dalam log audit apoteq.
+          Tindakan ini akan tercatat dalam log audit PustakaObat.id.
         </p>
       </CardFooter>
     </Card>

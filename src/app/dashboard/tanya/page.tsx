@@ -115,7 +115,7 @@ export default async function QuestionInboxPage({
         <HelpCircle size={48} className="text-primary opacity-20" />
         <h4 className="text-lg font-serif">Pentingnya Jawaban Profesional</h4>
         <p className="text-sm text-text-muted max-w-2xl mx-auto italic leading-relaxed">
-          Semua jawaban Anda akan dipublikasikan ke halaman publik apoteq dan dapat dibaca oleh ribuan orang. 
+          Semua jawaban Anda akan dipublikasikan ke halaman publik PustakaObat.id dan dapat dibaca oleh ribuan orang.
           Gunakan referensi medis yang sahih dan berikan edukasi yang jelas mengenai keamanan obat.
         </p>
       </div>

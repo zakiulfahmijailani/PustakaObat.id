@@ -25,7 +25,7 @@ export default async function WhoReviewQueuePage({ searchParams }: { searchParam
       <div>
         <Badge className="mb-4">WHO Review Workspace</Badge>
         <h1 className="text-4xl font-serif text-text">Verifikasi data obat WHO</h1>
-        <p className="mt-2 max-w-2xl text-text-muted">Tinjau akurasi representasi data sumber sebelum memberi status verifikasi Apoteq.</p>
+        <p className="mt-2 max-w-2xl text-text-muted">Tinjau akurasi representasi data sumber sebelum memberi status verifikasi PustakaObat.id.</p>
       </div>
       <form className="relative max-w-2xl">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />

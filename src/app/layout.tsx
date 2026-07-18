@@ -11,6 +11,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "PustakaObat.id — Pustaka Obat Indonesia",
   description: "Informasi obat berbahasa Indonesia dengan sumber yang dapat ditelusuri dan status peninjauan yang transparan.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

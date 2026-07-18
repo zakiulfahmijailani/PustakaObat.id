@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, BookMarked, CheckCircle2, ClipboardCheck, FileText, HeartHandshake, SearchCheck, ShieldAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -22,6 +23,12 @@ export default function AboutPage() {
           <Badge className="border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Tentang PustakaObat.id</Badge>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-[1.1] text-text md:text-6xl">Pustaka informasi obat untuk Indonesia.</h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-text-muted md:text-lg md:leading-8">PustakaObat.id membantu masyarakat menemukan informasi obat yang lebih mudah dipahami, dengan sumber yang dapat ditelusuri dan proses peninjauan yang transparan.</p>
+        </div>
+      </section>
+
+      <section className="container px-4 pt-12 md:pt-16">
+        <div className="overflow-hidden rounded-3xl border border-border bg-surface p-3 shadow-sm md:p-5">
+          <Image src="/logo.svg" alt="Logo PustakaObat.id" width={1200} height={360} priority className="h-auto w-full" />
         </div>
       </section>
 

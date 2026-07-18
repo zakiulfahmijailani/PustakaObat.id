@@ -92,7 +92,7 @@ export default function HomePage() {
               </Button>
             </div>
             <div className="hidden justify-center md:flex">
-              <div className="rounded-3xl border border-white/15 bg-white/10 p-8 backdrop-blur-sm"><Logo className="[&>svg]:text-white [&>span]:text-white [&>span>span:last-child]:text-white/65" /></div>
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-3 shadow-2xl"><Logo /></div>
             </div>
           </div>
         </div>

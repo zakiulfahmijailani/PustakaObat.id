@@ -7,7 +7,7 @@ export function RegisterForm() {
     <Card className="w-full max-w-lg border-none bg-surface/50 shadow-2xl backdrop-blur-xl">
       <CardHeader className="space-y-2 pb-8 text-center">
         <CardTitle className="text-3xl">Daftar Apoteker Reviewer</CardTitle>
-        <CardDescription>Mulai dengan akun Google. Setelah itu lengkapi identitas profesi untuk diperiksa Admin Apoteq.</CardDescription>
+        <CardDescription>Mulai dengan akun Google. Setelah itu lengkapi identitas profesi untuk diperiksa Admin PustakaObat.id.</CardDescription>
       </CardHeader>
       <CardContent>
         <GoogleAuthButton label="Daftar sebagai Reviewer dengan Google" intent="reviewer_register" />

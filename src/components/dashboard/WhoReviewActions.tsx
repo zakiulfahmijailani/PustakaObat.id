@@ -40,7 +40,7 @@ export function WhoReviewActions({ medicineId }: { medicineId: string }) {
     <div className="space-y-4 rounded-3xl border border-border bg-surface p-6">
       <div>
         <h2 className="font-serif text-xl text-text">Keputusan apoteker</h2>
-        <p className="mt-1 text-sm text-text-muted">Tinjau representasi data Apoteq berdasarkan tautan WHO. Penolakan tidak mengubah sumber asli WHO.</p>
+        <p className="mt-1 text-sm text-text-muted">Tinjau representasi data PustakaObat.id berdasarkan tautan WHO. Penolakan tidak mengubah sumber asli WHO.</p>
       </div>
       <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Catatan verifikasi (wajib untuk tolak/perlu perbaikan)" rows={4} />
       {message && <p role="status" className="text-sm text-text-muted">{message}</p>}

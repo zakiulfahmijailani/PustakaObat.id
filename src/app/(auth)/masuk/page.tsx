@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 
 export default function AccessSelectionPage() {
   return (
-    <AuthPageShell eyebrow="Akses staf Apoteq">
+    <AuthPageShell eyebrow="Akses staf PustakaObat.id">
       <div className="w-full text-center">
         <h1 className="text-4xl font-serif text-text">Pilih ruang kerja Anda</h1>
         <p className="mx-auto mt-3 max-w-2xl text-text-muted">Reviewer dan Admin menggunakan Google OAuth yang sama, tetapi memiliki dashboard dan kewenangan yang berbeda.</p>
