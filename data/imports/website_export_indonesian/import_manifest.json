@@ -1,0 +1,50 @@
+{
+  "package_name": "apoteq_indonesian_codex_v1",
+  "pipeline_version": "codex-id-1.0",
+  "created_at": "2026-07-18T07:57:10.379533+00:00",
+  "counts": {
+    "source_drugs": 99,
+    "bilingual_aliases": 242,
+    "editorial_candidate_drugs": 31,
+    "candidate_monograph_sections": 364,
+    "source_evidence_total": 375,
+    "excluded_non_candidate_evidence": 11,
+    "excluded_non_candidate_drugs": 2
+  },
+  "qc_passed_for_staging_review": true,
+  "public_publishable": false,
+  "files": {
+    "drug_names_indonesian.jsonl": {
+      "sha256": "130c005b7c1e82f585b9202dd97dfaababa47321c28016b954763a08260bad70",
+      "bytes": 27397
+    },
+    "drug_search_alias_candidates.jsonl": {
+      "sha256": "1e11b47440ce8db5d8e62bb971a2fcf4a763c5ebab9dbc7c2f9d6a732d272e57",
+      "bytes": 72879
+    },
+    "indonesian_monograph_candidates.jsonl": {
+      "sha256": "02b9a1c402afcc4eac31ce8e4f701533b595129a2e4d15039df75a3cea7e153b",
+      "bytes": 413090
+    },
+    "excluded_non_candidate_evidence.jsonl": {
+      "sha256": "1ee4312b08e5874ebc2e4cac3c1d56e8c3a8274939cc01323086d5e7a113287e",
+      "bytes": 18586
+    },
+    "quality_report.json": {
+      "sha256": "751cf0f4fe3dc3915dbba0891f3feaa07360ea4d2c0d944d2c0f59cac44f174f",
+      "bytes": 1119
+    },
+    "review_apoteker.xlsx": {
+      "sha256": "a00fbfc5b38afba99f23efc1f75a6c1a9b810a545244c2f4682be149b14f021c",
+      "bytes": 124283
+    },
+    "README_CODEX.md": {
+      "sha256": "85125865d5ce267fc28ccbb8180b0206592927d6d7f9d70d6eefdec776b16a15",
+      "bytes": 1645
+    },
+    "CODEX_PROMPT.md": {
+      "sha256": "fa1d6b6346e4370034b0b8b453cb41707ad25fecc013b35b781c1efc340104b0",
+      "bytes": 2107
+    }
+  }
+}

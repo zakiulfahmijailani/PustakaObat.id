@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-07-18T07:57:10.363584+00:00",
+  "pipeline_version": "codex-id-1.0",
+  "scope": {
+    "source_drugs": 99,
+    "bilingual_aliases": 242,
+    "editorial_candidate_drugs": 31,
+    "candidate_monograph_sections": 364,
+    "source_evidence_total": 375,
+    "excluded_non_candidate_evidence": 11,
+    "excluded_non_candidate_drugs": 2
+  },
+  "fatal_checks": {
+    "missing_candidate_sections": 0,
+    "extra_candidate_sections": 0,
+    "missing_source_evidence_ids": 0,
+    "duplicate_alias_keys": 0,
+    "empty_drafts": 0,
+    "unsafe_public_flags": 0,
+    "missing_indonesian_names": 0
+  },
+  "fatal_total": 0,
+  "qc_passed_for_staging_review": true,
+  "review_flags": {
+    "numeric_review": 64,
+    "content_too_short": 5
+  },
+  "generation_methods": {
+    "local_qwen_grouped_editorial_draft": 352,
+    "codex_editorial_synthesis": 12
+  },
+  "publication": {
+    "pharmacist_review_complete": false,
+    "public_publishable": false,
+    "runtime_ai_required_for_search": false
+  },
+  "missing_pairs": [],
+  "extra_pairs": [],
+  "missing_evidence_ids": []
+}
