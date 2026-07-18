@@ -124,6 +124,17 @@ export type RecommendationEvaluation = {
   manualInterval: ManualRangeEvaluation;
 };
 
+export type ActualRecommendationEvaluation = Pick<
+  RecommendationEvaluation,
+  "recommendationId" | "recommendationLabel" | "actualDose" | "actualInterval"
+>;
+
+export type ActualRegimenEvaluationResult = {
+  actualDoseMg: number;
+  actualIntervalHours: number | null;
+  targets: ActualRecommendationEvaluation[];
+};
+
 export type RegimenEvaluationResult = {
   input: RegimenEvaluationInput;
   targets: RecommendationEvaluation[];

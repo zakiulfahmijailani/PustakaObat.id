@@ -6,6 +6,7 @@ import {
   evaluateActualInterval,
 } from "./interval-model";
 import type {
+  ActualRegimenEvaluationResult,
   CalculatorResult,
   DoseEvaluation,
   ManualRangeEvaluation,
@@ -55,6 +56,37 @@ function compareManualDoseRange(
   };
 }
 
+export function evaluateActualRegimen(
+  calculatorResult: CalculatorResult,
+  actualDoseMg: number,
+  actualIntervalHours: number | null,
+): ActualRegimenEvaluationResult {
+  if (!Number.isFinite(actualDoseMg) || actualDoseMg <= 0) {
+    throw new Error("Dosis aktual harus lebih dari 0.");
+  }
+  if (
+    actualIntervalHours !== null &&
+    (!Number.isInteger(actualIntervalHours) || actualIntervalHours <= 0)
+  ) {
+    throw new Error("Interval aktual harus bilangan bulat positif.");
+  }
+
+  return {
+    actualDoseMg,
+    actualIntervalHours,
+    targets: Object.values(calculatorResult.recommendations).map((recommendation) => ({
+      recommendationId: recommendation.id,
+      recommendationLabel: recommendation.label,
+      actualDose: evaluateDose(actualDoseMg, recommendation),
+      actualInterval: evaluateActualInterval(
+        actualIntervalHours ?? 0,
+        recommendation.interval,
+        recommendation.eligibleForRegimenEvaluation,
+      ),
+    })),
+  };
+}
+
 export function evaluateRegimen(
   calculatorResult: CalculatorResult,
   input: RegimenEvaluationInput,
@@ -68,22 +100,23 @@ export function evaluateRegimen(
   );
   const validated = validateRegimenEvaluationInput(input, intervalsRequired);
   if (!validated.success) throw new Error(validated.issues.map((issue) => issue.message).join(" "));
+  const actual = evaluateActualRegimen(
+    calculatorResult,
+    validated.data.actualDoseMg,
+    validated.data.actualIntervalHours,
+  );
   return {
     input: validated.data,
-    targets: recommendations.map((recommendation) => ({
+    targets: recommendations.map((recommendation, index) => ({
       recommendationId: recommendation.id,
       recommendationLabel: recommendation.label,
-      actualDose: evaluateDose(validated.data.actualDoseMg, recommendation),
+      actualDose: actual.targets[index].actualDose,
       manualDose: compareManualDoseRange(
         validated.data.manualDoseMinMg,
         validated.data.manualDoseMaxMg,
         recommendation,
       ),
-      actualInterval: evaluateActualInterval(
-        validated.data.actualIntervalHours ?? 0,
-        recommendation.interval,
-        recommendation.eligibleForRegimenEvaluation,
-      ),
+      actualInterval: actual.targets[index].actualInterval,
       manualInterval: compareManualIntervalRange(
         validated.data.manualIntervalMinHours ?? 0,
         validated.data.manualIntervalMaxHours ?? 0,

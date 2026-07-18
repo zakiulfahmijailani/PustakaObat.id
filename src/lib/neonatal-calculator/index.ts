@@ -1,4 +1,5 @@
 export * from "./constants";
+export * from "./batch-engine";
 export * from "./evaluation-engine";
 export * from "./formatters";
 export * from "./interval-model";

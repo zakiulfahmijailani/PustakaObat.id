@@ -11,6 +11,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { BatchCalculator } from "./BatchCalculator";
 import {
   ANTIBIOTIC_LABELS,
   CALCULATOR_RULE_VERSION,
@@ -33,7 +34,7 @@ import {
   type ValidationIssue,
 } from "@/lib/neonatal-calculator";
 
-type Tab = "recommendation" | "evaluation";
+type Tab = "recommendation" | "evaluation" | "batch";
 type PatientForm = {
   patientLabel: string;
   antibiotic: Antibiotic;
@@ -228,12 +229,16 @@ export function NeonatalCalculator() {
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const recommendationTabRef = useRef<HTMLButtonElement>(null);
   const evaluationTabRef = useRef<HTMLButtonElement>(null);
+  const batchTabRef = useRef<HTMLButtonElement>(null);
 
   const selectTab = (nextTab: Tab, focus = false) => {
     setTab(nextTab);
     if (focus) {
-      const target =
-        nextTab === "recommendation" ? recommendationTabRef : evaluationTabRef;
+      const target = nextTab === "recommendation"
+        ? recommendationTabRef
+        : nextTab === "evaluation"
+          ? evaluationTabRef
+          : batchTabRef;
       window.requestAnimationFrame(() => target.current?.focus());
     }
   };
@@ -241,13 +246,16 @@ export function NeonatalCalculator() {
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
-      selectTab(tab === "recommendation" ? "evaluation" : "recommendation", true);
+      const order: Tab[] = ["recommendation", "evaluation", "batch"];
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const nextIndex = (order.indexOf(tab) + direction + order.length) % order.length;
+      selectTab(order[nextIndex], true);
     } else if (event.key === "Home") {
       event.preventDefault();
       selectTab("recommendation", true);
     } else if (event.key === "End") {
       event.preventDefault();
-      selectTab("evaluation", true);
+      selectTab("batch", true);
     }
   };
 
@@ -363,6 +371,7 @@ export function NeonatalCalculator() {
       <div className="mb-6 flex gap-2 rounded-2xl border border-border bg-surface p-1.5 print-hide" role="tablist" aria-label="Mode kalkulator">
         <button ref={recommendationTabRef} id="recommendation-tab" type="button" role="tab" tabIndex={tab === "recommendation" ? 0 : -1} aria-selected={tab === "recommendation"} aria-controls="recommendation-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("recommendation")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "recommendation" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Rekomendasi Dosis</button>
         <button ref={evaluationTabRef} id="evaluation-tab" type="button" role="tab" tabIndex={tab === "evaluation" ? 0 : -1} aria-selected={tab === "evaluation"} aria-controls="evaluation-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("evaluation")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "evaluation" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Evaluasi Pemberian</button>
+        <button ref={batchTabRef} id="batch-tab" type="button" role="tab" tabIndex={tab === "batch" ? 0 : -1} aria-selected={tab === "batch"} aria-controls="batch-panel" onKeyDown={handleTabKeyDown} onClick={() => selectTab("batch")} className={`min-h-11 flex-1 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === "batch" ? "bg-primary text-white" : "text-text-muted hover:bg-surface-2"}`}>Evaluasi Batch</button>
       </div>
 
       <section id="recommendation-panel" role="tabpanel" aria-labelledby="recommendation-tab" hidden={tab !== "recommendation"} className="print-always">
@@ -501,6 +510,10 @@ export function NeonatalCalculator() {
             </div>
           </div>
         )}
+      </section>
+
+      <section id="batch-panel" role="tabpanel" aria-labelledby="batch-tab" hidden={tab !== "batch"}>
+        <BatchCalculator />
       </section>
 
       <footer className="mt-8 rounded-2xl border border-info/20 bg-info/5 p-4 text-xs leading-relaxed text-text-muted print-always print-break-inside-avoid">
