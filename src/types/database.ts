@@ -14,7 +14,7 @@ export interface Database {
           id: string
           email: string
           full_name: string | null
-          role: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          role: 'editor' | 'reviewer' | 'admin' | 'super_admin' | 'pharmacist' | 'verifier'
           account_status: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
           professional_license_number: string | null
           phone: string | null
@@ -29,7 +29,7 @@ export interface Database {
           id: string
           email: string
           full_name?: string | null
-          role?: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          role?: 'editor' | 'reviewer' | 'admin' | 'super_admin' | 'pharmacist' | 'verifier'
           account_status?: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
           professional_license_number?: string | null
           phone?: string | null
@@ -44,7 +44,7 @@ export interface Database {
           id?: string
           email?: string
           full_name?: string | null
-          role?: 'reviewer' | 'admin' | 'pharmacist' | 'verifier'
+          role?: 'editor' | 'reviewer' | 'admin' | 'super_admin' | 'pharmacist' | 'verifier'
           account_status?: 'pending_review' | 'needs_revision' | 'active' | 'rejected' | 'suspended'
           professional_license_number?: string | null
           phone?: string | null

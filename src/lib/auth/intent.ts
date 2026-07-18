@@ -1,7 +1,9 @@
 export const AUTH_INTENTS = [
   'reviewer_login',
   'reviewer_register',
+  'editor_login',
   'admin_login',
+  'super_admin_login',
 ] as const
 
 export type AuthIntent = (typeof AUTH_INTENTS)[number]
@@ -18,6 +20,8 @@ export function parseAuthIntent(value: unknown): AuthIntent | null {
 export function getUnlinkedAccountDestination(intent: AuthIntent | null) {
   if (intent === 'reviewer_register') return '/reviewer/register/complete'
   if (intent === 'reviewer_login') return '/reviewer/not-registered'
+  if (intent === 'editor_login') return '/editor/access-denied'
   if (intent === 'admin_login') return '/admin/access-denied'
+  if (intent === 'super_admin_login') return '/super-admin/access-denied'
   return '/masuk'
 }

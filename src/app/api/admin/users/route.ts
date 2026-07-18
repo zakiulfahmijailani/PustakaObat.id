@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!isSameOriginMutation(request)) return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
   const session = await getActiveProfile()
   if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
-  if (session.profile.role !== 'admin') return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
+  if (session.activeRole !== 'admin') return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
   const admin = session.profile
   const metadata = getRequestMetadata(request)
   const parsed = adminUserActionSchema.safeParse(await request.json().catch(() => null))

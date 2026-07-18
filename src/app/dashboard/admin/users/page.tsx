@@ -14,7 +14,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   const params: unknown[] = []
   const filters: string[] = []
 
-  if (role !== 'all' && ['reviewer', 'admin'].includes(role)) {
+  if (role !== 'all' && ['editor', 'reviewer', 'admin', 'super_admin'].includes(role)) {
     params.push(role)
     filters.push(`p.role::text = $${params.length}`)
   }
@@ -48,7 +48,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   `, params)
 
   const pendingCount = profiles.filter((profile) => profile.account_status === 'pending_review').length
-  const roleOptions = [['all', 'Semua'], ['reviewer', 'Reviewer'], ['admin', 'Admin']]
+  const roleOptions = [['all', 'Semua'], ['editor', 'Editor'], ['reviewer', 'Reviewer'], ['admin', 'Admin'], ['super_admin', 'Super Admin']]
   const statusOptions = [['all', 'Semua status'], ['pending_review', 'Pending'], ['needs_revision', 'Perlu revisi'], ['active', 'Aktif'], ['rejected', 'Ditolak'], ['suspended', 'Ditangguhkan']]
   const hrefFor = (next: { role?: string; status?: string }) => {
     const search = new URLSearchParams({ role: next.role || role, status: next.status || status })

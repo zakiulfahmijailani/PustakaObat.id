@@ -1,0 +1,11 @@
+import Link from 'next/link'
+import { FilePenLine, Search } from 'lucide-react'
+import { getStagedDrugConcepts, type StagingFilters } from '@/lib/staging/queries'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { CatalogPagination } from '@/components/drug/CatalogPagination'
+
+export async function EditorContentQueue({ filters }: { filters: StagingFilters }) {
+  const { concepts, count, page, error } = await getStagedDrugConcepts(filters)
+  return <div className="space-y-6"><form className="grid gap-3 rounded-3xl border border-border bg-surface p-5 md:grid-cols-[1fr_auto]"><label className="relative"><span className="sr-only">Cari konten</span><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} /><input name="q" defaultValue={filters.q} placeholder="Cari nama obat" className="min-h-11 w-full rounded-xl border border-border bg-surface pl-11 pr-4 text-sm" /></label><Button type="submit">Cari</Button></form>{error ? <p className="rounded-2xl bg-error/10 p-5 text-error">Koleksi editorial belum dapat dibuka.</p> : concepts.length ? <div className="space-y-4">{concepts.map((concept) => <Link key={concept.drug_key} href={`/editor/content/${concept.drug_key}`} className="block rounded-3xl border border-border bg-surface p-6 transition-colors hover:border-primary/40"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><div className="flex flex-wrap gap-2"><Badge variant={concept.identity_status === 'validated' ? 'success' : 'warning'}>{concept.identity_status}</Badge>{concept.is_pilot && <Badge>Prioritas</Badge>}</div><h2 className="mt-3 font-serif text-2xl text-text">{concept.preferred_name}</h2><p className="mt-1 text-sm text-text-muted">{concept.covered_section_count || 0} bagian tersedia untuk disusun</p></div><span className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><FilePenLine size={17} />Buka draf</span></div></Link>)}<CatalogPagination page={page} count={count} pathname="/editor/content" params={{ q: filters.q }} /></div> : <p className="rounded-3xl border border-dashed border-border p-14 text-center text-text-muted">Belum ada konten yang cocok.</p>}</div>
+}

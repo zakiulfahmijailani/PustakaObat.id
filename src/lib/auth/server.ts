@@ -1,9 +1,10 @@
 import 'server-only'
 
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { auth } from '@/auth'
 import { queryNeon } from '@/lib/neon/server'
-import { type AccountStatus, type StaffRole } from './constants'
+import { ACTIVE_STAFF_ROLES, WORKSPACE_ROLES, type AccountStatus, type StaffRole, type WorkspaceRole } from './constants'
 import { getSafeRedirectForAccount, normalizeEmail } from './security'
 
 export interface AuthProfile {
@@ -147,12 +148,22 @@ export async function getAuthenticatedProfile(options: { linkByVerifiedEmail?: b
   }
 }
 
+export const WORKSPACE_COOKIE = 'pustakaobat_workspace'
+
+async function getWorkspaceRole(profile: AuthProfile): Promise<WorkspaceRole | null> {
+  if (profile.role !== 'super_admin') return profile.role as WorkspaceRole
+  const value = (await cookies()).get(WORKSPACE_COOKIE)?.value
+  return WORKSPACE_ROLES.includes(value as WorkspaceRole) ? value as WorkspaceRole : null
+}
+
 export async function getActiveProfile() {
   const session = await getAuthenticatedProfile()
   if (!session) return null
   if (!session.profile.is_active || session.profile.account_status !== 'active') return null
-  if (!['reviewer', 'admin'].includes(session.profile.role)) return null
-  return session
+  if (!ACTIVE_STAFF_ROLES.includes(session.profile.role as StaffRole)) return null
+  const activeRole = await getWorkspaceRole(session.profile)
+  if (!activeRole) return null
+  return { ...session, activeRole }
 }
 
 export async function requireActiveProfile(
@@ -170,20 +181,36 @@ export async function requireActiveProfile(
     redirect(getSafeRedirectForAccount(profile.account_status, profile.role))
   }
 
-  if (!['reviewer', 'admin'].includes(profile.role)) redirect('/account/setup-required')
-  if (allowedRoles && !allowedRoles.includes(profile.role as StaffRole)) {
+  if (!ACTIVE_STAFF_ROLES.includes(profile.role as StaffRole)) redirect('/account/setup-required')
+  const activeRole = await getWorkspaceRole(profile)
+  if (!activeRole) redirect('/super-admin/choose-role')
+  if (allowedRoles && !allowedRoles.includes(activeRole as StaffRole)) {
     redirect(getSafeRedirectForAccount(profile.account_status, profile.role))
   }
 
-  return session
+  return { ...session, activeRole }
 }
 
 export function requireReviewer() {
-  return requireActiveProfile(['reviewer', 'admin'], '/reviewer/not-registered')
+  return requireActiveProfile(['reviewer'], '/reviewer/not-registered')
 }
 
 export function requireAdmin() {
   return requireActiveProfile(['admin'], '/admin/access-denied')
+}
+
+export function requireEditor() {
+  return requireActiveProfile(['editor'], '/editor/access-denied')
+}
+
+export async function requireSuperAdmin() {
+  const identity = await getGoogleIdentity()
+  if (!identity) redirect('/super-admin/login')
+  const session = await getAuthenticatedProfile({ linkByVerifiedEmail: true })
+  if (!session || !session.profile.is_active || session.profile.account_status !== 'active' || session.profile.role !== 'super_admin') {
+    redirect('/super-admin/access-denied')
+  }
+  return session
 }
 
 export const requireReviewerOrAdmin = requireReviewer

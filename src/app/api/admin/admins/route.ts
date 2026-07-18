@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   const session = await getActiveProfile()
   if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
-  if (session.profile.role !== 'admin') {
+  if (session.activeRole !== 'admin') {
     return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
   }
 

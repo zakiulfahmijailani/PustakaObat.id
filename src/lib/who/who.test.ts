@@ -5,9 +5,9 @@ import { WHO_BPOM_DISCLAIMER } from './constants'
 import { normalizeWhoSearchQuery } from './queries'
 
 describe('WHO authorization policy', () => {
-  it('allows approved reviewers and admins but blocks legacy and public roles', () => {
+  it('allows reviewers but blocks admin, legacy, and public roles from clinical review', () => {
     expect(canReviewWho('reviewer')).toBe(true)
-    expect(canReviewWho('admin')).toBe(true)
+    expect(canReviewWho('admin')).toBe(false)
     expect(canReviewWho('pharmacist')).toBe(false)
     expect(canReviewWho('verifier')).toBe(false)
     expect(canReviewWho(null)).toBe(false)

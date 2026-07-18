@@ -67,3 +67,21 @@ export async function getStagedDrugForStaff(drugKey: string) {
     return { concept: null, evidence: [] as StagingEvidence[], sources: [] as StagingSourceDocument[], drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], events: [] as EditorialEvent[], publication: null, error }
   }
 }
+
+export async function getStagedDrugForEditor(drugKey: string) {
+  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], error: new Error('Neon is not configured.') }
+  try {
+    const [conceptRows, drafts, candidates] = await Promise.all([
+      queryNeon<StagingDrugConcept>("select * from public.monograph_staging_drugs where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden' limit 1", [drugKey]),
+      queryNeon<EditorialDraft>('select * from public.monograph_editorial_drafts where drug_key = $1 order by section_type', [drugKey]),
+      queryNeon<IndonesianCandidateDraft>(`select drug_key, section_type, title_indonesian, content_indonesian,
+        safety_notes, automatic_qc_issues, generation_method
+        from public.monograph_staging_indonesian_drafts
+        where drug_key = $1 and review_status = 'draft_ai' and requires_pharmacist_review = true
+        order by section_type`, [drugKey]),
+    ])
+    return { concept: conceptRows[0] || null, drafts, candidates, error: null }
+  } catch (error) {
+    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], error }
+  }
+}

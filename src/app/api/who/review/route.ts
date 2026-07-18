@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   if (!isSameOriginMutation(request)) return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
   const session = await getActiveProfile()
   if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
-  if (!canReviewWho(session.profile.role)) return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
+  if (!canReviewWho(session.activeRole)) return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
 
   const parsed = reviewSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request.' }, { status: 400 })

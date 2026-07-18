@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BadgeCheck, ShieldCheck, UserRoundPlus } from 'lucide-react'
+import { BadgeCheck, FilePenLine, ShieldCheck, UserRoundPlus } from 'lucide-react'
 import { AuthPageShell } from '@/components/auth/AuthPageShell'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -9,9 +9,10 @@ export default function AccessSelectionPage() {
     <AuthPageShell eyebrow="Akses staf PustakaObat.id">
       <div className="w-full text-center">
         <h1 className="text-4xl font-serif text-text">Pilih ruang kerja Anda</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-text-muted">Reviewer dan Admin menggunakan Google OAuth yang sama, tetapi memiliki dashboard dan kewenangan yang berbeda.</p>
+        <p className="mx-auto mt-3 max-w-2xl text-text-muted">Editor, Reviewer, dan Admin menggunakan Google OAuth yang sama, dengan ruang kerja serta kewenangan yang terpisah.</p>
       </div>
-      <div className="grid w-full gap-5 md:grid-cols-2">
+      <div className="grid w-full gap-5 md:grid-cols-3">
+        <Card className="border-none bg-surface/80 shadow-xl backdrop-blur"><CardContent className="flex h-full flex-col p-8"><div className="mb-6 w-fit rounded-2xl bg-primary/10 p-4 text-primary"><FilePenLine size={30} /></div><h2 className="text-2xl font-serif text-text">Editor</h2><p className="mt-2 flex-1 text-sm leading-relaxed text-text-muted">Susun bahasa dan struktur draf monografi sebelum informasi diperiksa oleh Reviewer.</p><Button asChild className="mt-7"><Link href="/editor/login">Masuk sebagai Editor</Link></Button></CardContent></Card>
         <Card className="border-none bg-surface/80 shadow-xl backdrop-blur"><CardContent className="flex h-full flex-col p-8">
           <div className="mb-6 w-fit rounded-2xl bg-primary/10 p-4 text-primary"><BadgeCheck size={30} /></div>
           <h2 className="text-2xl font-serif text-text">Apoteker Reviewer</h2>
@@ -27,6 +28,7 @@ export default function AccessSelectionPage() {
           <p className="mt-4 text-center text-xs text-white/55">Tidak tersedia pendaftaran Admin publik.</p>
         </CardContent></Card>
       </div>
+      <Link href="/super-admin/login" className="text-sm font-semibold text-primary hover:underline">Akses Super Admin</Link>
     </AuthPageShell>
   )
 }

@@ -32,18 +32,26 @@ export async function POST(request: Request) {
   if (!isSameOriginMutation(request)) return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 })
   const session = await getActiveProfile()
   if (!session) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 })
-  if (!['reviewer', 'admin'].includes(session.profile.role)) return NextResponse.json({ error: 'Insufficient permission.' }, { status: 403 })
-
   const parsed = requestSchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request.' }, { status: 400 })
 
   try {
     const body = parsed.data
-    if (body.action === 'select_pilot') return NextResponse.json({ concept: await selectPilotDrug(body.drugKey, session.user.id) })
-    if (body.action === 'create_from_ai_candidate') return NextResponse.json({ draft: await createEditorialDraftFromAiCandidate(body.drugKey, body.sectionType, session.user.id) })
-    if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
-    if (body.action === 'submit_draft') return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
-    if (body.action === 'publish_monograph') return NextResponse.json({ publication: await publishApprovedMonograph(body.drugKey, session.user.id) })
+    if (body.action === 'select_pilot') {
+      if (session.activeRole !== 'admin') return NextResponse.json({ error: 'Admin access is required.' }, { status: 403 })
+      return NextResponse.json({ concept: await selectPilotDrug(body.drugKey, session.user.id) })
+    }
+    if (body.action === 'create_from_ai_candidate' || body.action === 'save_draft' || body.action === 'submit_draft') {
+      if (session.activeRole !== 'editor') return NextResponse.json({ error: 'Editor access is required.' }, { status: 403 })
+      if (body.action === 'create_from_ai_candidate') return NextResponse.json({ draft: await createEditorialDraftFromAiCandidate(body.drugKey, body.sectionType, session.user.id) })
+      if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
+      return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
+    }
+    if (body.action === 'publish_monograph') {
+      if (session.activeRole !== 'admin') return NextResponse.json({ error: 'Admin access is required.' }, { status: 403 })
+      return NextResponse.json({ publication: await publishApprovedMonograph(body.drugKey, session.user.id) })
+    }
+    if (session.activeRole !== 'reviewer') return NextResponse.json({ error: 'Reviewer access is required.' }, { status: 403 })
     return NextResponse.json({ draft: await reviewEditorialDraft(body.draftId, body.decision, body.note || null, session.user.id) })
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unable to update staging editorial workflow.' }, { status: 500 })
