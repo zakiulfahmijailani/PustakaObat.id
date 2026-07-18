@@ -22,6 +22,7 @@ export const Navbar = () => {
   const navLinks = [
     { name: 'Beranda', href: '/' },
     { name: 'Cari Obat', href: '/obat' },
+    { name: 'Kalkulator', href: '/kalkulator' },
     { name: 'Tentang Kami', href: '/tentang' },
   ]
 
