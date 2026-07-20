@@ -28,7 +28,7 @@ export default function AboutPage() {
 
       <section className="container px-4 pt-12 md:pt-16">
         <div className="overflow-hidden rounded-3xl border border-border bg-surface p-3 shadow-sm md:p-5">
-          <Image src="/logo.svg" alt="Logo PustakaObat.id" width={1200} height={360} priority className="h-auto w-full" />
+          <Image src="/brand-logo.png" alt="Logo PustakaObat.id — Pustaka Obat Indonesia" width={1548} height={395} priority className="h-auto w-full" />
         </div>
       </section>
 

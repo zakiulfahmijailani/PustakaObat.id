@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "PustakaObat.id — Pustaka Obat Indonesia",
   description: "Informasi obat berbahasa Indonesia dengan sumber yang dapat ditelusuri dan status peninjauan yang transparan.",
   icons: {
-    icon: "/icon.svg",
+    icon: "/brand-icon.png",
   },
 };
 
