@@ -4,7 +4,11 @@ import { useEffect, useId, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Clock3, Search, X } from 'lucide-react'
 
-const POPULAR_SEARCHES = ['amoxicillin', 'paracetamol', 'metformin']
+const POPULAR_MEDICINES = [
+  { name: 'amoxicillin', slug: 'amoxicillin' },
+  { name: 'paracetamol', slug: 'paracetamol' },
+  { name: 'metformin', slug: 'metformin' },
+]
 const STORAGE_KEY = 'pustakaobat-recent-searches'
 
 export function MedicineSearchForm({
@@ -69,7 +73,7 @@ export function MedicineSearchForm({
           className="min-w-0 flex-1 bg-transparent px-5 py-3 text-base outline-none placeholder:text-text-muted/75"
         />
         <datalist id={`${inputId}-suggestions`}>
-          {[...recent, ...POPULAR_SEARCHES].map((item) => <option key={item} value={item} />)}
+          {[...recent, ...POPULAR_MEDICINES.map((medicine) => medicine.name)].map((item) => <option key={item} value={item} />)}
         </datalist>
         {aware && <input type="hidden" name="aware" value={aware} />}
         {essential && <input type="hidden" name="essential" value={essential} />}
@@ -88,7 +92,7 @@ export function MedicineSearchForm({
         ) : (
           <>
             <span>Coba:</span>
-            {POPULAR_SEARCHES.map((item) => <Link key={item} href={`/obat?q=${item}`} className="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{item}</Link>)}
+            {POPULAR_MEDICINES.map((medicine) => <Link key={medicine.slug} href={`/obat/${medicine.slug}`} className="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{medicine.name}</Link>)}
           </>
         )}
       </div>
