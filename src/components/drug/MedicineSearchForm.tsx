@@ -3,7 +3,6 @@
 import { useEffect, useId, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Clock3, Search, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 const POPULAR_SEARCHES = ['amoxicillin', 'paracetamol', 'metformin']
 const STORAGE_KEY = 'pustakaobat-recent-searches'
@@ -54,13 +53,10 @@ export function MedicineSearchForm({
         method="get"
         onSubmit={rememberSearch}
         role="search"
-        className={cn(
-          'flex w-full items-center overflow-hidden border bg-surface transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10',
-          prominent ? 'rounded-2xl border-2 border-text shadow-[0_4px_0_var(--color-text)]' : 'rounded-2xl border-2 border-text p-1.5 shadow-[0_4px_0_var(--color-text)]',
-        )}
+        className="flex w-full items-center overflow-hidden rounded-2xl border-2 border-text bg-surface p-1.5 shadow-[0_4px_0_var(--color-text)] transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10"
       >
         <label htmlFor={inputId} className="sr-only">Cari nama obat</label>
-        {!prominent && <Search className="ml-3 shrink-0 text-primary" size={21} aria-hidden="true" />}
+        <Search className="ml-3 shrink-0 text-primary" size={21} aria-hidden="true" />
         <input
           id={inputId}
           name="q"
@@ -77,8 +73,8 @@ export function MedicineSearchForm({
         </datalist>
         {aware && <input type="hidden" name="aware" value={aware} />}
         {essential && <input type="hidden" name="essential" value={essential} />}
-        <button type="submit" className={cn('inline-flex min-h-12 shrink-0 items-center gap-2 bg-primary px-5 text-sm font-bold text-white transition-colors hover:bg-primary-hover sm:px-6', prominent ? 'rounded-none' : 'rounded-xl')}>
-          Cari {!prominent && <ArrowRight size={17} aria-hidden="true" />}
+        <button type="submit" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white transition-colors hover:bg-primary-hover sm:px-6">
+          Cari <ArrowRight size={17} aria-hidden="true" />
         </button>
       </form>
 
