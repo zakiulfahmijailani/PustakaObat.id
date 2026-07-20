@@ -55,12 +55,12 @@ export function MedicineSearchForm({
         onSubmit={rememberSearch}
         role="search"
         className={cn(
-          'flex w-full items-center overflow-hidden rounded-2xl border bg-surface p-1.5 transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10',
-          prominent ? 'border-border shadow-[0_18px_50px_-20px_rgba(20,83,45,0.35)]' : 'border-2 border-text shadow-[0_4px_0_var(--color-text)]',
+          'flex w-full items-center overflow-hidden border bg-surface transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10',
+          prominent ? 'rounded-2xl border-2 border-text shadow-[0_4px_0_var(--color-text)]' : 'rounded-2xl border-2 border-text p-1.5 shadow-[0_4px_0_var(--color-text)]',
         )}
       >
         <label htmlFor={inputId} className="sr-only">Cari nama obat</label>
-        <Search className="ml-3 shrink-0 text-primary" size={21} aria-hidden="true" />
+        {!prominent && <Search className="ml-3 shrink-0 text-primary" size={21} aria-hidden="true" />}
         <input
           id={inputId}
           name="q"
@@ -69,16 +69,16 @@ export function MedicineSearchForm({
           onChange={(event) => setQuery(event.target.value)}
           list={`${inputId}-suggestions`}
           autoComplete="off"
-          placeholder="Cari nama generik atau nama dagang"
-          className="min-w-0 flex-1 bg-transparent px-3 py-3 text-base outline-none placeholder:text-text-muted/75"
+          placeholder={prominent ? 'Ketik nama obat, mis. parasetamol atau amoksisilin...' : 'Cari nama generik atau nama dagang'}
+          className="min-w-0 flex-1 bg-transparent px-5 py-3 text-base outline-none placeholder:text-text-muted/75"
         />
         <datalist id={`${inputId}-suggestions`}>
           {[...recent, ...POPULAR_SEARCHES].map((item) => <option key={item} value={item} />)}
         </datalist>
         {aware && <input type="hidden" name="aware" value={aware} />}
         {essential && <input type="hidden" name="essential" value={essential} />}
-        <button type="submit" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white transition-colors hover:bg-primary-hover sm:px-6">
-          Cari <ArrowRight size={17} aria-hidden="true" />
+        <button type="submit" className={cn('inline-flex min-h-12 shrink-0 items-center gap-2 bg-primary px-5 text-sm font-bold text-white transition-colors hover:bg-primary-hover sm:px-6', prominent ? 'rounded-none' : 'rounded-xl')}>
+          Cari {!prominent && <ArrowRight size={17} aria-hidden="true" />}
         </button>
       </form>
 
