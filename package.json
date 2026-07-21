@@ -30,6 +30,7 @@
     "full-label:verify": "node scripts/full-label-v3.2/verify-import.mjs",
     "full-label:upload": "node scripts/full-label-v3.2/upload-object-shards.mjs",
     "full-label:storage:verify": "node scripts/full-label-v3.2/verify-object-storage.mjs",
+    "full-label:storage:register-dashboard": "node scripts/full-label-v3.2/register-dashboard-upload.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
     "super-admin:bootstrap": "node scripts/bootstrap-super-admin.mjs"
   },

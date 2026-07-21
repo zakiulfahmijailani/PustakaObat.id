@@ -8,7 +8,8 @@ database metadata from source prose.
 - Neon test branch: compact label lookup metadata, safe ranked candidates,
   a derived review queue, section counts, and sparse object-upload state.
 - Immutable package/object archive: the complete metadata exports.
-- Private S3-compatible object storage: one gzip JSON object per FDA label.
+- Private R2 object storage: the 16 gzip JSONL transport shards, uploaded
+  through the Cloudflare dashboard when the S3 endpoint is unavailable.
 - Git: scripts, schema, and documentation only. Never the handoff package.
 
 Every imported source row must remain:
@@ -19,7 +20,7 @@ public_status = hidden
 publication_eligible = false
 ```
 
-## Why the 16 transport shards are repartitioned
+## Why the 16 transport shards are retained
 
 The Colab package contains 16 gzip JSONL transport files of roughly 180–190 MB
 each. Serving those files directly would make a single drug page scan a very
@@ -74,6 +75,24 @@ npm run full-label:storage:verify -- `
 
 Repeat for shards `0` through `15`. Upload and verification are resumable:
 labels already marked `verified` are skipped.
+
+### Dashboard upload fallback
+
+When the R2 S3 endpoint has a TLS problem, upload the 16 files in
+`object_storage_payload/` through the R2 dashboard. Then register the exact
+root object names in the Neon test branch:
+
+```powershell
+npm run full-label:storage:register-dashboard -- `
+  --package "<workbench_export>" `
+  --env .env.full-label.local `
+  --expected-host <test-branch-host.neon.tech> `
+  --bucket pustakaobat-fda-label-v32 `
+  --apply YES
+```
+
+This command is idempotent, checks every package checksum and size, verifies
+all 16 shard rows, and refuses to alter any publication state.
 
 The compact metadata import is designed for a 512 MB Neon test branch. The
 verified v3.2 import uses about 321 MB and does not duplicate full source prose.
