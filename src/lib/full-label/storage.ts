@@ -31,6 +31,11 @@ interface ObjectStorageConfig {
   bucket: string
 }
 
+interface PrivateReaderConfig {
+  url: string
+  token: string
+}
+
 let storageConfig: ObjectStorageConfig | null = null
 
 function getObjectStorageConfig(): ObjectStorageConfig {
@@ -58,20 +63,31 @@ function getObjectStorageConfig(): ObjectStorageConfig {
   return storageConfig
 }
 
-export async function readLabelSectionsFromShard(
-  objectKey: string,
+function getPrivateReaderConfig(): PrivateReaderConfig | null {
+  const url = process.env.PUSTAKAOBAT_OBJECT_READER_URL?.replace(/\/$/, '')
+  const token = process.env.PUSTAKAOBAT_OBJECT_READER_TOKEN
+
+  if (!url || !token) return null
+
+  return { url, token }
+}
+
+function createLineReader(source: Readable) {
+  const gunzip = createGunzip()
+  source.pipe(gunzip)
+
+  return {
+    gunzip,
+    lines: readline.createInterface({ input: gunzip, crlfDelay: Infinity }),
+  }
+}
+
+async function readMatchingSections(
+  source: Readable,
   labelId: string,
   expectedSectionCount: number,
 ): Promise<FullLabelSection[]> {
-  const { client, bucket } = getObjectStorageConfig()
-  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }))
-
-  if (!response.Body) throw new Error('R2 returned an empty object body.')
-
-  const source = Readable.from(response.Body as AsyncIterable<Uint8Array>)
-  const gunzip = createGunzip()
-  source.pipe(gunzip)
-  const lines = readline.createInterface({ input: gunzip, crlfDelay: Infinity })
+  const { gunzip, lines } = createLineReader(source)
   const sections: FullLabelSection[] = []
 
   try {
@@ -91,4 +107,43 @@ export async function readLabelSectionsFromShard(
   }
 
   return sections
+}
+
+export async function readLabelSectionsFromShard(
+  objectKey: string,
+  labelId: string,
+  expectedSectionCount: number,
+): Promise<FullLabelSection[]> {
+  const privateReader = getPrivateReaderConfig()
+
+  if (privateReader) {
+    const response = await fetch(
+      `${privateReader.url}/objects/${encodeURIComponent(objectKey)}`,
+      {
+        headers: { Authorization: `Bearer ${privateReader.token}` },
+        cache: 'no-store',
+      },
+    )
+
+    if (!response.ok || !response.body) {
+      throw new Error(`Private R2 reader returned HTTP ${response.status}.`)
+    }
+
+    return readMatchingSections(
+      Readable.fromWeb(response.body as never),
+      labelId,
+      expectedSectionCount,
+    )
+  }
+
+  const { client, bucket } = getObjectStorageConfig()
+  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }))
+
+  if (!response.Body) throw new Error('R2 returned an empty object body.')
+
+  return readMatchingSections(
+    Readable.from(response.Body as AsyncIterable<Uint8Array>),
+    labelId,
+    expectedSectionCount,
+  )
 }
