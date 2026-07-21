@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getActiveProfile } from '@/lib/auth/server'
-import { queryNeon } from '@/lib/neon/server'
+import { queryFullLabelNeon } from '@/lib/full-label/database'
 import { readLabelSectionsFromShard } from '@/lib/full-label/storage'
 
 export const runtime = 'nodejs'
@@ -38,7 +38,9 @@ export async function GET(
     return NextResponse.json({ error: 'Akses reviewer diperlukan untuk preview.' }, { status: 403 })
   }
 
-  const rows = await queryNeon<LabelRouteRow>(`
+  let rows: LabelRouteRow[]
+  try {
+    rows = await queryFullLabelNeon<LabelRouteRow>(`
     select
       d.label_id,
       d.spl_document_id,
@@ -66,7 +68,11 @@ export async function GET(
         (not $2::boolean and d.editorial_status = 'published' and d.public_status = 'published' and d.publication_eligible = true)
       )
     limit 1
-  `, [labelId, preview])
+    `, [labelId, preview])
+  } catch (error) {
+    console.error('Full-label metadata query failed', { labelId, error })
+    return NextResponse.json({ error: 'Metadata full-label belum tersedia pada database yang terhubung.' }, { status: 503 })
+  }
 
   const label = rows[0]
   if (!label) {
