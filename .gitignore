@@ -53,3 +53,8 @@ __pycache__/
 # it only into the authenticated Neon staging tables.
 /data/imports/website_export/
 /data/imports/apoteq_website_export_v2_2_codex.zip
+
+# PustakaObat full-label v3.2 contains regulated source evidence and multi-GB
+# object-storage payloads. Keep every local package out of Git.
+/data/imports/full-label-v3.2/
+/data/imports/*full_label*v3_2*/
