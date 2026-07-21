@@ -67,7 +67,13 @@ function getPrivateReaderConfig(): PrivateReaderConfig | null {
   const url = process.env.PUSTAKAOBAT_OBJECT_READER_URL?.replace(/\/$/, '')
   const token = process.env.PUSTAKAOBAT_OBJECT_READER_TOKEN
 
-  if (!url || !token) return null
+  if (!url || !token) {
+    console.warn('Full-label private reader is not configured.', {
+      urlConfigured: Boolean(url),
+      tokenConfigured: Boolean(token),
+    })
+    return null
+  }
 
   return { url, token }
 }
