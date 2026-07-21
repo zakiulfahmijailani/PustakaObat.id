@@ -117,7 +117,17 @@ export async function GET(
     })
     return NextResponse.json({
       error: 'Label sedang tidak dapat dimuat.',
-      ...(preview && error instanceof Error ? { detail: error.message } : {}),
-    }, { status: 502 })
+      ...(preview
+        ? {
+            detail: error instanceof Error ? error.message : String(error),
+            reader_transport: 'private_worker_only',
+            reader_url_configured: Boolean(process.env.PUSTAKAOBAT_OBJECT_READER_URL),
+            reader_token_configured: Boolean(process.env.PUSTAKAOBAT_OBJECT_READER_TOKEN),
+          }
+        : {}),
+    }, {
+      status: 502,
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
   }
 }

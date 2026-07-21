@@ -1,6 +1,5 @@
 import 'server-only'
 
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
 import { createGunzip } from 'node:zlib'
 import * as readline from 'node:readline'
@@ -26,41 +25,9 @@ export interface FullLabelSection {
   section_group: string | null
 }
 
-interface ObjectStorageConfig {
-  client: S3Client
-  bucket: string
-}
-
 interface PrivateReaderConfig {
   url: string
   token: string
-}
-
-let storageConfig: ObjectStorageConfig | null = null
-
-function getObjectStorageConfig(): ObjectStorageConfig {
-  if (storageConfig) return storageConfig
-
-  const endpoint = process.env.PUSTAKAOBAT_OBJECT_ENDPOINT
-  const bucket = process.env.PUSTAKAOBAT_OBJECT_BUCKET
-  const accessKeyId = process.env.PUSTAKAOBAT_OBJECT_ACCESS_KEY_ID
-  const secretAccessKey = process.env.PUSTAKAOBAT_OBJECT_SECRET_ACCESS_KEY
-
-  if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
-    throw new Error('PustakaObat object storage is not configured.')
-  }
-
-  storageConfig = {
-    bucket,
-    client: new S3Client({
-      endpoint,
-      region: process.env.PUSTAKAOBAT_OBJECT_REGION || 'auto',
-      forcePathStyle: process.env.PUSTAKAOBAT_OBJECT_FORCE_PATH_STYLE === 'true',
-      credentials: { accessKeyId, secretAccessKey },
-    }),
-  }
-
-  return storageConfig
 }
 
 function getPrivateReaderConfig(): PrivateReaderConfig | null {
@@ -122,33 +89,27 @@ export async function readLabelSectionsFromShard(
 ): Promise<FullLabelSection[]> {
   const privateReader = getPrivateReaderConfig()
 
-  if (privateReader) {
-    const response = await fetch(
-      `${privateReader.url}/objects/${encodeURIComponent(objectKey)}`,
-      {
-        headers: { Authorization: `Bearer ${privateReader.token}` },
-        cache: 'no-store',
-      },
-    )
-
-    if (!response.ok || !response.body) {
-      throw new Error(`Private R2 reader returned HTTP ${response.status}.`)
-    }
-
-    return readMatchingSections(
-      Readable.fromWeb(response.body as never),
-      labelId,
-      expectedSectionCount,
-    )
+  if (!privateReader) {
+    // The direct S3-compatible endpoint is deliberately not used here. It
+    // fails its TLS handshake from the deployed application, while the
+    // private Worker binding reads the same R2 bucket without exposing it.
+    throw new Error('Private full-label reader is not configured.')
   }
 
-  const { client, bucket } = getObjectStorageConfig()
-  const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }))
+  const response = await fetch(
+    `${privateReader.url}/objects/${encodeURIComponent(objectKey)}`,
+    {
+      headers: { Authorization: `Bearer ${privateReader.token}` },
+      cache: 'no-store',
+    },
+  )
 
-  if (!response.Body) throw new Error('R2 returned an empty object body.')
+  if (!response.ok || !response.body) {
+    throw new Error(`Private R2 reader returned HTTP ${response.status}.`)
+  }
 
   return readMatchingSections(
-    Readable.from(response.Body as AsyncIterable<Uint8Array>),
+    Readable.fromWeb(response.body as never),
     labelId,
     expectedSectionCount,
   )
