@@ -94,6 +94,27 @@ npm run full-label:storage:register-dashboard -- `
 This command is idempotent, checks every package checksum and size, verifies
 all 16 shard rows, and refuses to alter any publication state.
 
+### Server endpoint
+
+The website reads a label through the server-only endpoint:
+
+```text
+GET /api/full-label/labels/{label_id}/sections
+```
+
+The endpoint resolves the label's `object_shard` and `object_key` from Neon,
+streams and decompresses the corresponding private R2 JSONL shard, and returns
+only that label's sections. R2 credentials never reach the browser. Published
+labels are available without login; source-only hidden labels can only be
+previewed by an active staff member with:
+
+```text
+GET /api/full-label/labels/{label_id}/sections?preview=1
+```
+
+The endpoint returns 404 for hidden labels in normal public mode and does not
+change editorial or publication state.
+
 The compact metadata import is designed for a 512 MB Neon test branch. The
 verified v3.2 import uses about 321 MB and does not duplicate full source prose.
 
