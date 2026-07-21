@@ -115,6 +115,9 @@ export async function GET(
       objectKey: label.object_key,
       error,
     })
-    return NextResponse.json({ error: 'Label sedang tidak dapat dimuat.' }, { status: 502 })
+    return NextResponse.json({
+      error: 'Label sedang tidak dapat dimuat.',
+      ...(preview && error instanceof Error ? { detail: error.message } : {}),
+    }, { status: 502 })
   }
 }
