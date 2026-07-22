@@ -45,6 +45,9 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
 
   if (localDrug) {
     const reviewedAt = formatDate(localDrug.reviewed_at || localDrug.published_at || localDrug.updated_at)
+    const requiredSections = ['indication', 'dosage', 'side_effects', 'contraindication', 'warnings']
+    const publishedSectionTypes = new Set(localDrug.sections.map((section) => section.section_type))
+    const completeCoreMonograph = requiredSections.every((section) => publishedSectionTypes.has(section))
     return (
       <div className="print-container container max-w-5xl px-4 pb-28">
         <Link href="/obat" className="print-hide mb-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"><ArrowLeft size={17} /> Kembali ke pustaka</Link>
@@ -56,7 +59,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
               <h1 className="font-serif text-4xl font-bold capitalize leading-tight text-text md:text-5xl">{localDrug.display_name}</h1>
               {localDrug.name !== localDrug.display_name && <p className="mt-1 text-sm text-text-muted">Nama produk: {localDrug.name}</p>}
             </div>
-            <Badge variant="success" className="border border-success/30 px-3 py-1"><BadgeCheck className="mr-1" size={13} /> Terverifikasi apoteker</Badge>
+            <Badge variant={completeCoreMonograph ? 'success' : 'warning'} className="px-3 py-1"><BadgeCheck className="mr-1" size={13} />{completeCoreMonograph ? 'Terverifikasi apoteker' : 'Terverifikasi sebagian'}</Badge>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -76,6 +79,8 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
 
           <div className="mt-5"><PrintMonographButton /></div>
         </header>
+
+        {!completeCoreMonograph && <section className="mt-5 rounded-xl border border-warning/30 bg-warning/5 p-5"><div className="flex gap-3"><CircleAlert className="mt-0.5 shrink-0 text-warning" size={21} /><div><h2 className="font-bold text-text">Monografi diterbitkan bertahap</h2><p className="mt-1 text-sm leading-relaxed text-text-muted">Hanya bagian yang telah disetujui Reviewer dan diterbitkan Admin yang tampil. Bagian lain akan ditambahkan setelah menyelesaikan alur editorial dan review.</p></div></div></section>}
 
         {localDrug.summary && (
           <section className="mt-5 rounded-xl border border-warning/30 bg-warning/5 p-5">
