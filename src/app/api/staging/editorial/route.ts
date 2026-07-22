@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getActiveProfile } from '@/lib/auth/server'
 import { isSameOriginMutation } from '@/lib/auth/request'
-import { createEditorialDraftFromAiCandidate, publishApprovedMonograph, reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
+import { createEditorialDraftFromAiCandidate, publishApprovedMonograph, publishApprovedSection, reviewEditorialDraft, saveEditorialDraft, selectPilotDrug, submitEditorialDraft } from '@/lib/staging/mutations'
 
 const drugKey = z.string().regex(/^DRUG_[A-Z0-9]+$/)
 const requestSchema = z.discriminatedUnion('action', [
@@ -16,6 +16,7 @@ const requestSchema = z.discriminatedUnion('action', [
   }),
   z.object({ action: z.literal('submit_draft'), draftId: z.string().uuid() }),
   z.object({ action: z.literal('publish_monograph'), drugKey }),
+  z.object({ action: z.literal('publish_section'), draftId: z.string().uuid() }),
   z.object({
     action: z.literal('review_draft'),
     draftId: z.string().uuid(),
@@ -47,8 +48,9 @@ export async function POST(request: Request) {
       if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
       return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
     }
-    if (body.action === 'publish_monograph') {
+    if (body.action === 'publish_monograph' || body.action === 'publish_section') {
       if (session.activeRole !== 'admin') return NextResponse.json({ error: 'Admin access is required.' }, { status: 403 })
+      if (body.action === 'publish_section') return NextResponse.json({ section: await publishApprovedSection(body.draftId, session.user.id) })
       return NextResponse.json({ publication: await publishApprovedMonograph(body.drugKey, session.user.id) })
     }
     if (session.activeRole !== 'reviewer') return NextResponse.json({ error: 'Reviewer access is required.' }, { status: 403 })

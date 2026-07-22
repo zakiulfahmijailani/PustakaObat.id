@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/server'
 const navItems: StaffNavItem[] = [
   { title: 'Ringkasan', href: '/admin/dashboard', icon: 'layout-dashboard' },
   { title: 'Data Obat', href: '/admin/medicines', icon: 'file-text' },
+  { title: 'Monografi Siap Terbit', href: '/admin/publication-queue', icon: 'book-open-check' },
   { title: 'Diskusi Internal', href: '/admin/discussions', icon: 'message-square' },
   { title: 'Reviewer & User', href: '/admin/users', icon: 'users' },
   { title: 'Editor', href: '/admin/editors', icon: 'file-pen-line' },

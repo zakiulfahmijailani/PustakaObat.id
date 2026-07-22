@@ -134,3 +134,12 @@ export async function publishApprovedMonograph(drugKey: string, actorId: string)
   if (!rows[0]) throw new Error('The approved monograph could not be published.')
   return rows[0]
 }
+
+export async function publishApprovedSection(draftId: string, actorId: string) {
+  const rows = await queryNeon<{ drug_id: string; publication_id: string; public_section_id: string; section_type: string }>(
+    'select * from public.publish_approved_section($1::uuid, $2::uuid)',
+    [draftId, actorId],
+  )
+  if (!rows[0]) throw new Error('The approved section could not be published.')
+  return rows[0]
+}
