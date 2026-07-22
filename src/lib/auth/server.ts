@@ -213,4 +213,6 @@ export async function requireSuperAdmin() {
   return session
 }
 
-export const requireReviewerOrAdmin = requireReviewer
+export function requireReviewerOrAdmin() {
+  return requireActiveProfile(['reviewer', 'admin'], '/masuk')
+}

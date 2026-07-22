@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight, BadgeCheck, BookOpenText, Clock3, FileWarning, FlaskConical, ShieldAlert } from 'lucide-react'
-import { requireReviewer } from '@/lib/auth/server'
+import { requireReviewerOrAdmin } from '@/lib/auth/server'
 import { getStagedDrugForStaff } from '@/lib/staging/queries'
 import { queryFullLabelNeon } from '@/lib/full-label/database'
 import { EditorialReviewPanel } from '@/components/reviewer/EditorialReviewPanel'
@@ -41,7 +41,7 @@ async function getFullLabelCandidates(rxcui: string | null) {
 }
 
 export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string; basePath: string }) {
-  const session = await requireReviewer()
+  const session = await requireReviewerOrAdmin()
   const { concept, evidence, sources, drafts, candidates, events, publication, error } = await getStagedDrugForStaff(drugKey)
   if (error || !concept) notFound()
   const fullLabelCandidates = await getFullLabelCandidates(concept.rxcui)

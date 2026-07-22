@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { FlaskConical, Search, ShieldAlert } from 'lucide-react'
-import { requireReviewer } from '@/lib/auth/server'
+import { requireReviewerOrAdmin } from '@/lib/auth/server'
 import { getStagedDrugConcepts, type StagingFilters } from '@/lib/staging/queries'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CatalogPagination } from '@/components/drug/CatalogPagination'
 
 export async function StagingQueuePage({ filters, basePath }: { filters: StagingFilters; basePath: string }) {
-  await requireReviewer()
+  await requireReviewerOrAdmin()
   const { concepts, count, page, error } = await getStagedDrugConcepts(filters)
   return (
     <div className="space-y-8">
