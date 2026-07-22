@@ -83,7 +83,7 @@ begin
       s.source_url, s.validation_status, s.usage_scope, s.retrieved_at
     from public.monograph_staging_source_documents s
     where s.drug_key = approved_draft.drug_key
-    on conflict (publication_id, source_document_key) do nothing;
+    on conflict do nothing;
 
     update public.who_medicines
     set drug_id = public_drug_id

@@ -42,7 +42,7 @@ async function getFullLabelCandidates(rxcui: string | null) {
 
 export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string; basePath: string }) {
   const session = await requireReviewerOrAdmin()
-  const { concept, evidence, sources, drafts, candidates, events, publication, error } = await getStagedDrugForStaff(drugKey)
+  const { concept, evidence, sources, drafts, candidates, events, publication, publishedDraftIds, error } = await getStagedDrugForStaff(drugKey)
   if (error || !concept) notFound()
   const fullLabelCandidates = await getFullLabelCandidates(concept.rxcui)
   const evidenceBySection = Object.entries(Object.groupBy(evidence, (item) => item.section_type)).sort(([left], [right]) => left.localeCompare(right))
@@ -70,7 +70,7 @@ export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string
 
       <Card className="border-primary/20"><CardHeader><CardTitle>Review Draf Bahasa Indonesia</CardTitle><p className="text-sm leading-relaxed text-text-muted">Reviewer menilai draf Bahasa Indonesia yang sudah dikirim Editor. Evidence FDA di bawah tetap read-only sebagai sumber pembanding.</p></CardHeader><CardContent><EditorialReviewPanel drafts={drafts} aiCandidates={candidates} actorId={session.user.id} /></CardContent></Card>
 
-      {session.activeRole === 'admin' && <AdminPublicationPanel drugKey={drugKey} drafts={drafts} publication={publication} />}
+      {session.activeRole === 'admin' && <AdminPublicationPanel drafts={drafts} publication={publication} publishedDraftIds={publishedDraftIds} />}
 
       <section className="space-y-4"><div><h2 className="font-serif text-3xl text-text">Evidence sumber</h2><p className="mt-1 text-sm text-text-muted">Evidence FDA hanya untuk pembanding reviewer dan tidak dapat diedit atau diterbitkan langsung.</p></div>{evidenceBySection.map(([section, records]) => <Card key={section}><CardHeader><div className="flex items-center justify-between gap-4"><CardTitle>{SECTION_LABELS[section] || section}</CardTitle><Badge variant="outline">{records?.length || 0} sumber</Badge></div></CardHeader><CardContent className="space-y-4">{records?.map((item) => <details key={item.evidence_id} className="rounded-2xl border border-border bg-surface-2 p-5"><summary className="cursor-pointer font-bold text-text">{item.source_name} · {item.source_section}</summary><div className="mt-4 flex flex-wrap gap-2"><Badge variant="outline">Kecocokan sumber: {item.ingredient_match_status}</Badge>{item.product_specific && <Badge variant="warning">Spesifik produk</Badge>}<Badge variant="destructive">Tidak untuk publik</Badge></div><p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-text-muted">{item.source_text}</p><p className="mt-4 text-xs text-text-muted">Evidence ID {item.evidence_id} · publication_eligible=false</p></details>)}</CardContent></Card>)}</section>
 
