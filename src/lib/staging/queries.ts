@@ -82,7 +82,7 @@ export interface FullLabelCandidate {
   candidate_rank: number | null
 }
 
-async function getFullLabelCandidates(rxcui: string | null) {
+export async function getFullLabelCandidates(rxcui: string | null) {
   if (!rxcui) return [] as FullLabelCandidate[]
 
   try {
@@ -105,7 +105,7 @@ async function getFullLabelCandidates(rxcui: string | null) {
 }
 
 export async function getStagedDrugForEditor(drugKey: string) {
-  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], fullLabelCandidates: [] as FullLabelCandidate[], error: new Error('Neon is not configured.') }
+  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], error: new Error('Neon is not configured.') }
   try {
     const [conceptRows, drafts, candidates] = await Promise.all([
       queryNeon<StagingDrugConcept>("select * from public.monograph_staging_drugs where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden' limit 1", [drugKey]),
@@ -116,10 +116,8 @@ export async function getStagedDrugForEditor(drugKey: string) {
         where drug_key = $1 and review_status = 'draft_ai' and requires_pharmacist_review = true
         order by section_type`, [drugKey]),
     ])
-    const concept = conceptRows[0] || null
-    const fullLabelCandidates = await getFullLabelCandidates(concept?.rxcui || null)
-    return { concept, drafts, candidates, fullLabelCandidates, error: null }
+    return { concept: conceptRows[0] || null, drafts, candidates, error: null }
   } catch (error) {
-    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], fullLabelCandidates: [] as FullLabelCandidate[], error }
+    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], error }
   }
 }
