@@ -24,6 +24,7 @@
     "indonesian:verify": "node scripts/staging/verify-indonesian.mjs",
     "indonesian:publish-search:migrate": "node scripts/staging/apply-migration.mjs 009_public_indonesian_search.sql",
     "discussions:migrate": "node scripts/staging/apply-migration.mjs 011_internal_discussions.sql",
+    "editorial:evidence-binding:migrate": "node scripts/staging/apply-migration.mjs 016_editorial_evidence_binding.sql",
     "full-label:validate": "node scripts/full-label-v3.2/validate-package.mjs",
     "full-label:migrate": "node scripts/full-label-v3.2/apply-schema.mjs",
     "full-label:import": "node scripts/full-label-v3.2/import-metadata.mjs",

@@ -13,6 +13,7 @@ const requestSchema = z.discriminatedUnion('action', [
     drugKey,
     sectionType: z.string().trim().min(1).max(80).regex(/^[a-z0-9_]+$/),
     contentIndonesian: z.string().trim().min(40).max(30000),
+    sourceLabelId: z.string().trim().min(1).max(300),
   }),
   z.object({ action: z.literal('submit_draft'), draftId: z.string().uuid() }),
   z.object({ action: z.literal('publish_monograph'), drugKey }),
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     if (body.action === 'create_from_ai_candidate' || body.action === 'save_draft' || body.action === 'submit_draft') {
       if (session.activeRole !== 'editor') return NextResponse.json({ error: 'Editor access is required.' }, { status: 403 })
       if (body.action === 'create_from_ai_candidate') return NextResponse.json({ draft: await createEditorialDraftFromAiCandidate(body.drugKey, body.sectionType, session.user.id) })
-      if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, session.user.id) })
+      if (body.action === 'save_draft') return NextResponse.json({ draft: await saveEditorialDraft(body.drugKey, body.sectionType, body.contentIndonesian, body.sourceLabelId, session.user.id) })
       return NextResponse.json({ draft: await submitEditorialDraft(body.draftId, session.user.id) })
     }
     if (body.action === 'publish_monograph' || body.action === 'publish_section') {

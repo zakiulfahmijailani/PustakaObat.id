@@ -68,6 +68,11 @@ export interface EditorialDraft {
   reviewed_by: string | null
   reviewed_at: string | null
   reviewer_note: string | null
+  source_label_id: string | null
+  source_section_types: string[]
+  source_label_effective_time: string | null
+  source_binding_method: string | null
+  source_bound_at: string | null
   publication_eligible: false
   created_at: string
   updated_at: string

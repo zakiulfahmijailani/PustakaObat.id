@@ -34,6 +34,10 @@ export async function GET(
   }
 
   const preview = new URL(request.url).searchParams.get('preview') === '1'
+  const requestedSectionTypes = new URL(request.url).searchParams.getAll('sectionType')
+  if (requestedSectionTypes.length > 20 || requestedSectionTypes.some((type) => !/^[a-z0-9_]+$/.test(type))) {
+    return NextResponse.json({ error: 'Filter seksi label tidak valid.' }, { status: 400 })
+  }
   if (preview && !(await getActiveProfile())) {
     return NextResponse.json({ error: 'Akses reviewer diperlukan untuk preview.' }, { status: 403 })
   }
@@ -89,6 +93,10 @@ export async function GET(
       }, { status: 502 })
     }
 
+    const filteredSections = requestedSectionTypes.length
+      ? sections.filter((section) => requestedSectionTypes.includes(section.section_type))
+      : sections
+
     return NextResponse.json({
       label: {
         label_id: label.label_id,
@@ -102,7 +110,7 @@ export async function GET(
         editorial_status: label.editorial_status,
         public_status: label.public_status,
         publication_eligible: label.publication_eligible,
-        sections,
+        sections: filteredSections,
       },
     }, {
       headers: preview
