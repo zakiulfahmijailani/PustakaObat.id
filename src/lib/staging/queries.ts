@@ -3,6 +3,7 @@ import 'server-only'
 import { isNeonConfigured, queryNeon } from '@/lib/neon/server'
 import { WHO_PAGE_SIZE } from '@/lib/who/constants'
 import type { EditorialDraft, EditorialEvent, IndonesianCandidateDraft, MonographPublication, StagingDrugConcept, StagingEvidence, StagingSourceDocument } from './types'
+import { queryFullLabelNeon } from '@/lib/full-label/database'
 
 export interface StagingFilters {
   q?: string
@@ -72,8 +73,39 @@ export async function getStagedDrugForStaff(drugKey: string) {
   }
 }
 
+/** A private FDA label that has been safely matched to a staged drug concept. */
+export interface FullLabelCandidate {
+  label_id: string
+  preferred_name: string | null
+  effective_time: string | null
+  ingredient_count: number
+  candidate_rank: number | null
+}
+
+async function getFullLabelCandidates(rxcui: string | null) {
+  if (!rxcui) return [] as FullLabelCandidate[]
+
+  try {
+    return await queryFullLabelNeon<FullLabelCandidate>(`
+      select c.label_id, c.preferred_name, d.effective_time, d.ingredient_count, c.candidate_rank
+      from public.pb_fl32_drug_label_candidates c
+      join public.pb_fl32_label_documents d using (label_id)
+      join public.pb_fl32_label_section_manifests m using (label_id)
+      join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+      where c.rxcui = $1
+        and s.storage_status in ('uploaded', 'verified')
+      order by c.candidate_rank nulls last, d.effective_time desc nulls last
+      limit 5
+    `, [rxcui])
+  } catch {
+    // Full-label storage is optional for the editorial workspace. A missing
+    // R2/metadata connection must not hide the existing staged draft.
+    return [] as FullLabelCandidate[]
+  }
+}
+
 export async function getStagedDrugForEditor(drugKey: string) {
-  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], error: new Error('Neon is not configured.') }
+  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], fullLabelCandidates: [] as FullLabelCandidate[], error: new Error('Neon is not configured.') }
   try {
     const [conceptRows, drafts, candidates] = await Promise.all([
       queryNeon<StagingDrugConcept>("select * from public.monograph_staging_drugs where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden' limit 1", [drugKey]),
@@ -84,8 +116,10 @@ export async function getStagedDrugForEditor(drugKey: string) {
         where drug_key = $1 and review_status = 'draft_ai' and requires_pharmacist_review = true
         order by section_type`, [drugKey]),
     ])
-    return { concept: conceptRows[0] || null, drafts, candidates, error: null }
+    const concept = conceptRows[0] || null
+    const fullLabelCandidates = await getFullLabelCandidates(concept?.rxcui || null)
+    return { concept, drafts, candidates, fullLabelCandidates, error: null }
   } catch (error) {
-    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], error }
+    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], fullLabelCandidates: [] as FullLabelCandidate[], error }
   }
 }
