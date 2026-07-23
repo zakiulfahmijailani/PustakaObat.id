@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight, BadgeCheck, BookOpenText, Clock3, FileWarning, FlaskConical, ShieldAlert } from 'lucide-react'
 import { requireReviewerOrAdmin } from '@/lib/auth/server'
-import { getStagedDrugForStaff } from '@/lib/staging/queries'
-import { queryFullLabelNeon } from '@/lib/full-label/database'
+import { getFullLabelCandidates, getStagedDrugForStaff } from '@/lib/staging/queries'
 import { EditorialReviewPanel } from '@/components/reviewer/EditorialReviewPanel'
 import { AdminPublicationPanel } from '@/components/staging/AdminPublicationPanel'
 import { Badge } from '@/components/ui/Badge'
@@ -13,38 +12,11 @@ const SECTION_LABELS: Record<string, string> = {
   indication: 'Indikasi', dosage: 'Dosis dan penggunaan', warnings: 'Peringatan', side_effects: 'Efek samping', drug_interactions: 'Interaksi obat', specific_populations: 'Populasi khusus', pregnancy: 'Kehamilan', clinical_pharmacology: 'Farmakologi klinis', mechanism: 'Mekanisme kerja', pharmacokinetics: 'Farmakokinetik', storage: 'Penyimpanan', how_supplied: 'Sediaan', contraindication: 'Kontraindikasi',
 }
 
-interface FullLabelCandidate {
-  label_id: string
-  preferred_name: string | null
-  effective_time: string | null
-  ingredient_count: number
-  candidate_rank: number | null
-}
-
-async function getFullLabelCandidates(rxcui: string | null) {
-  if (!rxcui) return [] as FullLabelCandidate[]
-  try {
-    return await queryFullLabelNeon<FullLabelCandidate>(`
-      select c.label_id, c.preferred_name, d.effective_time, d.ingredient_count, c.candidate_rank
-      from public.pb_fl32_drug_label_candidates c
-      join public.pb_fl32_label_documents d using (label_id)
-      join public.pb_fl32_label_section_manifests m using (label_id)
-      join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
-      where c.rxcui = $1
-        and s.storage_status in ('uploaded', 'verified')
-      order by c.candidate_rank nulls last, d.effective_time desc nulls last
-      limit 5
-    `, [rxcui])
-  } catch {
-    return [] as FullLabelCandidate[]
-  }
-}
-
 export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string; basePath: string }) {
   const session = await requireReviewerOrAdmin()
   const { concept, evidence, sources, drafts, candidates, events, publication, publishedDraftIds, error } = await getStagedDrugForStaff(drugKey)
   if (error || !concept) notFound()
-  const fullLabelCandidates = await getFullLabelCandidates(concept.rxcui)
+  const fullLabelCandidates = await getFullLabelCandidates(concept.rxcui, concept.preferred_name).catch(() => [])
   const evidenceBySection = Object.entries(Object.groupBy(evidence, (item) => item.section_type)).sort(([left], [right]) => left.localeCompare(right))
   const fullLabelBasePath = basePath.startsWith('/admin') ? '/admin/full-labels' : '/reviewer/full-labels'
 

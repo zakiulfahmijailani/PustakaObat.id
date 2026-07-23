@@ -24,14 +24,17 @@ export async function GET(request: Request) {
   if (!/^DRUG_[A-Z0-9]+$/.test(drugKey)) return NextResponse.json({ error: 'Drug key tidak valid.' }, { status: 400 })
 
   try {
-    const concepts = await queryNeon<{ rxcui: string | null }>(`
-      select rxcui
+    const concepts = await queryNeon<{ rxcui: string | null, preferred_name: string | null }>(`
+      select rxcui, preferred_name
       from public.monograph_staging_drugs
       where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden'
       limit 1
     `, [drugKey])
 
-    const candidates = await withTimeout(getFullLabelCandidates(concepts[0]?.rxcui || null), 5000)
+    const candidates = await withTimeout(
+      getFullLabelCandidates(concepts[0]?.rxcui || null, concepts[0]?.preferred_name || null),
+      5000,
+    )
     return NextResponse.json({ candidates }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('Editor full-label candidate query failed', { drugKey, error })

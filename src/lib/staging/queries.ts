@@ -80,13 +80,20 @@ export interface FullLabelCandidate {
   effective_time: string | null
   ingredient_count: number
   candidate_rank: number | null
+  match_method: 'rxcui' | 'exact_single_ingredient_display_name'
 }
 
-export async function getFullLabelCandidates(rxcui: string | null) {
-  if (!rxcui) return [] as FullLabelCandidate[]
+type FullLabelCandidateRow = Omit<FullLabelCandidate, 'match_method'>
 
-  try {
-    return await queryFullLabelNeon<FullLabelCandidate>(`
+/**
+ * Finds private FDA labels for the editorial workbench without treating the
+ * result as a canonical identity merge. RxCUI is preferred. A narrowly scoped
+ * fallback is permitted only for an exact display-name match on a one-ingredient
+ * label, which keeps combinations (for example, abacavir + lamivudine) out of
+ * a single-ingredient drug workspace.
+ */
+export async function getFullLabelCandidates(rxcui: string | null, preferredName: string | null = null) {
+  const rxcuiCandidates = rxcui ? await queryFullLabelNeon<FullLabelCandidateRow>(`
       select c.label_id, c.preferred_name, d.effective_time, d.ingredient_count, c.candidate_rank
       from public.pb_fl32_drug_label_candidates c
       join public.pb_fl32_label_documents d using (label_id)
@@ -96,12 +103,34 @@ export async function getFullLabelCandidates(rxcui: string | null) {
         and s.storage_status in ('uploaded', 'verified')
       order by c.candidate_rank nulls last, d.effective_time desc nulls last
       limit 5
-    `, [rxcui])
-  } catch {
-    // Full-label storage is optional for the editorial workspace. A missing
-    // R2/metadata connection must not hide the existing staged draft.
-    return [] as FullLabelCandidate[]
-  }
+    `, [rxcui]).then((rows) => rows.map((row) => ({ ...row, match_method: 'rxcui' as const }))) : []
+
+  if (rxcuiCandidates.length > 0) return rxcuiCandidates
+
+  const normalizedName = preferredName?.trim()
+  if (!normalizedName || normalizedName.length < 3) return [] as FullLabelCandidate[]
+
+  return queryFullLabelNeon<FullLabelCandidateRow>(`
+    select
+      d.label_id,
+      $1::text as preferred_name,
+      d.effective_time,
+      d.ingredient_count,
+      null::integer as candidate_rank,
+      'exact_single_ingredient_display_name'::text as match_method
+    from public.pb_fl32_label_documents d
+    join public.pb_fl32_label_section_manifests m using (label_id)
+    join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+    where d.ingredient_count = 1
+      and s.storage_status in ('uploaded', 'verified')
+      and exists (
+        select 1
+        from jsonb_array_elements_text(d.display_names) as display_name(value)
+        where lower(display_name.value) = lower($1)
+      )
+    order by d.effective_time desc nulls last
+    limit 5
+  `, [normalizedName]).then((rows) => rows.map((row) => ({ ...row, match_method: 'exact_single_ingredient_display_name' as const })))
 }
 
 export async function getStagedDrugForEditor(drugKey: string) {
