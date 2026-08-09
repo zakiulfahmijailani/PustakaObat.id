@@ -19,6 +19,7 @@ const migrations = [
   "013_full_label_staging_v3_2_compact.sql",
   "014_full_label_staging_v3_2_sparse_storage.sql",
   "015_full_label_staging_v3_2_compact_objects.sql",
+  "017_full_label_indonesian_translation_overlay.sql",
 ];
 const client = new Client({ connectionString });
 

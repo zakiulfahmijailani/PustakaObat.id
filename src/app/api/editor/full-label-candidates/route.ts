@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     const candidates = await withTimeout(
       getFullLabelCandidates(concepts[0]?.rxcui || null, concepts[0]?.preferred_name || null),
-      5000,
+      15000,
     )
     return NextResponse.json({ candidates }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {

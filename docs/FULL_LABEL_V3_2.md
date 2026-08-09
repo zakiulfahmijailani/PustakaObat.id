@@ -136,3 +136,40 @@ Successful import does not alter `/obat` and does not create public monographs.
 The next application step is an authenticated reviewer view that selects a safe
 label candidate, fetches its private object, prepares an Indonesian draft, and
 requires pharmacist approval before an explicit publication operation.
+
+## Private Indonesian translation overlay
+
+The completed Colab translation is imported as a separate, private overlay. It
+is joined to FDA label sections only by `source_text_sha256`; source prose is
+not copied into Neon and the import never changes publication state.
+
+Build the overlay from the completed `data_indonesian_full_fda_g4_quality_v4`
+folder. This requires a local Python installation with `pyarrow`:
+
+```powershell
+npm run full-label:translations:build -- `
+  --translations "J:\My Drive\notebooks6 - translate\data_indonesian_full_fda_g4_quality_v4\translation_parts" `
+  --checkpoint "J:\My Drive\notebooks6 - translate\data_indonesian_full_fda_g4_quality_v4\checkpoint.json" `
+  --output "J:\My Drive\notebooks6 - translate\full_label_translation_overlay_v1"
+```
+
+Then apply the schema and upload the generated private objects:
+
+```powershell
+npm run full-label:migrate -- --env .env.full-label.local --expected-host <test-branch-host.neon.tech> --apply YES
+
+npm run full-label:translations:upload -- `
+  --package "J:\My Drive\notebooks6 - translate\full_label_translation_overlay_v1" `
+  --env .env.full-label.local `
+  --expected-host <test-branch-host.neon.tech> `
+  --apply YES
+```
+
+Only authenticated reviewer/admin previews read this overlay. The workbench
+labels it as `AI translated · unreviewed`; it never becomes a public monograph
+or a publishable label through this import.
+
+If the source artifact contains an empty AI output, the builder omits that one
+draft and records the count in its manifest. The reviewer then sees only the
+English source for that section; an empty string is never treated as a valid
+translation.

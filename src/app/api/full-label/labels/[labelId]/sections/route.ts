@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getActiveProfile } from '@/lib/auth/server'
 import { queryFullLabelNeon } from '@/lib/full-label/database'
-import { readLabelSectionsFromShard } from '@/lib/full-label/storage'
+import { readLabelSectionsFromObject, readLabelSectionsFromShard, readTranslationsFromOverlay, type IndonesianTranslation, type TranslationOverlayConfig } from '@/lib/full-label/storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -22,6 +22,11 @@ interface LabelRouteRow {
   object_shard: number
   object_key: string
   storage_status: string
+  label_object_storage_status: string | null
+}
+
+interface TranslationOverlayRow extends TranslationOverlayConfig {
+  import_id: string
 }
 
 export async function GET(
@@ -60,10 +65,12 @@ export async function GET(
       m.section_count,
       m.object_shard,
       s.object_key,
-      s.storage_status
+      s.storage_status,
+      o.storage_status as label_object_storage_status
     from public.pb_fl32_label_documents d
     join public.pb_fl32_label_section_manifests m using (label_id)
     join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+    left join public.pb_fl32_label_objects o using (label_id)
     where d.label_id = $1
       and s.storage_status in ('uploaded', 'verified')
       and (
@@ -84,7 +91,23 @@ export async function GET(
   }
 
   try {
-    const sections = await readLabelSectionsFromShard(label.object_key, label.label_id, label.section_count)
+    let sections
+    if (label.label_object_storage_status === 'verified') {
+      try {
+        sections = await readLabelSectionsFromObject(label.label_id, label.section_count)
+      } catch (labelObjectError) {
+        // A materialized object is an optimization, never a single point of
+        // failure. Keep the reviewer page available while an object is being
+        // retried or a storage edge is temporarily unavailable.
+        console.error('Materialized label object read failed; falling back to source shard', {
+          labelId,
+          error: labelObjectError,
+        })
+        sections = await readLabelSectionsFromShard(label.object_key, label.label_id, label.section_count)
+      }
+    } else {
+      sections = await readLabelSectionsFromShard(label.object_key, label.label_id, label.section_count)
+    }
     if (sections.length !== label.section_count) {
       return NextResponse.json({
         error: 'Isi shard belum lengkap.',
@@ -96,6 +119,50 @@ export async function GET(
     const filteredSections = requestedSectionTypes.length
       ? sections.filter((section) => requestedSectionTypes.includes(section.section_type))
       : sections
+
+    let translationOverlayState: 'available' | 'not_imported' | 'unavailable' = 'not_imported'
+    let translatedByHash = new Map<string, IndonesianTranslation>()
+    // AI translation is a private reviewer aid. It is deliberately never
+    // joined into the public response, even if the source label is published.
+    if (preview) {
+      try {
+        const overlays = await queryFullLabelNeon<TranslationOverlayRow>(`
+          select import_id::text, object_prefix, prefix_length
+          from public.pb_fl32_translation_imports
+          where status='verified'
+            and editorial_status='ai_translated'
+            and public_status='hidden'
+            and publication_eligible=false
+          order by verified_at desc nulls last, imported_at desc
+          limit 1
+        `)
+        const overlay = overlays[0]
+        if (overlay) {
+          translatedByHash = await readTranslationsFromOverlay(
+            overlay,
+            filteredSections
+              .map((section) => section.source_text_sha256 || '')
+              .filter(Boolean),
+          )
+          translationOverlayState = 'available'
+        }
+      } catch (translationError) {
+        console.error('Private translation overlay read failed', { labelId, translationError })
+        translationOverlayState = 'unavailable'
+      }
+    }
+
+    const reviewerSections = filteredSections.map((section) => {
+      const translation = section.source_text_sha256
+        ? translatedByHash.get(section.source_text_sha256.toLowerCase())
+        : undefined
+      return {
+        ...section,
+        indonesian_draft: preview ? translation?.content_indonesian || null : null,
+        translation_status: preview ? translation?.translation_status || section.translation_status : section.translation_status,
+        translation_quality_flags_json: preview ? translation?.quality_flags_json || '[]' : '[]',
+      }
+    })
 
     return NextResponse.json({
       label: {
@@ -110,7 +177,8 @@ export async function GET(
         editorial_status: label.editorial_status,
         public_status: label.public_status,
         publication_eligible: label.publication_eligible,
-        sections: filteredSections,
+        translation_overlay_state: preview ? translationOverlayState : undefined,
+        sections: reviewerSections,
       },
     }, {
       headers: preview

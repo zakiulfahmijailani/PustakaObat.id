@@ -17,6 +17,9 @@ interface FullLabelSection {
   source_language: string | null
   translation_status: string | null
   section_group: string | null
+  source_text_sha256: string | null
+  indonesian_draft: string | null
+  translation_quality_flags_json: string
 }
 
 interface FullLabelResponse {
@@ -32,6 +35,7 @@ interface FullLabelResponse {
     editorial_status: string
     public_status: string
     publication_eligible: boolean
+    translation_overlay_state?: 'available' | 'not_imported' | 'unavailable'
     sections: FullLabelSection[]
   }
 }
@@ -100,7 +104,7 @@ export function FullLabelWorkbench({ labelId, backHref }: { labelId: string; bac
     const needle = query.trim().toLocaleLowerCase('id-ID')
     if (!needle) return data.label.sections
     return data.label.sections.filter((section) =>
-      `${titleFor(section)} ${section.source_text || ''}`.toLocaleLowerCase('id-ID').includes(needle),
+      `${titleFor(section)} ${section.source_text || ''} ${section.indonesian_draft || ''}`.toLocaleLowerCase('id-ID').includes(needle),
     )
   }, [data, query])
 
@@ -140,13 +144,13 @@ export function FullLabelWorkbench({ labelId, backHref }: { labelId: string; bac
       </div>
     </section>
 
-    <section className="rounded-3xl border border-warning/35 bg-warning/5 p-5 text-sm leading-relaxed text-text-muted"><div className="flex gap-3"><ShieldCheck className="mt-0.5 shrink-0 text-warning" size={20} /><p><strong className="text-text">Belum terverifikasi dan belum diterjemahkan.</strong> Semua isi di bawah berasal dari label FDA berbahasa Inggris. Pertimbangkan variasi produk, bentuk sediaan, rute, dan tanggal label sebelum membuat keputusan editorial atau klinis.</p></div></section>
+    <section className="rounded-3xl border border-warning/35 bg-warning/5 p-5 text-sm leading-relaxed text-text-muted"><div className="flex gap-3"><ShieldCheck className="mt-0.5 shrink-0 text-warning" size={20} /><p><strong className="text-text">{label.translation_overlay_state === 'available' ? 'Terjemahan AI tersedia untuk pembanding, tetapi belum diverifikasi.' : 'Belum terverifikasi dan belum diterjemahkan.'}</strong> {label.translation_overlay_state === 'unavailable' ? 'Overlay terjemahan privat sedang tidak dapat dimuat; gunakan teks sumber dan coba lagi nanti. ' : ''}Semua isi di bawah tetap bahan editorial, bukan teks yang boleh diterbitkan langsung.</p></div></section>
 
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="space-y-4">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><h2 className="text-3xl font-serif text-text">Bagian label</h2><p className="mt-1 text-sm text-text-muted">Klik bagian untuk membaca teks sumber lengkap.</p></div><label className="relative block w-full sm:max-w-sm"><Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari dalam label…" className="h-11 w-full rounded-full border border-border bg-surface py-2 pl-11 pr-4 text-sm text-text outline-none transition focus:border-primary" /></label></div>
 
-        {sections.length ? sections.map((section, index) => <details key={section.section_id} open={index === 0 && !query} className="group rounded-3xl border border-border bg-surface shadow-sm"><summary className="flex min-h-16 list-none items-center justify-between gap-4 px-5 py-4 md:px-7"><div><p className="text-lg font-bold text-text">{titleFor(section)}</p><p className="mt-1 text-xs uppercase tracking-wider text-text-muted">{section.section_group?.replaceAll('_', ' ') || 'label section'} · English source</p></div><ChevronDown className="shrink-0 text-primary transition group-open:rotate-180" size={21} /></summary><div className="border-t border-border px-5 py-6 md:px-7"><p className="whitespace-pre-wrap break-words text-[0.95rem] leading-8 text-text">{section.source_text || 'Teks sumber tidak tersedia untuk bagian ini.'}</p><div className="mt-6 flex flex-wrap gap-2 text-xs"><Badge variant="outline">{section.source_character_count.toLocaleString('id-ID')} karakter</Badge><Badge variant="outline">{section.translation_status === 'untranslated' ? 'Belum diterjemahkan' : section.translation_status || 'Status tidak diketahui'}</Badge></div></div></details>) : <Card><CardContent className="p-8 text-center text-text-muted">Tidak ada bagian yang cocok dengan pencarian ini.</CardContent></Card>}
+        {sections.length ? sections.map((section, index) => <details key={section.section_id} open={index === 0 && !query} className="group rounded-3xl border border-border bg-surface shadow-sm"><summary className="flex min-h-16 list-none items-center justify-between gap-4 px-5 py-4 md:px-7"><div><p className="text-lg font-bold text-text">{titleFor(section)}</p><p className="mt-1 text-xs uppercase tracking-wider text-text-muted">{section.section_group?.replaceAll('_', ' ') || 'label section'} · {section.indonesian_draft ? 'English + Indonesian AI draft' : 'English source'}</p></div><ChevronDown className="shrink-0 text-primary transition group-open:rotate-180" size={21} /></summary><div className="space-y-6 border-t border-border px-5 py-6 md:px-7"><div><p className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Sumber Inggris</p><p className="whitespace-pre-wrap break-words text-[0.95rem] leading-8 text-text">{section.source_text || 'Teks sumber tidak tersedia untuk bagian ini.'}</p></div>{section.indonesian_draft && <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5"><p className="mb-2 text-xs font-bold uppercase tracking-wider text-primary">Draf Indonesia AI · perlu review apoteker</p><p className="whitespace-pre-wrap break-words text-[0.95rem] leading-8 text-text">{section.indonesian_draft}</p></div>}<div className="flex flex-wrap gap-2 text-xs"><Badge variant="outline">{section.source_character_count.toLocaleString('id-ID')} karakter sumber</Badge><Badge variant={section.indonesian_draft ? 'warning' : 'outline'}>{section.translation_status === 'AI_TRANSLATED_UNREVIEWED' ? 'AI translated · unreviewed' : section.translation_status === 'untranslated' ? 'Belum diterjemahkan' : section.translation_status || 'Status tidak diketahui'}</Badge>{section.translation_quality_flags_json !== '[]' && <Badge variant="warning">Perlu cek QC otomatis</Badge>}</div></div></details>) : <Card><CardContent className="p-8 text-center text-text-muted">Tidak ada bagian yang cocok dengan pencarian ini.</CardContent></Card>}
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">

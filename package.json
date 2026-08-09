@@ -32,6 +32,10 @@
     "full-label:upload": "node scripts/full-label-v3.2/upload-object-shards.mjs",
     "full-label:storage:verify": "node scripts/full-label-v3.2/verify-object-storage.mjs",
     "full-label:storage:register-dashboard": "node scripts/full-label-v3.2/register-dashboard-upload.mjs",
+    "full-label:translations:build": "python scripts/full-label-v3.2/build-indonesian-translation-overlay.py",
+    "full-label:translations:upload": "node scripts/full-label-v3.2/upload-indonesian-translation-overlay.mjs",
+    "full-label:translations:register": "node scripts/full-label-v3.2/register-indonesian-translation-overlay.mjs",
+    "full-label:objects:materialize": "node scripts/full-label-v3.2/materialize-label-objects.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
     "super-admin:bootstrap": "node scripts/bootstrap-super-admin.mjs"
   },
