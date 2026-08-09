@@ -35,11 +35,13 @@ export function BoundEvidencePanel({
   sectionTypes,
   drugName,
   onAvailabilityChange,
+  onIndonesianDraftChange,
 }: {
   labelId: string
   sectionTypes: string[]
   drugName: string
   onAvailabilityChange?: (available: boolean) => void
+  onIndonesianDraftChange?: (draft: string | null) => void
 }) {
   const [sections, setSections] = useState<LabelSection[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -54,6 +56,7 @@ export function BoundEvidencePanel({
     setLoaded(false)
     setTranslationOverlayState('not_imported')
     onAvailabilityChange?.(false)
+    onIndonesianDraftChange?.(null)
     const typeQuery = sectionTypeKey.split('|').filter(Boolean).map((type) => `sectionType=${encodeURIComponent(type)}`).join('&')
 
     fetch(`/api/full-label/labels/${encodeURIComponent(labelId)}/sections?preview=1&${typeQuery}`, {
@@ -67,15 +70,21 @@ export function BoundEvidencePanel({
         setTranslationOverlayState(body.label.translation_overlay_state || 'not_imported')
         setLoaded(true)
         onAvailabilityChange?.(body.label.sections.length > 0)
+        const fullIndonesianDraft = body.label.sections
+          .map((section) => section.indonesian_draft?.trim() || '')
+          .filter(Boolean)
+          .join('\n\n')
+        onIndonesianDraftChange?.(fullIndonesianDraft || null)
       })
       .catch((requestError: unknown) => {
         if ((requestError as Error).name === 'AbortError') return
         setError(requestError instanceof Error ? requestError.message : 'Evidence FDA tidak dapat dimuat.')
         onAvailabilityChange?.(false)
+        onIndonesianDraftChange?.(null)
       })
 
     return () => controller.abort()
-  }, [drugName, labelId, onAvailabilityChange, sectionTypeKey])
+  }, [drugName, labelId, onAvailabilityChange, onIndonesianDraftChange, sectionTypeKey])
 
   if (error) return <div className="rounded-2xl border border-error/25 bg-error/5 p-4 text-sm text-text-muted"><AlertTriangle className="mb-2 text-error" size={18} />{error}</div>
   if (!loaded) return <div className="flex items-center gap-2 rounded-2xl bg-surface-2 p-4 text-sm text-text-muted"><LoaderCircle className="animate-spin text-primary" size={17} />Memuat evidence FDA untuk {drugName}…</div>
