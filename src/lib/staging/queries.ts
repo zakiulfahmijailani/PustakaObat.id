@@ -73,6 +73,10 @@ export async function getEditorActionQueue(filters: StagingFilters, actorId: str
       "d.editorial_status = 'staging'",
       "d.public_status = 'hidden'",
       'd.publication_eligible = false',
+      `exists (
+        select 1 from public.monograph_full_label_availability ready
+        where ready.drug_key = d.drug_key and ready.translated_section_count > 0
+      )`,
       `(exists (
         select 1 from public.monograph_staging_indonesian_drafts ai
         where ai.drug_key = d.drug_key
@@ -239,13 +243,26 @@ type FullLabelCandidateRow = Omit<FullLabelCandidate, 'match_method'>
  */
 export async function getFullLabelCandidates(rxcui: string | null, preferredName: string | null = null) {
   const rxcuiCandidates = rxcui ? await queryFullLabelNeon<FullLabelCandidateRow>(`
+      with latest_overlay as (
+        select import_id from public.pb_fl32_translation_imports
+        where status='verified' and editorial_status='ai_translated'
+          and public_status='hidden' and publication_eligible=false
+        order by verified_at desc nulls last, imported_at desc limit 1
+      )
       select c.label_id, c.preferred_name, d.effective_time, d.ingredient_count, c.candidate_rank
       from public.pb_fl32_drug_label_candidates c
       join public.pb_fl32_label_documents d using (label_id)
       join public.pb_fl32_label_section_manifests m using (label_id)
       join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+      join public.pb_fl32_label_objects o using (label_id)
+      cross join latest_overlay imports
+      join public.pb_fl32_bilingual_label_objects bilingual
+        on bilingual.label_id=c.label_id and bilingual.translation_import_id=imports.import_id
       where c.rxcui = $1
         and s.storage_status in ('uploaded', 'verified')
+        and o.storage_status = 'verified'
+        and bilingual.storage_status = 'verified'
+        and bilingual.translated_section_count > 0
       order by c.candidate_rank nulls last, d.effective_time desc nulls last
       limit 5
     `, [rxcui]).then((rows) => rows.map((row) => ({ ...row, match_method: 'rxcui' as const }))) : []
@@ -256,6 +273,12 @@ export async function getFullLabelCandidates(rxcui: string | null, preferredName
   if (!normalizedName || normalizedName.length < 3) return [] as FullLabelCandidate[]
 
   return queryFullLabelNeon<FullLabelCandidateRow>(`
+    with latest_overlay as (
+      select import_id from public.pb_fl32_translation_imports
+      where status='verified' and editorial_status='ai_translated'
+        and public_status='hidden' and publication_eligible=false
+      order by verified_at desc nulls last, imported_at desc limit 1
+    )
     select
       d.label_id,
       $1::text as preferred_name,
@@ -266,8 +289,15 @@ export async function getFullLabelCandidates(rxcui: string | null, preferredName
     from public.pb_fl32_label_documents d
     join public.pb_fl32_label_section_manifests m using (label_id)
     join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+    join public.pb_fl32_label_objects o using (label_id)
+    cross join latest_overlay imports
+    join public.pb_fl32_bilingual_label_objects bilingual
+      on bilingual.label_id=d.label_id and bilingual.translation_import_id=imports.import_id
     where d.ingredient_count = 1
       and s.storage_status in ('uploaded', 'verified')
+      and o.storage_status = 'verified'
+      and bilingual.storage_status = 'verified'
+      and bilingual.translated_section_count > 0
       and exists (
         select 1
         from jsonb_array_elements_text(d.display_names) as display_name(value)

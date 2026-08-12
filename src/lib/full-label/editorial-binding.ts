@@ -4,17 +4,7 @@ import { queryNeon } from '@/lib/neon/server'
 import { getFullLabelCandidates } from '@/lib/staging/queries'
 import { fdaSectionTypesForMonographSection } from './section-mapping'
 import { queryFullLabelNeon } from './database'
-
-function stringArray(value: unknown): string[] {
-  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string')
-  if (typeof value !== 'string') return []
-  try {
-    const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
-  } catch {
-    return []
-  }
-}
+import { readBilingualLabelObject } from './storage'
 
 export interface EditorialEvidenceBinding {
   labelId: string
@@ -49,18 +39,43 @@ export async function validateEditorialEvidenceBinding(
   const candidate = candidates.find((item) => item.label_id === selectedLabelId)
   if (!candidate) throw new Error('Label FDA tidak merupakan kandidat aman untuk obat ini.')
 
-  const manifests = await queryFullLabelNeon<{ effective_time: string | null, section_types: unknown }>(`
-    select d.effective_time, m.section_types
+  const manifests = await queryFullLabelNeon<{
+    effective_time: string | null
+    section_count: number
+    translation_import_id: string
+    manifest_sha256: string
+  }>(`
+    with latest_overlay as (
+      select import_id, manifest_sha256
+      from public.pb_fl32_translation_imports
+      where status='verified' and editorial_status='ai_translated'
+        and public_status='hidden' and publication_eligible=false
+      order by verified_at desc nulls last, imported_at desc limit 1
+    )
+    select d.effective_time, m.section_count,
+      imports.import_id::text as translation_import_id, imports.manifest_sha256
     from public.pb_fl32_label_documents d
     join public.pb_fl32_label_section_manifests m using (label_id)
     join public.pb_fl32_object_shards s on s.shard_number = m.object_shard
+    join public.pb_fl32_label_objects o using (label_id)
+    cross join latest_overlay imports
+    join public.pb_fl32_bilingual_label_objects bilingual
+      on bilingual.label_id=d.label_id and bilingual.translation_import_id=imports.import_id
     where d.label_id = $1 and s.storage_status in ('uploaded', 'verified')
+      and o.storage_status='verified' and bilingual.storage_status='verified'
+      and bilingual.translated_section_count > 0
     limit 1
   `, [selectedLabelId])
   const manifest = manifests[0]
   if (!manifest) throw new Error('Metadata label FDA belum tersedia.')
 
-  const available = new Set(stringArray(manifest.section_types))
+  const sections = await readBilingualLabelObject(
+    selectedLabelId,
+    manifest.section_count,
+    manifest.translation_import_id,
+    manifest.manifest_sha256,
+  )
+  const available = new Set(sections.map((section) => section.section_type))
   const sectionTypes = allowedFieldTypes.filter((field) => available.has(field))
   if (!sectionTypes.length) {
     throw new Error('Label FDA yang dipilih tidak memiliki seksi sumber untuk bagian monografi ini. Pilih label lain atau bagian lain.')
