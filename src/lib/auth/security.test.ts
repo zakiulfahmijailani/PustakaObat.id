@@ -150,4 +150,17 @@ describe('Neon authentication security helpers', () => {
     expect(stagingRoute).toContain("session.activeRole !== 'editor'")
     expect(stagingRoute).toContain("session.activeRole !== 'reviewer'")
   })
+
+  it('ships browser security headers on every route', () => {
+    const nextConfig = readFileSync('next.config.ts', 'utf8')
+    expect(nextConfig).toContain("source: '/(.*)'")
+    expect(nextConfig).toContain("frame-ancestors 'none'")
+    expect(nextConfig).toContain("object-src 'none'")
+    expect(nextConfig).toContain("upgrade-insecure-requests")
+    expect(nextConfig).toContain("{ key: 'X-Content-Type-Options', value: 'nosniff' }")
+    expect(nextConfig).toContain("{ key: 'X-Frame-Options', value: 'DENY' }")
+    expect(nextConfig).toContain("{ key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }")
+    expect(nextConfig).toContain("camera=(), microphone=(), geolocation=(), payment=(), usb=()")
+    expect(nextConfig).not.toContain("'unsafe-eval'")
+  })
 })
