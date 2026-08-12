@@ -12,7 +12,7 @@ const requestSchema = z.discriminatedUnion('action', [
     action: z.literal('save_draft'),
     drugKey,
     sectionType: z.string().trim().min(1).max(80).regex(/^[a-z0-9_]+$/),
-    contentIndonesian: z.string().trim().min(40).max(30000),
+    contentIndonesian: z.string().trim().min(40),
     sourceLabelId: z.string().trim().min(1).max(300),
   }),
   z.object({ action: z.literal('submit_draft'), draftId: z.string().uuid() }),

@@ -27,4 +27,14 @@ describe('private bilingual label storage', () => {
     expect(storage).toContain('translationCache')
     expect(storage).toContain('3.2.1-bilingual')
   })
+
+  it('keeps complete bilingual evidence visible and accepts long editorial drafts', async () => {
+    const boundEvidence = await readFile(resolve('src/components/full-label/BoundEvidencePanel.tsx'), 'utf8')
+    const workbench = await readFile(resolve('src/components/full-label/FullLabelWorkbench.tsx'), 'utf8')
+    const editorialRoute = await readFile(resolve('src/app/api/staging/editorial/route.ts'), 'utf8')
+    expect(boundEvidence).toContain('<details key={section.section_id} open')
+    expect(workbench).toContain('<details key={section.section_id} open')
+    expect(editorialRoute).toContain("contentIndonesian: z.string().trim().min(40)")
+    expect(editorialRoute).not.toContain('.max(30000)')
+  })
 })
