@@ -21,7 +21,22 @@ export async function getStagedDrugConcepts(filters: StagingFilters) {
   const page = Math.max(1, Number.parseInt(filters.page || '1', 10) || 1)
   if (!isNeonConfigured()) return { concepts: [] as StagingDrugConcept[], count: 0, page, error: new Error('Neon is not configured.') }
   try {
-    const conditions = ["d.editorial_status = 'staging'", "d.public_status = 'hidden'", 'd.publication_eligible = false']
+    const conditions = [
+      "d.editorial_status = 'staging'",
+      "d.public_status = 'hidden'",
+      'd.publication_eligible = false',
+      // The Editor queue is actionable work only. Do not surface a concept
+      // whose page would have no selectable section or Indonesian draft.
+      `(exists (
+        select 1 from public.monograph_staging_indonesian_drafts ai
+        where ai.drug_key = d.drug_key
+          and ai.review_status = 'draft_ai'
+          and ai.requires_pharmacist_review = true
+      ) or exists (
+        select 1 from public.monograph_editorial_drafts ed
+        where ed.drug_key = d.drug_key
+      ))`,
+    ]
     const parameters: unknown[] = []
     const q = normalizeStagingSearch(filters.q)
     if (q) { parameters.push(`%${q}%`); conditions.push(`(d.normalized_name ilike $${parameters.length} or exists (select 1 from public.monograph_staging_search_index s where s.drug_key = d.drug_key and s.search_text ilike $${parameters.length}))`) }
