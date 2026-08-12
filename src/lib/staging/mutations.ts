@@ -43,6 +43,7 @@ export async function saveEditorialDraft(drugKey: string, sectionType: string, c
         source_bound_at = now(),
         publication_eligible = false, updated_at = now()
       where public.monograph_editorial_drafts.status in ('draft', 'changes_requested')
+        and public.monograph_editorial_drafts.authored_by = $8::uuid
       returning *, (xmax = 0) as was_created
     ), audited as (
       insert into public.monograph_editorial_events (draft_id, drug_key, actor_id, action, metadata)
@@ -81,6 +82,7 @@ export async function createEditorialDraftFromAiCandidate(drugKey: string, secti
         submitted_at = null, reviewed_by = null, reviewed_at = null, reviewer_note = null,
         publication_eligible = false, updated_at = now()
       where public.monograph_editorial_drafts.status in ('draft', 'changes_requested')
+        and public.monograph_editorial_drafts.authored_by = $3::uuid
       returning *, (xmax = 0) as was_created
     ), audited as (
       insert into public.monograph_editorial_events (draft_id, drug_key, actor_id, action, metadata)
@@ -111,7 +113,8 @@ export async function submitEditorialDraft(draftId: string, actorId: string) {
     with submitted as (
       update public.monograph_editorial_drafts
       set status = 'submitted', submitted_at = now(), publication_eligible = false, updated_at = now()
-      where id = $1::uuid and status in ('draft', 'changes_requested') and length(trim(content_indonesian)) >= 40
+      where id = $1::uuid and authored_by = $2::uuid
+        and status in ('draft', 'changes_requested') and length(trim(content_indonesian)) >= 40
         and source_label_id is not null and cardinality(source_section_types) > 0
       returning *
     ), audited as (
@@ -132,7 +135,7 @@ export async function reviewEditorialDraft(draftId: string, decision: 'approve' 
       set status = $2, reviewed_by = $4::uuid, reviewed_at = now(), reviewer_note = nullif(trim($3), ''),
           publication_eligible = false, updated_at = now()
       where id = $1::uuid and status = 'submitted' and authored_by is distinct from $4::uuid
-        and source_label_id is not null and cardinality(source_section_types) > 0
+        and ($2 = 'changes_requested' or (source_label_id is not null and cardinality(source_section_types) > 0))
       returning *
     ), audited as (
       insert into public.monograph_editorial_events (draft_id, drug_key, actor_id, action, metadata)
@@ -141,7 +144,7 @@ export async function reviewEditorialDraft(draftId: string, decision: 'approve' 
       from reviewed
     ) select * from reviewed
   `, [draftId, status, note || '', actorId, action])
-  if (!rows[0]) throw new Error('Hanya Reviewer lain yang dapat meninjau draf terkirim yang sudah terikat ke evidence FDA.')
+  if (!rows[0]) throw new Error('Hanya Reviewer lain yang dapat meninjau draf terkirim; persetujuan juga memerlukan evidence FDA terikat.')
   return rows[0]
 }
 

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { AlertTriangle, ArrowUpRight, BookOpenText, FileText, Save, Send } from 'lucide-react'
 import { BoundEvidencePanel } from '@/components/full-label/BoundEvidencePanel'
 import { fdaSectionTypesForMonographSection, MONOGRAPH_SECTION_LABELS } from '@/lib/full-label/section-mapping'
+import { resolveInitialSection } from '@/lib/staging/editorial-queue'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import type { EditorialDraft } from '@/lib/staging/types'
@@ -23,10 +24,10 @@ interface FullLabelCandidate {
   effective_time: string | null
 }
 
-export function EditorialDraftForm({ drugKey, drugName, availableSections, drafts }: { drugKey: string; drugName: string; availableSections: string[]; drafts: EditorialDraft[] }) {
+export function EditorialDraftForm({ drugKey, drugName, availableSections, drafts, initialSection }: { drugKey: string; drugName: string; availableSections: string[]; drafts: EditorialDraft[]; initialSection?: string }) {
   const router = useRouter()
   const sections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections])
-  const [sectionType, setSectionType] = useState(sections[0] || 'indication')
+  const [sectionType, setSectionType] = useState(resolveInitialSection(initialSection, sections) || 'indication')
   const [contentBySection, setContentBySection] = useState<Record<string, string>>(Object.fromEntries(drafts.map((draft) => [draft.section_type, draft.content_indonesian])))
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState<string | null>(null)

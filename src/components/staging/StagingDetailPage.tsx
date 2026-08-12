@@ -12,7 +12,7 @@ const SECTION_LABELS: Record<string, string> = {
   indication: 'Indikasi', dosage: 'Dosis dan penggunaan', warnings: 'Peringatan', side_effects: 'Efek samping', drug_interactions: 'Interaksi obat', specific_populations: 'Populasi khusus', pregnancy: 'Kehamilan', clinical_pharmacology: 'Farmakologi klinis', mechanism: 'Mekanisme kerja', pharmacokinetics: 'Farmakokinetik', storage: 'Penyimpanan', how_supplied: 'Sediaan', contraindication: 'Kontraindikasi',
 }
 
-export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string; basePath: string }) {
+export async function StagingDetailPage({ drugKey, basePath, initialSection }: { drugKey: string; basePath: string; initialSection?: string }) {
   const session = await requireReviewerOrAdmin()
   const { concept, evidence, sources, drafts, candidates, events, publication, publishedDraftIds, error } = await getStagedDrugForStaff(drugKey)
   if (error || !concept) notFound()
@@ -40,7 +40,7 @@ export async function StagingDetailPage({ drugKey, basePath }: { drugKey: string
 
       {publication && <section className="rounded-3xl border border-success/30 bg-success/5 p-6"><div className="flex items-start gap-3"><BadgeCheck className="mt-0.5 shrink-0 text-success" size={22} /><div><h2 className="font-serif text-2xl text-text">Monografi telah diterbitkan</h2><p className="mt-2 text-sm leading-relaxed text-text-muted">Versi publik berisi {publication.published_section_count} bagian yang telah disetujui. Evidence staging tetap tersembunyi dan tidak menjadi konten publik.</p><Link href={`/obat/${concept.slug}`} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary">Buka monografi publik <ArrowUpRight size={16} /></Link></div></div></section>}
 
-      <Card className="border-primary/20"><CardHeader><CardTitle>Review Draf Bahasa Indonesia</CardTitle><p className="text-sm leading-relaxed text-text-muted">Reviewer menilai draf Bahasa Indonesia yang sudah dikirim Editor terhadap seksi FDA yang terikat pada draf tersebut.</p></CardHeader><CardContent><EditorialReviewPanel drafts={drafts} aiCandidates={candidates} actorId={session.user.id} drugName={concept.preferred_name} /></CardContent></Card>
+      <Card className="border-primary/20"><CardHeader><CardTitle>Review Draf Bahasa Indonesia</CardTitle><p className="text-sm leading-relaxed text-text-muted">Reviewer menilai draf Bahasa Indonesia yang sudah dikirim Editor terhadap seksi FDA yang terikat pada draf tersebut.</p></CardHeader><CardContent><EditorialReviewPanel drafts={drafts} aiCandidates={candidates} actorId={session.user.id} drugName={concept.preferred_name} initialSection={initialSection} /></CardContent></Card>
 
       {session.activeRole === 'admin' && <AdminPublicationPanel drafts={drafts} publication={publication} publishedDraftIds={publishedDraftIds} />}
 
