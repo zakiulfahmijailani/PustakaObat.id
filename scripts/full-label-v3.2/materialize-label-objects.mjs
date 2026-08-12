@@ -15,13 +15,17 @@ import { createObjectClient } from "./object-client.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (!args.env || !args["expected-host"] || args.shard === undefined || args.apply !== "YES") {
-  throw new Error("Usage: node materialize-label-objects.mjs --env <file> --expected-host <neon-host> --shard <0-15> [--label-id <id> | --label-ids <id,id> | --limit <count>] --apply YES");
+  throw new Error("Usage: node materialize-label-objects.mjs --env <file> --expected-host <neon-host> --shard <0-15> [--label-id <id> | --label-ids <id,id> | --candidate-only YES | --all YES] [--limit <count>] --apply YES");
 }
 
 const shardNumber = Number(args.shard);
 const limit = args.limit === undefined ? Number.POSITIVE_INFINITY : Number(args.limit);
 const targetLabelId = args["label-id"] || null;
 const targetLabelIds = new Set(String(args["label-ids"] || targetLabelId || "").split(",").map((value) => value.trim()).filter(Boolean));
+const candidateOnly = args["candidate-only"] === "YES";
+const allLabels = args.all === "YES";
+const selectedModes = Number(targetLabelIds.size > 0) + Number(candidateOnly) + Number(allLabels);
+if (selectedModes !== 1) throw new Error("Choose exactly one target mode: explicit label IDs, --candidate-only YES, or --all YES");
 if (!Number.isInteger(shardNumber) || shardNumber < 0 || shardNumber > 15) throw new Error("--shard must be 0-15");
 if (args.limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
   throw new Error("--limit must be a positive integer");
@@ -74,6 +78,20 @@ try {
   )).rows[0];
   if (!shard) throw new Error(`Source shard ${shardNumber} is unavailable`);
 
+  if (candidateOnly) {
+    const candidateRows = (await client.query(`
+      select distinct c.label_id
+      from public.pb_fl32_drug_label_candidates c
+      join public.pb_fl32_label_section_manifests m using (label_id)
+      where m.object_shard=$1
+      order by c.label_id
+    `, [shardNumber])).rows;
+    for (const row of candidateRows) targetLabelIds.add(row.label_id);
+  }
+
+  if (candidateOnly && !targetLabelIds.size) {
+    console.log(JSON.stringify({ status: "label_objects_materialized", shard: shardNumber, uploaded: 0, skipped: 0, source_rows: 0, target_mode: "candidate_only", public_publishable: false }));
+  } else {
   const alreadyMaterialized = new Set((await client.query(
     `select o.label_id from pb_fl32_label_objects o
      join pb_fl32_label_section_manifests m using (label_id)
@@ -128,7 +146,7 @@ try {
 
   async function accept(labelId, sections) {
     if (!labelId) return false;
-    if (targetLabelIds.size && !targetLabelIds.has(labelId)) return false;
+    if (!allLabels && !targetLabelIds.has(labelId)) return false;
     if (alreadyMaterialized.has(labelId)) {
       skipped += 1;
       return false;
@@ -153,7 +171,8 @@ try {
   }
   if (uploaded + pending.length < limit) await accept(currentLabelId, currentSections);
   await flush();
-  console.log(JSON.stringify({ status: "label_objects_materialized", shard: shardNumber, uploaded, skipped, source_rows: sourceRows, public_publishable: false }));
+  console.log(JSON.stringify({ status: "label_objects_materialized", shard: shardNumber, uploaded, skipped, source_rows: sourceRows, target_mode: candidateOnly ? "candidate_only" : allLabels ? "all" : "explicit", public_publishable: false }));
+  }
 } finally {
   await client.end();
   objectClient.destroy();
