@@ -73,20 +73,13 @@ export async function getEditorActionQueue(filters: StagingFilters, actorId: str
       "d.editorial_status = 'staging'",
       "d.public_status = 'hidden'",
       'd.publication_eligible = false',
-      `exists (
-        select 1 from public.monograph_full_label_availability ready
-        where ready.drug_key = d.drug_key and ready.translated_section_count > 0
-      )`,
+      'ready.translated_section_count > 0',
+      'cardinality(ready.available_section_types) > 0',
       `(exists (
-        select 1 from public.monograph_staging_indonesian_drafts ai
-        where ai.drug_key = d.drug_key
-          and ai.review_status = 'draft_ai'
-          and ai.requires_pharmacist_review = true
-          and ai.publication_eligible = false
-          and ai.is_public = false
-          and not exists (
+        select 1 from unnest(ready.available_section_types) available(section_type)
+        where not exists (
             select 1 from public.monograph_editorial_drafts claimed
-            where claimed.drug_key = ai.drug_key and claimed.section_type = ai.section_type
+            where claimed.drug_key = d.drug_key and claimed.section_type = available.section_type
           )
       ) or exists (
         select 1 from public.monograph_editorial_drafts own
@@ -99,20 +92,18 @@ export async function getEditorActionQueue(filters: StagingFilters, actorId: str
     const q = normalizeStagingSearch(filters.q)
     if (q) { parameters.push(`%${q}%`); conditions.push(`(d.normalized_name ilike $${parameters.length} or exists (select 1 from public.monograph_staging_search_index s where s.drug_key = d.drug_key and s.search_text ilike $${parameters.length}))`) }
     const where = conditions.join(' and ')
-    const total = await queryNeon<{ count: string }>(`select count(*)::text count from public.monograph_staging_drugs d where ${where}`, parameters)
+    const total = await queryNeon<{ count: string }>(`select count(*)::text count
+      from public.monograph_staging_drugs d
+      join public.monograph_full_label_availability ready using (drug_key)
+      where ${where}`, parameters)
     parameters.push(WHO_PAGE_SIZE, (page - 1) * WHO_PAGE_SIZE)
     const concepts = await queryNeon<EditorActionQueueItem>(`
       select d.*,
-        (select count(distinct ai.section_type)::int
-          from public.monograph_staging_indonesian_drafts ai
-          where ai.drug_key = d.drug_key
-            and ai.review_status = 'draft_ai'
-            and ai.requires_pharmacist_review = true
-            and ai.publication_eligible = false
-            and ai.is_public = false
-            and not exists (
+        (select count(*)::int
+          from unnest(ready.available_section_types) available(section_type)
+          where not exists (
               select 1 from public.monograph_editorial_drafts claimed
-              where claimed.drug_key = ai.drug_key and claimed.section_type = ai.section_type
+              where claimed.drug_key = d.drug_key and claimed.section_type = available.section_type
             )) as new_section_count,
         (select count(distinct own.section_type)::int
           from public.monograph_editorial_drafts own
@@ -121,16 +112,11 @@ export async function getEditorActionQueue(filters: StagingFilters, actorId: str
           from public.monograph_editorial_drafts own
           where own.drug_key = d.drug_key and own.authored_by = $1::uuid and own.status = 'changes_requested') as revision_section_count,
         (select count(*)::int from (
-          select ai.section_type
-          from public.monograph_staging_indonesian_drafts ai
-          where ai.drug_key = d.drug_key
-            and ai.review_status = 'draft_ai'
-            and ai.requires_pharmacist_review = true
-            and ai.publication_eligible = false
-            and ai.is_public = false
-            and not exists (
+          select available.section_type
+          from unnest(ready.available_section_types) available(section_type)
+          where not exists (
               select 1 from public.monograph_editorial_drafts claimed
-              where claimed.drug_key = ai.drug_key and claimed.section_type = ai.section_type
+              where claimed.drug_key = d.drug_key and claimed.section_type = available.section_type
             )
           union
           select own.section_type
@@ -140,6 +126,7 @@ export async function getEditorActionQueue(filters: StagingFilters, actorId: str
             and own.status in ('draft', 'changes_requested')
         ) actionable) as actionable_section_count
       from public.monograph_staging_drugs d
+      join public.monograph_full_label_availability ready using (drug_key)
       where ${where}
       order by exists (
           select 1 from public.monograph_editorial_drafts priority
@@ -309,24 +296,23 @@ export async function getFullLabelCandidates(rxcui: string | null, preferredName
 }
 
 export async function getStagedDrugForEditor(drugKey: string, actorId: string) {
-  if (!isNeonConfigured()) return { concept: null, drafts: [], candidates: [], error: new Error('Neon is not configured.') }
+  if (!isNeonConfigured()) return { concept: null, drafts: [], availableSections: [], error: new Error('Neon is not configured.') }
   try {
-    const [conceptRows, drafts, candidates] = await Promise.all([
+    const [conceptRows, drafts, availability] = await Promise.all([
       queryNeon<StagingDrugConcept>("select * from public.monograph_staging_drugs where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden' limit 1", [drugKey]),
       queryNeon<EditorialDraft>('select * from public.monograph_editorial_drafts where drug_key = $1 and authored_by = $2::uuid order by section_type', [drugKey, actorId]),
-      queryNeon<IndonesianCandidateDraft>(`select drug_key, section_type, title_indonesian, content_indonesian,
-        safety_notes, automatic_qc_issues, generation_method
-        from public.monograph_staging_indonesian_drafts candidate
-        where drug_key = $1 and review_status = 'draft_ai' and requires_pharmacist_review = true
-          and publication_eligible = false and is_public = false
+      queryNeon<{ available_section_types: string[] }>(`
+        select coalesce(array_agg(available.section_type order by available.section_type), '{}'::text[]) as available_section_types
+        from public.monograph_full_label_availability ready
+        cross join lateral unnest(ready.available_section_types) available(section_type)
+        where ready.drug_key = $1 and ready.translated_section_count > 0
           and not exists (
             select 1 from public.monograph_editorial_drafts claimed
-            where claimed.drug_key = candidate.drug_key and claimed.section_type = candidate.section_type
-          )
-        order by section_type`, [drugKey]),
+            where claimed.drug_key = ready.drug_key and claimed.section_type = available.section_type
+          )`, [drugKey]),
     ])
-    return { concept: conceptRows[0] || null, drafts, candidates, error: null }
+    return { concept: conceptRows[0] || null, drafts, availableSections: availability[0]?.available_section_types || [], error: null }
   } catch (error) {
-    return { concept: null, drafts: [] as EditorialDraft[], candidates: [] as IndonesianCandidateDraft[], error }
+    return { concept: null, drafts: [] as EditorialDraft[], availableSections: [] as string[], error }
   }
 }

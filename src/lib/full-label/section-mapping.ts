@@ -1,3 +1,5 @@
+import sectionMapping from './section-mapping.json'
+
 export const MONOGRAPH_SECTION_LABELS: Record<string, string> = {
   indication: 'Indikasi',
   dosage: 'Dosis dan penggunaan',
@@ -15,21 +17,7 @@ export const MONOGRAPH_SECTION_LABELS: Record<string, string> = {
 }
 
 /** FDA label fields that may substantiate one Indonesian monograph section. */
-export const MONOGRAPH_TO_FDA_SECTION_TYPES: Record<string, string[]> = {
-  indication: ['indications_and_usage'],
-  dosage: ['dosage_and_administration', 'dosage_and_administration_table'],
-  warnings: ['boxed_warning', 'warnings', 'warnings_and_cautions', 'precautions'],
-  side_effects: ['adverse_reactions', 'adverse_reactions_table'],
-  drug_interactions: ['drug_interactions'],
-  specific_populations: ['use_in_specific_populations', 'pediatric_use', 'geriatric_use', 'nursing_mothers', 'labor_and_delivery'],
-  pregnancy: ['pregnancy', 'pregnancy_or_breast_feeding', 'teratogenic_effects'],
-  clinical_pharmacology: ['clinical_pharmacology', 'clinical_pharmacology_table'],
-  mechanism: ['mechanism_of_action'],
-  pharmacokinetics: ['pharmacokinetics', 'pharmacokinetics_table'],
-  storage: ['storage_and_handling'],
-  how_supplied: ['how_supplied', 'dosage_forms_and_strengths'],
-  contraindication: ['contraindications'],
-}
+export const MONOGRAPH_TO_FDA_SECTION_TYPES: Record<string, string[]> = sectionMapping
 
 export function fdaSectionTypesForMonographSection(sectionType: string) {
   return MONOGRAPH_TO_FDA_SECTION_TYPES[sectionType] || []
