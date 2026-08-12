@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getActiveProfile } from '@/lib/auth/server'
 import { queryFullLabelNeon } from '@/lib/full-label/database'
-import { readLabelSectionsFromObject, readLabelSectionsFromShard, readTranslationsFromOverlay, type IndonesianTranslation, type TranslationOverlayConfig } from '@/lib/full-label/storage'
+import { readBilingualLabelObject, readLabelSectionsFromObject, readLabelSectionsFromShard, readTranslationsFromOverlay, type IndonesianTranslation, type TranslationOverlayConfig } from '@/lib/full-label/storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -27,12 +27,15 @@ interface LabelRouteRow {
 
 interface TranslationOverlayRow extends TranslationOverlayConfig {
   import_id: string
+  manifest_sha256: string
+  bilingual_storage_status: string | null
 }
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ labelId: string }> },
 ) {
+  const requestStartedAt = performance.now()
   const { labelId } = await context.params
   if (!labelId || labelId.length > 300) {
     return NextResponse.json({ error: 'Label ID tidak valid.' }, { status: 400 })
@@ -91,10 +94,51 @@ export async function GET(
   }
 
   try {
+    let overlay: TranslationOverlayRow | undefined
+    if (preview) {
+      try {
+        const overlays = await queryFullLabelNeon<TranslationOverlayRow>(`
+          select imports.import_id::text, imports.object_prefix, imports.prefix_length, imports.manifest_sha256,
+            bilingual.storage_status as bilingual_storage_status
+          from public.pb_fl32_translation_imports imports
+          left join public.pb_fl32_bilingual_label_objects bilingual
+            on bilingual.translation_import_id = imports.import_id and bilingual.label_id = $1
+          where imports.status='verified'
+            and imports.editorial_status='ai_translated'
+            and imports.public_status='hidden'
+            and imports.publication_eligible=false
+          order by imports.verified_at desc nulls last, imports.imported_at desc
+          limit 1
+        `, [labelId])
+        overlay = overlays[0]
+      } catch (overlayMetadataError) {
+        // The bilingual registry can be rolled out independently. The legacy
+        // source + translation overlay remains a safe compatibility path.
+        console.error('Private translation overlay metadata query failed', { labelId, overlayMetadataError })
+      }
+    }
+
     let sections
-    if (label.label_object_storage_status === 'verified') {
+    let bilingualObjectLoaded = false
+    let storageMode = 'source-shard'
+    if (preview && overlay?.bilingual_storage_status === 'verified') {
+      try {
+        sections = await readBilingualLabelObject(
+          label.label_id,
+          label.section_count,
+          overlay.import_id,
+          overlay.manifest_sha256,
+        )
+        bilingualObjectLoaded = true
+        storageMode = 'bilingual-object'
+      } catch (bilingualObjectError) {
+        console.error('Bilingual label object read failed; falling back to source storage', { labelId, bilingualObjectError })
+      }
+    }
+    if (!sections && label.label_object_storage_status === 'verified') {
       try {
         sections = await readLabelSectionsFromObject(label.label_id, label.section_count)
+        storageMode = 'label-object'
       } catch (labelObjectError) {
         // A materialized object is an optimization, never a single point of
         // failure. Keep the reviewer page available while an object is being
@@ -104,8 +148,9 @@ export async function GET(
           error: labelObjectError,
         })
         sections = await readLabelSectionsFromShard(label.object_key, label.label_id, label.section_count)
+        storageMode = 'source-shard'
       }
-    } else {
+    } else if (!sections) {
       sections = await readLabelSectionsFromShard(label.object_key, label.label_id, label.section_count)
     }
     if (sections.length !== label.section_count) {
@@ -126,18 +171,18 @@ export async function GET(
     // joined into the public response, even if the source label is published.
     if (preview) {
       try {
-        const overlays = await queryFullLabelNeon<TranslationOverlayRow>(`
-          select import_id::text, object_prefix, prefix_length
-          from public.pb_fl32_translation_imports
-          where status='verified'
-            and editorial_status='ai_translated'
-            and public_status='hidden'
-            and publication_eligible=false
-          order by verified_at desc nulls last, imported_at desc
-          limit 1
-        `)
-        const overlay = overlays[0]
-        if (overlay) {
+        if (bilingualObjectLoaded) {
+          translatedByHash = new Map(filteredSections.flatMap((section) => section.source_text_sha256 && section.indonesian_draft
+            ? [[section.source_text_sha256.toLowerCase(), {
+                content_indonesian: section.indonesian_draft,
+                translation_status: 'AI_TRANSLATED_UNREVIEWED' as const,
+                quality_flags_json: (section as typeof section & { translation_quality_flags_json?: string }).translation_quality_flags_json || '[]',
+                source_character_count: section.source_character_count,
+                translation_character_count: section.indonesian_draft.length,
+              }] as const]
+            : []))
+          translationOverlayState = 'available'
+        } else if (overlay) {
           translatedByHash = await readTranslationsFromOverlay(
             overlay,
             filteredSections
@@ -182,7 +227,11 @@ export async function GET(
       },
     }, {
       headers: preview
-        ? { 'Cache-Control': 'private, no-store' }
+        ? {
+            'Cache-Control': 'private, max-age=60, stale-while-revalidate=300',
+            'Vary': 'Cookie',
+            'Server-Timing': `full-label;dur=${(performance.now() - requestStartedAt).toFixed(1)};desc="${storageMode}"`,
+          }
         : { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' },
     })
   } catch (error) {

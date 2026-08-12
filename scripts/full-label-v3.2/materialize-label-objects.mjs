@@ -15,12 +15,13 @@ import { createObjectClient } from "./object-client.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (!args.env || !args["expected-host"] || args.shard === undefined || args.apply !== "YES") {
-  throw new Error("Usage: node materialize-label-objects.mjs --env <file> --expected-host <neon-host> --shard <0-15> [--label-id <id> | --limit <count>] --apply YES");
+  throw new Error("Usage: node materialize-label-objects.mjs --env <file> --expected-host <neon-host> --shard <0-15> [--label-id <id> | --label-ids <id,id> | --limit <count>] --apply YES");
 }
 
 const shardNumber = Number(args.shard);
 const limit = args.limit === undefined ? Number.POSITIVE_INFINITY : Number(args.limit);
 const targetLabelId = args["label-id"] || null;
+const targetLabelIds = new Set(String(args["label-ids"] || targetLabelId || "").split(",").map((value) => value.trim()).filter(Boolean));
 if (!Number.isInteger(shardNumber) || shardNumber < 0 || shardNumber > 15) throw new Error("--shard must be 0-15");
 if (args.limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
   throw new Error("--limit must be a positive integer");
@@ -127,7 +128,7 @@ try {
 
   async function accept(labelId, sections) {
     if (!labelId) return false;
-    if (targetLabelId && labelId !== targetLabelId) return false;
+    if (targetLabelIds.size && !targetLabelIds.has(labelId)) return false;
     if (alreadyMaterialized.has(labelId)) {
       skipped += 1;
       return false;

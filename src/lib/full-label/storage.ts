@@ -47,6 +47,10 @@ interface PrivateReaderConfig {
 const SECTION_CACHE_TTL_MS = 10 * 60 * 1000
 const SECTION_CACHE_LIMIT = 32
 const sectionCache = new Map<string, { expiresAt: number; sections: FullLabelSection[] }>()
+const pendingSectionReads = new Map<string, Promise<FullLabelSection[]>>()
+const TRANSLATION_CACHE_TTL_MS = 30 * 60 * 1000
+const TRANSLATION_CACHE_LIMIT = 5000
+const translationCache = new Map<string, { expiresAt: number; translation: IndonesianTranslation }>()
 
 function getCachedSections(cacheKey: string) {
   const cached = sectionCache.get(cacheKey)
@@ -66,6 +70,37 @@ function cacheSections(cacheKey: string, sections: FullLabelSection[]) {
     const oldestKey = sectionCache.keys().next().value
     if (!oldestKey) break
     sectionCache.delete(oldestKey)
+  }
+}
+
+async function deduplicateSectionRead(cacheKey: string, reader: () => Promise<FullLabelSection[]>) {
+  const cached = getCachedSections(cacheKey)
+  if (cached) return cached
+  const pending = pendingSectionReads.get(cacheKey)
+  if (pending) return pending
+  const promise = reader().finally(() => pendingSectionReads.delete(cacheKey))
+  pendingSectionReads.set(cacheKey, promise)
+  return promise
+}
+
+function getCachedTranslation(sourceHash: string) {
+  const cached = translationCache.get(sourceHash)
+  if (!cached) return null
+  if (cached.expiresAt <= Date.now()) {
+    translationCache.delete(sourceHash)
+    return null
+  }
+  translationCache.delete(sourceHash)
+  translationCache.set(sourceHash, cached)
+  return cached.translation
+}
+
+function cacheTranslation(sourceHash: string, translation: IndonesianTranslation) {
+  translationCache.set(sourceHash, { expiresAt: Date.now() + TRANSLATION_CACHE_TTL_MS, translation })
+  while (translationCache.size > TRANSLATION_CACHE_LIMIT) {
+    const oldestKey = translationCache.keys().next().value
+    if (!oldestKey) break
+    translationCache.delete(oldestKey)
   }
 }
 
@@ -186,6 +221,19 @@ async function readPrivateObject(objectKey: string): Promise<Readable> {
   return Readable.fromWeb(response.body as never)
 }
 
+async function readOptionalPrivateObject(objectKey: string): Promise<Readable | null> {
+  const privateReader = getPrivateReaderConfig()
+  if (!privateReader) throw new Error('Private full-label reader is not configured.')
+  const encodedObjectPath = objectKey.split('/').map(encodeURIComponent).join('/')
+  const response = await fetch(`${privateReader.url}/objects/${encodedObjectPath}`, {
+    headers: { Authorization: `Bearer ${privateReader.token}` },
+    cache: 'no-store',
+  })
+  if (response.status === 404) return null
+  if (!response.ok || !response.body) throw new Error(`Private R2 reader returned HTTP ${response.status}.`)
+  return Readable.fromWeb(response.body as never)
+}
+
 export async function readLabelSectionsFromShard(
   objectKey: string,
   labelId: string,
@@ -195,12 +243,11 @@ export async function readLabelSectionsFromShard(
   // fails its TLS handshake from the deployed application, while the private
   // Worker binding reads the same R2 bucket without exposing it.
   const cacheKey = `${objectKey}\u0000${labelId}\u0000${expectedSectionCount}`
-  const cached = getCachedSections(cacheKey)
-  if (cached) return cached
-
-  const sections = await readMatchingSections(await readPrivateObject(objectKey), labelId, expectedSectionCount)
-  if (sections.length === expectedSectionCount) cacheSections(cacheKey, sections)
-  return sections
+  return deduplicateSectionRead(cacheKey, async () => {
+    const sections = await readMatchingSections(await readPrivateObject(objectKey), labelId, expectedSectionCount)
+    if (sections.length === expectedSectionCount) cacheSections(cacheKey, sections)
+    return sections
+  })
 }
 
 function labelObjectKey(labelId: string) {
@@ -213,32 +260,73 @@ export async function readLabelSectionsFromObject(
   expectedSectionCount: number,
 ): Promise<FullLabelSection[]> {
   const cacheKey = `label-object\u0000${labelId}\u0000${expectedSectionCount}`
-  const cached = getCachedSections(cacheKey)
-  if (cached) return cached
+  return deduplicateSectionRead(cacheKey, async () => {
+    const source = await readPrivateObject(labelObjectKey(labelId))
+    const gunzip = createGunzip()
+    source.pipe(gunzip)
+    const chunks: Buffer[] = []
+    try {
+      for await (const chunk of gunzip) chunks.push(Buffer.from(chunk))
+      const payload = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
+        schema_version?: string
+        label_id?: string
+        sections?: FullLabelSection[]
+      }
+      if (payload.schema_version !== '3.2.0' || payload.label_id !== labelId || !Array.isArray(payload.sections)) {
+        throw new Error('Private label object is invalid.')
+      }
+      if (payload.sections.length !== expectedSectionCount || payload.sections.some((section) => section.label_id !== labelId)) {
+        throw new Error('Private label object is incomplete.')
+      }
+      cacheSections(cacheKey, payload.sections)
+      return payload.sections
+    } finally {
+      source.destroy()
+      gunzip.destroy()
+    }
+  })
+}
 
-  const source = await readPrivateObject(labelObjectKey(labelId))
-  const gunzip = createGunzip()
-  source.pipe(gunzip)
-  const chunks: Buffer[] = []
-  try {
-    for await (const chunk of gunzip) chunks.push(Buffer.from(chunk))
-    const payload = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
-      schema_version?: string
-      label_id?: string
-      sections?: FullLabelSection[]
+function bilingualLabelObjectKey(manifestSha256: string, labelId: string) {
+  if (!/^[a-f0-9]{64}$/.test(manifestSha256)) throw new Error('Translation manifest SHA-256 is invalid.')
+  const digest = createHash('sha256').update(labelId, 'utf8').digest('hex')
+  return `pustakaobat/full-label/v3.2/bilingual/${manifestSha256}/${digest.slice(0, 2)}/${digest}.json.gz`
+}
+
+export async function readBilingualLabelObject(
+  labelId: string,
+  expectedSectionCount: number,
+  translationImportId: string,
+  manifestSha256: string,
+): Promise<FullLabelSection[]> {
+  const cacheKey = `bilingual-label ${translationImportId} ${labelId} ${expectedSectionCount}`
+  return deduplicateSectionRead(cacheKey, async () => {
+    const source = await readPrivateObject(bilingualLabelObjectKey(manifestSha256, labelId))
+    const gunzip = createGunzip()
+    source.pipe(gunzip)
+    const chunks: Buffer[] = []
+    try {
+      for await (const chunk of gunzip) chunks.push(Buffer.from(chunk))
+      const payload = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
+        schema_version?: string
+        label_id?: string
+        translation_import_id?: string
+        sections?: FullLabelSection[]
+      }
+      if (payload.schema_version !== '3.2.1-bilingual' || payload.label_id !== labelId
+        || payload.translation_import_id !== translationImportId || !Array.isArray(payload.sections)) {
+        throw new Error('Private bilingual label object is invalid.')
+      }
+      if (payload.sections.length !== expectedSectionCount || payload.sections.some((section) => section.label_id !== labelId)) {
+        throw new Error('Private bilingual label object is incomplete.')
+      }
+      cacheSections(cacheKey, payload.sections)
+      return payload.sections
+    } finally {
+      source.destroy()
+      gunzip.destroy()
     }
-    if (payload.schema_version !== '3.2.0' || payload.label_id !== labelId || !Array.isArray(payload.sections)) {
-      throw new Error('Private label object is invalid.')
-    }
-    if (payload.sections.length !== expectedSectionCount || payload.sections.some((section) => section.label_id !== labelId)) {
-      throw new Error('Private label object is incomplete.')
-    }
-    cacheSections(cacheKey, payload.sections)
-    return payload.sections
-  } finally {
-    source.destroy()
-    gunzip.destroy()
-  }
+  })
 }
 
 /**
@@ -264,6 +352,15 @@ export async function readTranslationsFromOverlay(
   )
   if (!hashes.size) return new Map()
 
+  const merged = new Map<string, IndonesianTranslation>()
+  for (const sourceHash of [...hashes]) {
+    const cached = getCachedTranslation(sourceHash)
+    if (!cached) continue
+    merged.set(sourceHash, cached)
+    hashes.delete(sourceHash)
+  }
+  if (!hashes.size) return merged
+
   const byPrefix = new Map<string, Set<string>>()
   for (const sourceHash of hashes) {
     const prefix = sourceHash.slice(0, overlay.prefix_length)
@@ -273,18 +370,18 @@ export async function readTranslationsFromOverlay(
   }
 
   const entries = [...byPrefix.entries()]
-  const merged = new Map<string, IndonesianTranslation>()
   const concurrency = 6
   for (let offset = 0; offset < entries.length; offset += concurrency) {
     const batch = entries.slice(offset, offset + concurrency)
-    const results = await Promise.all(batch.map(async ([prefix, expectedHashes]) => (
-      readMatchingTranslations(
-        await readPrivateObject(`${overlay.object_prefix}/${prefix}.jsonl.gz`),
-        expectedHashes,
-      )
-    )))
+    const results = await Promise.all(batch.map(async ([prefix, expectedHashes]) => {
+      const source = await readOptionalPrivateObject(`${overlay.object_prefix}/${prefix}.jsonl.gz`)
+      return source ? readMatchingTranslations(source, expectedHashes) : new Map<string, IndonesianTranslation>()
+    }))
     for (const result of results) {
-      for (const [sourceHash, translation] of result) merged.set(sourceHash, translation)
+      for (const [sourceHash, translation] of result) {
+        merged.set(sourceHash, translation)
+        cacheTranslation(sourceHash, translation)
+      }
     }
   }
   return merged

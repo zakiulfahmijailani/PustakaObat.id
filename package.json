@@ -36,6 +36,7 @@
     "full-label:translations:upload": "node scripts/full-label-v3.2/upload-indonesian-translation-overlay.mjs",
     "full-label:translations:register": "node scripts/full-label-v3.2/register-indonesian-translation-overlay.mjs",
     "full-label:objects:materialize": "node scripts/full-label-v3.2/materialize-label-objects.mjs",
+    "full-label:bilingual:materialize": "node scripts/full-label-v3.2/materialize-bilingual-label-objects.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
     "super-admin:bootstrap": "node scripts/bootstrap-super-admin.mjs"
   },

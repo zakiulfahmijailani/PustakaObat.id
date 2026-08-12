@@ -107,6 +107,12 @@ export function labelObjectKey(labelId) {
   return `pustakaobat/full-label/v3.2/labels/${digest.slice(0, 2)}/${digest}.json.gz`;
 }
 
+export function bilingualLabelObjectKey(manifestSha256, labelId) {
+  if (!/^[a-f0-9]{64}$/.test(manifestSha256)) throw new Error("Invalid translation manifest SHA-256");
+  const digest = sha256Text(labelId);
+  return `pustakaobat/full-label/v3.2/bilingual/${manifestSha256}/${digest.slice(0, 2)}/${digest}.json.gz`;
+}
+
 export function quoteIdentifier(value) {
   if (!/^[a-z_][a-z0-9_]*$/i.test(value)) throw new Error(`Unsafe SQL identifier: ${value}`);
   return `"${value}"`;
