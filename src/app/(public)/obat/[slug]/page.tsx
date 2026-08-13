@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowUpRight, BadgeCheck, CalendarDays, CircleAlert, FileCheck2, Globe2, Info, Pill, ShieldCheck, ShieldQuestion } from 'lucide-react'
 import { PrintMonographButton } from '@/components/drug/PrintMonographButton'
+import { RichTextContent } from '@/components/editor/RichTextContent'
 import { Badge } from '@/components/ui/Badge'
 import { AWARE_DESCRIPTIONS, VERIFICATION_LABELS, WHO_BPOM_DISCLAIMER } from '@/lib/who/constants'
 import { displayMedicineName, getPublicLocalDrugBySlug, getPublicWhoMedicineBySlug } from '@/lib/who/queries'
@@ -117,7 +118,7 @@ export default async function DrugDetailPage({ params }: { params: Promise<{ slu
                   <h2 className="flex-1 font-serif text-xl font-semibold text-text">{sectionLabels[section.section_type] || section.section_type}</h2>
                   <Badge variant="success" className="text-xs">Bahasa Indonesia</Badge>
                 </div>
-                <div className="px-5 py-5"><p className="whitespace-pre-wrap text-[15px] leading-7 text-text/90">{section.content}</p></div>
+                <div className="px-5 py-5"><RichTextContent value={section.content} className="text-[15px] leading-7 text-text/90" /></div>
               </section>
             )) : (
               <section className="rounded-xl border border-dashed border-border p-8 text-center text-text-muted">Bagian monografi belum tersedia.</section>

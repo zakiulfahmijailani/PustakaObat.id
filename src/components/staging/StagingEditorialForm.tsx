@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, FlaskConical, Send, Save, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { RichTextEditor } from '@/components/editor/RichTextEditor'
 import { Textarea } from '@/components/ui/Textarea'
 import type { EditorialDraft, IndonesianCandidateDraft, MonographPublication } from '@/lib/staging/types'
 
@@ -55,7 +56,7 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
         <select id="editorial-section" value={sectionType} onChange={(event) => setSectionType(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm">
           {sections.map((section) => <option key={section} value={section}>{SECTION_LABELS[section] || section}</option>)}
         </select>
-        <Textarea label="Draf asli Bahasa Indonesia" value={contentBySection[sectionType] || ''} onChange={(event) => setContentBySection((current) => ({ ...current, [sectionType]: event.target.value }))} disabled={pending || currentDraft?.status === 'submitted' || currentDraft?.status === 'pharmacist_approved'} className="min-h-64" helperText="Tulis teks editorial orisinal. Jangan salin source_text mentah atau menerjemahkannya secara otomatis." />
+        <RichTextEditor label="Draf asli Bahasa Indonesia" value={contentBySection[sectionType] || ''} onChange={(content) => setContentBySection((current) => ({ ...current, [sectionType]: content }))} disabled={pending || currentDraft?.status === 'submitted' || currentDraft?.status === 'pharmacist_approved'} className="min-h-64" helperText="Gunakan toolbar untuk menata teks. Tulis teks editorial orisinal dan periksa kembali sebelum dikirim." />
       </div>
       <div className="flex flex-wrap gap-3">
         {!currentDraft && currentCandidate && <Button type="button" variant="outline" disabled={pending} onClick={() => { setContentBySection((current) => ({ ...current, [sectionType]: currentCandidate.content_indonesian })); run({ action: 'create_from_ai_candidate', drugKey, sectionType }, 'Kandidat AI disalin sebagai draf editorial. Periksa dan edit sebelum mengirimkannya untuk review.') }}><Save size={17} />Gunakan kandidat AI sebagai draf</Button>}

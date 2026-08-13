@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, ArrowUpRight, BookOpenText, FileText, Save, Send } from 'lucide-react'
 import { BoundEvidencePanel } from '@/components/full-label/BoundEvidencePanel'
+import { RichTextEditor } from '@/components/editor/RichTextEditor'
 import { fdaSectionTypesForMonographSection, MONOGRAPH_SECTION_LABELS } from '@/lib/full-label/section-mapping'
 import { resolveInitialSection } from '@/lib/staging/editorial-queue'
 import { Button } from '@/components/ui/Button'
-import { Textarea } from '@/components/ui/Textarea'
 import type { EditorialDraft } from '@/lib/staging/types'
 
 async function mutate(payload: Record<string, unknown>) {
@@ -82,7 +82,7 @@ export function EditorialDraftForm({ drugKey, drugName, availableSections, draft
     {sourceLabelId && !mappedSectionTypes.length && <div className="rounded-2xl border border-warning/30 bg-warning/5 p-5 text-sm text-text-muted"><AlertTriangle className="mb-2 text-warning" size={19} />Bagian ini belum memiliki pemetaan ke seksi label FDA.</div>}
     {currentDraft?.status === 'changes_requested' && <div className="rounded-2xl border border-warning/30 bg-warning/5 p-5"><p className="font-bold text-text">Catatan Reviewer</p><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-text-muted">{currentDraft.reviewer_note || 'Reviewer meminta perbaikan pada bagian ini.'}</p></div>}
     {currentDraft && !currentDraft.source_label_id && <div className="rounded-2xl border border-warning/30 bg-warning/5 p-5 text-sm text-text-muted"><AlertTriangle className="mb-2 text-warning" size={19} />Draf lama ini belum terikat ke evidence FDA. Simpan ulang draf dengan label di atas sebelum mengirimnya lagi untuk review atau publikasi.</div>}
-    <Textarea label="Draf Bahasa Indonesia" value={contentBySection[sectionType] || ''} onChange={(event) => setContentBySection((value) => ({ ...value, [sectionType]: event.target.value }))} disabled={pending || !editable} className="min-h-80" helperText="Draf yang dikirim akan dikunci dan Reviewer akan membandingkannya dengan evidence FDA terikat di atas." />
+    <RichTextEditor label="Draf Bahasa Indonesia" value={contentBySection[sectionType] || ''} onChange={(content) => setContentBySection((value) => ({ ...value, [sectionType]: content }))} disabled={pending || !editable} className="min-h-80" helperText="Gunakan toolbar untuk menata teks. Draf yang dikirim akan dikunci dan Reviewer akan membandingkannya dengan evidence FDA terikat di atas." />
     <div className="flex flex-wrap gap-3">
       {editable && <Button type="button" variant="outline" disabled={pending || !fullTranslationDraft} onClick={() => setContentBySection((value) => ({ ...value, [sectionType]: fullTranslationDraft || '' }))}><FileText size={17} />Gunakan terjemahan FDA lengkap</Button>}
       <Button type="button" disabled={pending || !editable || !sourceLabelId || !sourceReady || (contentBySection[sectionType] || '').trim().length < 40} onClick={() => run({ action: 'save_draft', drugKey, sectionType, contentIndonesian: contentBySection[sectionType] || '', sourceLabelId }, 'Draf dan evidence FDA terikat tersimpan.')}><Save size={17} />Simpan draf</Button>

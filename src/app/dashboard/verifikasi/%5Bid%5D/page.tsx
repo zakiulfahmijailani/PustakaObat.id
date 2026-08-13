@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ReviewAction } from '@/components/dashboard/ReviewAction'
+import { RichTextContent } from '@/components/editor/RichTextContent'
 import Link from 'next/link'
 
 interface PageProps {
@@ -143,9 +144,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
                       {sectionLabels[section.section_type] || section.section_type}
                     </h3>
                   </div>
-                  <div className="pl-14 prose prose-slate max-w-none text-lg text-text-muted whitespace-pre-wrap leading-relaxed italic">
-                    {section.content}
-                  </div>
+                  <RichTextContent value={section.content} className="pl-14 text-lg italic text-text-muted" />
                 </div>
               ))}
             </div>
