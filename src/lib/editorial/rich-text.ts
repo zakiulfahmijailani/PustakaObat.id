@@ -5,6 +5,11 @@ export type RichTextInline = {
 
 export type RichTextBlock =
   | {
+      type: 'heading'
+      level: 1 | 2
+      content: RichTextInline[]
+    }
+  | {
       type: 'paragraph'
       lines: Array<{ indent: number; content: RichTextInline[] }>
     }
@@ -19,6 +24,7 @@ export type RichTextBlock =
     }
 
 const LIST_LINE = /^(\s*)(?:(-)|(?:([0-9]+)\.))\s+(.+)$/
+const HEADING_LINE = /^(#{1,2})\s+(.+)$/
 
 function indentationLevel(whitespace: string) {
   return Math.min(6, Math.floor(whitespace.replaceAll('\t', '  ').length / 2))
@@ -79,6 +85,13 @@ export function parseRichText(value: string): RichTextBlock[] {
 
   while (index < lines.length) {
     if (!lines[index].trim()) {
+      index += 1
+      continue
+    }
+
+    const heading = lines[index].match(HEADING_LINE)
+    if (heading) {
+      blocks.push({ type: 'heading', level: heading[1].length as 1 | 2, content: parseInlineFormatting(heading[2]) })
       index += 1
       continue
     }
@@ -184,6 +197,17 @@ export function indentLines(selection: TextSelection): TextEditResult {
 
 export function outdentLines(selection: TextSelection): TextEditResult {
   return replaceSelectedLines(selection, (lines) => lines.map((line) => line.startsWith('\t') ? line.slice(1) : line.replace(/^ {1,2}/, '')))
+}
+
+export function setTextStyle(selection: TextSelection, style: 'title' | 'subtitle' | 'text'): TextEditResult {
+  const prefix = style === 'title' ? '# ' : style === 'subtitle' ? '## ' : ''
+  return replaceSelectedLines(selection, (lines) => lines.map((line) => {
+    const match = line.match(/^(\s*)#{1,2}\s+(.*)$/)
+    const plainLine = line.match(/^(\s*)(.*)$/)!
+    const indent = match?.[1] || plainLine[1]
+    const content = match?.[2] || plainLine[2]
+    return content ? `${indent}${prefix}${content}` : line
+  }))
 }
 
 export function insertTable(selection: TextSelection): TextEditResult {

@@ -6,6 +6,7 @@ import {
   makeNumberedList,
   outdentLines,
   parseRichText,
+  setTextStyle,
   wrapSelection,
 } from './rich-text'
 
@@ -35,5 +36,13 @@ describe('editorial rich text', () => {
     const result = insertTable({ value: 'Pengantar', selectionStart: 9, selectionEnd: 9 })
     expect(result.value).toContain('| Kolom 1 | Kolom 2 |')
     expect(result.value).toContain('| --- | --- |')
+  })
+
+  it('parses and applies title, subtitle, and text styles', () => {
+    const blocks = parseRichText('# Judul\n## Subjudul\nTeks biasa')
+    expect(blocks[0]).toMatchObject({ type: 'heading', level: 1 })
+    expect(blocks[1]).toMatchObject({ type: 'heading', level: 2 })
+    expect(setTextStyle({ value: 'Paragraf', selectionStart: 0, selectionEnd: 8 }, 'title').value).toBe('# Paragraf')
+    expect(setTextStyle({ value: '# Judul', selectionStart: 0, selectionEnd: 6 }, 'text').value).toBe('Judul')
   })
 })
