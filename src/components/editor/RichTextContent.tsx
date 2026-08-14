@@ -30,6 +30,11 @@ export function RichTextContent({ value, className }: { value: string; className
       </Tag>
     }
 
+    if (block.type === 'heading') {
+      const Tag = block.level === 1 ? 'h2' : 'h3'
+      return <Tag key={blockIndex} className={block.level === 1 ? 'font-serif text-2xl font-bold text-text' : 'font-serif text-xl font-semibold text-text'}><InlineContent content={block.content} /></Tag>
+    }
+
     return <p key={blockIndex}>{block.lines.map((line, index) => <span key={index} className="block" style={{ marginInlineStart: `${line.indent * 1.25}rem` }}><InlineContent content={line.content} /></span>)}</p>
   })
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
-import { Bold, IndentDecrease, IndentIncrease, Italic, List, ListOrdered, Table2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Bold, IndentDecrease, IndentIncrease, Italic, List, ListOrdered, Table2, Undo2 } from 'lucide-react'
 import { RichTextContent } from '@/components/editor/RichTextContent'
 import { Textarea } from '@/components/ui/Textarea'
 import {
@@ -10,6 +10,7 @@ import {
   makeBulletList,
   makeNumberedList,
   outdentLines,
+  setTextStyle,
   wrapSelection,
   type TextEditResult,
   type TextSelection,
@@ -36,11 +37,35 @@ const tools = [
 
 export function RichTextEditor({ label, value, onChange, disabled = false, helperText, className }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const lastValueRef = useRef(value)
+  const historyRef = useRef<Array<{ value: string; selectionStart: number; selectionEnd: number }>>([])
+  const [canUndo, setCanUndo] = useState(false)
+
+  useEffect(() => {
+    if (value !== lastValueRef.current) {
+      lastValueRef.current = value
+      historyRef.current = []
+      setCanUndo(false)
+    }
+  }, [value])
+
+  function rememberCurrentValue() {
+    const textarea = textareaRef.current
+    if (!textarea) return
+    historyRef.current = [...historyRef.current.slice(-99), {
+      value,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd,
+    }]
+    setCanUndo(true)
+  }
 
   function applyEdit(edit: (selection: TextSelection) => TextEditResult) {
     const textarea = textareaRef.current
     if (!textarea || disabled) return
+    rememberCurrentValue()
     const result = edit({ value, selectionStart: textarea.selectionStart, selectionEnd: textarea.selectionEnd })
+    lastValueRef.current = result.value
     onChange(result.value)
     requestAnimationFrame(() => {
       textarea.focus()
@@ -48,10 +73,51 @@ export function RichTextEditor({ label, value, onChange, disabled = false, helpe
     })
   }
 
+  function undo() {
+    const textarea = textareaRef.current
+    const previous = historyRef.current.pop()
+    if (!textarea || !previous || disabled) return
+    lastValueRef.current = previous.value
+    onChange(previous.value)
+    setCanUndo(historyRef.current.length > 0)
+    requestAnimationFrame(() => {
+      textarea.focus()
+      textarea.setSelectionRange(previous.selectionStart, previous.selectionEnd)
+    })
+  }
+
+  function handleChange(nextValue: string) {
+    if (nextValue === value) return
+    rememberCurrentValue()
+    lastValueRef.current = nextValue
+    onChange(nextValue)
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
+      event.preventDefault()
+      undo()
+    }
+  }
+
+  function applyTextStyle(style: 'title' | 'subtitle' | 'text') {
+    applyEdit((selection) => setTextStyle(selection, style))
+  }
+
   return <div className="space-y-3">
     <div className="space-y-1.5">
       <p className="text-sm font-medium leading-none text-text">{label}</p>
       <div className="flex flex-wrap gap-1 rounded-2xl border border-border bg-surface-2/60 p-2" role="toolbar" aria-label={`Pemformatan ${label}`}>
+        <button type="button" disabled={disabled || !canUndo} onMouseDown={(event) => event.preventDefault()} onClick={undo} title="Undo" aria-label="Undo" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-text transition-colors hover:bg-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40">
+          <Undo2 size={16} aria-hidden="true" />
+          <span>Undo</span>
+        </button>
+        <label className="sr-only" htmlFor={`${label}-text-style`}>Gaya teks</label>
+        <select id={`${label}-text-style`} defaultValue="text" disabled={disabled} onChange={(event) => applyTextStyle(event.target.value as 'title' | 'subtitle' | 'text')} title="Gaya teks" aria-label="Gaya teks" className="min-h-10 rounded-xl border border-border bg-surface px-3 text-xs font-semibold text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40">
+          <option value="title">Judul</option>
+          <option value="subtitle">Subjudul</option>
+          <option value="text">Teks</option>
+        </select>
         {tools.map((tool) => {
           const Icon = tool.icon
           return <button key={tool.label} type="button" disabled={disabled} onMouseDown={(event) => event.preventDefault()} onClick={() => applyEdit(tool.apply)} title={tool.label} aria-label={tool.label} className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-text transition-colors hover:bg-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-40">
@@ -61,7 +127,7 @@ export function RichTextEditor({ label, value, onChange, disabled = false, helpe
         })}
       </div>
     </div>
-    <Textarea ref={textareaRef} aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} disabled={disabled} className={className} helperText={helperText} />
+    <Textarea ref={textareaRef} aria-label={label} value={value} onChange={(event) => handleChange(event.target.value)} onKeyDown={handleKeyDown} disabled={disabled} className={className} helperText={helperText} />
     {value.trim() && <div className="rounded-2xl border border-border bg-surface p-4">
       <p className="mb-3 text-xs font-bold uppercase tracking-wider text-text-muted">Pratinjau format</p>
       <RichTextContent value={value} className="text-sm text-text" />
