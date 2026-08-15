@@ -22,6 +22,7 @@ export const Footer = () => {
             <li><Link href="/" className="hover:text-primary">Beranda</Link></li>
             <li><Link href="/obat" className="hover:text-primary">Cari obat</Link></li>
             <li><Link href="/tentang" className="hover:text-primary">Tentang kami</Link></li>
+            <li><Link href="/terms" className="hover:text-primary">Terms & Conditions</Link></li>
           </ul>
         </div>
 

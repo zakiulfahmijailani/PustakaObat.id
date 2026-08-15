@@ -220,7 +220,7 @@ export function BatchCalculator() {
 
           <div className="flex items-start gap-3 rounded-2xl border border-info/20 bg-info/5 p-4 text-sm leading-relaxed text-text-muted">
             <ShieldCheck size={20} className="mt-0.5 shrink-0 text-info" aria-hidden="true" />
-            <div><strong className="block text-text">Diproses lokal di browser</strong>File dan hasil tidak dikirim atau disimpan oleh Apoteq. Gunakan kode kasus tanpa nama, nomor rekam medis, NIK, atau identitas langsung.</div>
+            <div><strong className="block text-text">Diproses lokal di browser</strong>File dan hasil tidak dikirim atau disimpan oleh PustakaObat.id. Gunakan kode kasus tanpa nama, nomor rekam medis, NIK, atau identitas langsung.</div>
           </div>
         </div>
 

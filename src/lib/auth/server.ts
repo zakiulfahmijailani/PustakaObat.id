@@ -60,7 +60,7 @@ export async function getGoogleIdentity(): Promise<GoogleIdentity | null> {
   return {
     authUserId: parseAuthUserId(session.user.id),
     email: normalizeEmail(session.user.email),
-    name: session.user.name?.trim() || 'Pengguna Apoteq',
+    name: session.user.name?.trim() || 'Pengguna PustakaObat.id',
     image: session.user.image || null,
   }
 }
@@ -90,7 +90,7 @@ export async function linkExistingProfile(identity: GoogleIdentity) {
 
   if (!candidate) return null
   if (candidate.auth_user_id && candidate.auth_user_id !== identity.authUserId) {
-    throw new Error('Google identity conflict for an existing Apoteq profile.')
+    throw new Error('Google identity conflict for an existing PustakaObat.id profile.')
   }
 
   const rows = await queryNeon<AuthProfile>(`

@@ -1,6 +1,7 @@
 export type RichTextInline = {
-  type: 'text' | 'bold' | 'italic'
+  type: 'text' | 'bold' | 'italic' | 'citation'
   text: string
+  href?: string
 }
 
 export type RichTextBlock =
@@ -42,6 +43,20 @@ export function parseInlineFormatting(value: string): RichTextInline[] {
   }
 
   while (cursor < value.length) {
+    if (value.startsWith('[[cite:', cursor)) {
+      const end = value.indexOf(']]', cursor + 7)
+      if (end > cursor + 7) {
+        const [encodedLabel, encodedHref = ''] = value.slice(cursor + 7, end).split('|', 2)
+        try {
+          result.push({ type: 'citation', text: decodeURIComponent(encodedLabel), href: encodedHref ? decodeURIComponent(encodedHref) : undefined })
+          cursor = end + 2
+          continue
+        } catch {
+          // Malformed citation tokens are rendered as ordinary text.
+        }
+      }
+    }
+
     if (value.startsWith('**', cursor)) {
       const end = value.indexOf('**', cursor + 2)
       if (end > cursor + 2) {
@@ -208,6 +223,11 @@ export function setTextStyle(selection: TextSelection, style: 'title' | 'subtitl
     const content = match?.[2] || plainLine[2]
     return content ? `${indent}${prefix}${content}` : line
   }))
+}
+
+export function citeSelectedLines(selection: TextSelection, label: string, href?: string): TextEditResult {
+  const token = `[[cite:${encodeURIComponent(label)}|${encodeURIComponent(href || '')}]]`
+  return replaceSelectedLines(selection, (lines) => lines.map((line) => line.trim() ? `${line} ${token}` : line))
 }
 
 export function insertTable(selection: TextSelection): TextEditResult {

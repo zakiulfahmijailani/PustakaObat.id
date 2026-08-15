@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, FlaskConical, Send, Save, Undo2 } from 'lucide-react'
+import { CheckCircle2, Send, Save, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { RichTextEditor } from '@/components/editor/RichTextEditor'
 import { Textarea } from '@/components/ui/Textarea'
@@ -24,7 +24,7 @@ async function mutate(payload: Record<string, unknown>) {
   return result
 }
 
-export function StagingEditorialForm({ drugKey, isPilot, availableSections, drafts, aiCandidates, publication, actorId }: { drugKey: string; isPilot: boolean; availableSections: string[]; drafts: EditorialDraft[]; aiCandidates: IndonesianCandidateDraft[]; publication: MonographPublication | null; actorId: string }) {
+export function StagingEditorialForm({ drugKey, availableSections, drafts, aiCandidates, publication, actorId }: { drugKey: string; availableSections: string[]; drafts: EditorialDraft[]; aiCandidates: IndonesianCandidateDraft[]; publication: MonographPublication | null; actorId: string }) {
   const router = useRouter()
   const sections = useMemo(() => [...new Set(availableSections)].sort(), [availableSections])
   const [sectionType, setSectionType] = useState(sections[0] || 'indication')
@@ -47,10 +47,6 @@ export function StagingEditorialForm({ drugKey, isPilot, availableSections, draf
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant={isPilot ? 'secondary' : 'outline'} disabled={pending || isPilot} onClick={() => run({ action: 'select_pilot', drugKey }, 'Obat dipilih sebagai pilot editorial.')}><FlaskConical size={17} />{isPilot ? 'Pilot aktif' : 'Pilih sebagai pilot'}</Button>
-        <p className="text-sm text-text-muted">Pilot awal workflow adalah amoxicillin. Pemilihan pilot tidak mengubah visibilitas publik.</p>
-      </div>
       <div className="space-y-3">
         <label className="text-sm font-bold text-text" htmlFor="editorial-section">Bagian monografi</label>
         <select id="editorial-section" value={sectionType} onChange={(event) => setSectionType(event.target.value)} className="min-h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm">

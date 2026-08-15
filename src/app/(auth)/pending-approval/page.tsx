@@ -59,7 +59,7 @@ export default function PendingApprovalPage() {
           </CardContent>
           <CardFooter className="pb-12 pt-0 flex flex-col gap-3">
             <Button variant="primary" className="w-full" asChild>
-              <Link href="mailto:admin@apoteq.id">
+              <Link href="mailto:admin@pustakaobat.id">
                 <Mail className="mr-2 h-4 w-4" />
                 Hubungi Admin
               </Link>
@@ -69,7 +69,7 @@ export default function PendingApprovalPage() {
         </Card>
 
         <p className="text-center text-xs text-text-muted animate-in fade-in duration-1000 delay-300">
-          Butuh bantuan segera? Email kami di <span className="text-primary font-medium">support@apoteq.id</span>
+          Butuh bantuan segera? Email kami di <span className="text-primary font-medium">support@pustakaobat.id</span>
         </p>
       </div>
     </div>

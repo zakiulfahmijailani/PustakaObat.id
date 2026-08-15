@@ -233,7 +233,7 @@ function rowChecksum(row) {
   return sha256(Buffer.from(JSON.stringify(row)))
 }
 
-function drugRecord(row, coverage, amoxicillinDrugKey) {
+function drugRecord(row, coverage) {
   const prepared = {
     drug_key: row.drug_id,
     preferred_name: row.preferred_name,
@@ -261,7 +261,7 @@ function drugRecord(row, coverage, amoxicillinDrugKey) {
     aware_category: row.aware_category || null,
     coverage: JSON.stringify(coverage),
     core_editorial_candidate: csvBoolean(coverage.core_editorial_candidate),
-    is_pilot: row.drug_id === amoxicillinDrugKey,
+    is_pilot: false,
     editorial_status: 'staging',
     public_status: 'hidden',
     publication_eligible: false,
@@ -411,8 +411,8 @@ export async function importDataset(dataDirectory = DEFAULT_DATA_DIRECTORY) {
       select drug_key, identity_status, core_editorial_candidate, public_status, publication_eligible, is_pilot
       from public.monograph_staging_drugs where drug_key = $1
     `, [validated.amoxicillinDrugKey])
-    const pilot = amoxicillinCheck.rows[0]
-    assert(pilot?.identity_status === 'validated' && pilot.core_editorial_candidate && pilot.public_status === 'hidden' && !pilot.publication_eligible && pilot.is_pilot, 'Amoxicillin pilot reconciliation failed')
+    const amoxicillin = amoxicillinCheck.rows[0]
+    assert(amoxicillin?.identity_status === 'validated' && amoxicillin.core_editorial_candidate && amoxicillin.public_status === 'hidden' && !amoxicillin.publication_eligible && !amoxicillin.is_pilot, 'Amoxicillin cancellation reconciliation failed')
 
     await client.query(`
       update public.monograph_staging_import_runs
@@ -435,7 +435,7 @@ async function main() {
   const validated = await validateDataset(options.dataDirectory)
   console.log(`Package v${validated.manifest.pipeline_version}: checksums and schema contract valid`)
   console.log(`Reconciled source rows: ${JSON.stringify(validated.counts)}`)
-  console.log(`Amoxicillin pilot: ${validated.amoxicillinDrugKey} (validated, editorial candidate, unpublished)`)
+  console.log(`Amoxicillin: ${validated.amoxicillinDrugKey} (pilot cancelled, editorial candidate, unpublished)`)
   if (!options.apply) {
     console.log('Dry run complete. No database write was performed.')
     return

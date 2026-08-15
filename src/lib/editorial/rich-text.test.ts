@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   indentLines,
+  citeSelectedLines,
   insertTable,
   makeBulletList,
   makeNumberedList,
@@ -44,5 +45,11 @@ describe('editorial rich text', () => {
     expect(blocks[1]).toMatchObject({ type: 'heading', level: 2 })
     expect(setTextStyle({ value: 'Paragraf', selectionStart: 0, selectionEnd: 8 }, 'title').value).toBe('# Paragraf')
     expect(setTextStyle({ value: '# Judul', selectionStart: 0, selectionEnd: 6 }, 'text').value).toBe('Judul')
+  })
+
+  it('attaches a source citation to the selected paragraph', () => {
+    const result = citeSelectedLines({ value: 'Dosis diberikan setiap hari.', selectionStart: 0, selectionEnd: 5 }, 'FDA · dosage', 'https://open.fda.gov')
+    expect(result.value).toContain('[[cite:FDA%20%C2%B7%20dosage|https%3A%2F%2Fopen.fda.gov]]')
+    expect(parseRichText(result.value)[0]).toMatchObject({ type: 'paragraph' })
   })
 })

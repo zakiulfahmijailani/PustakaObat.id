@@ -6,7 +6,7 @@ import { adminPreauthorizationSchema, reviewerOnboardingSchema } from './schemas
 
 describe('Neon authentication security helpers', () => {
   it('normalizes email addresses deterministically', () => {
-    expect(normalizeEmail('  Reviewer@Apoteq.ID ')).toBe('reviewer@apoteq.id')
+    expect(normalizeEmail('  Reviewer@PustakaObat.ID ')).toBe('reviewer@pustakaobat.id')
   })
 
   it('routes account states without trusting a client role', () => {
@@ -43,6 +43,8 @@ describe('Neon authentication security helpers', () => {
       professionalLicenseNumber: 'STRA-12345',
       sipaNumber: '',
       phone: '',
+      workExperience: 'Berpraktik sebagai apoteker selama lima tahun.',
+      termsAccepted: true,
     })
     expect(valid.success).toBe(true)
 
@@ -50,6 +52,8 @@ describe('Neon authentication security helpers', () => {
       fullName: 'Ayu Reviewer, Apt.',
       institution: 'Apotek Contoh',
       professionalLicenseNumber: '',
+      workExperience: 'Berpraktik sebagai apoteker selama lima tahun.',
+      termsAccepted: true,
     })
     expect(invalid.success).toBe(false)
   })

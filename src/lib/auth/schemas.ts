@@ -1,11 +1,23 @@
 import { z } from 'zod'
 
+const optionalPublicUrl = z.union([
+  z.literal(''),
+  z.string().trim().url('Link tidak valid').max(500).refine((value) => /^https?:\/\//i.test(value), 'Link harus menggunakan http atau https'),
+]).optional().default('')
+
 export const reviewerOnboardingSchema = z.object({
   fullName: z.string().trim().min(3, 'Nama lengkap minimal 3 karakter').max(150),
   institution: z.string().trim().min(3, 'Nama institusi minimal 3 karakter').max(200),
   professionalLicenseNumber: z.string().trim().min(4, 'Nomor identitas profesi wajib diisi').max(100),
   sipaNumber: z.string().trim().max(100).optional().default(''),
   phone: z.string().trim().max(30).optional().default(''),
+  workExperience: z.string().trim().min(20, 'Pengalaman kerja minimal 20 karakter').max(5000),
+  awards: z.string().trim().max(3000).optional().default(''),
+  publications: z.string().trim().max(5000).optional().default(''),
+  linkedinUrl: optionalPublicUrl,
+  instagramUrl: optionalPublicUrl,
+  youtubeUrl: optionalPublicUrl,
+  termsAccepted: z.literal(true, { error: 'Anda wajib menyetujui Terms & Conditions.' }),
 })
 
 export const reviewerApplicationUpdateSchema = z.object({

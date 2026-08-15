@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL ?? 'https://apoteq.vercel.app',
-        'X-Title': 'Apoteq - Informasi Obat',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pustakaobat.id',
+        'X-Title': 'PustakaObat.id - Informasi Obat',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.0-flash-exp:free',

@@ -296,11 +296,12 @@ export async function getFullLabelCandidates(rxcui: string | null, preferredName
 }
 
 export async function getStagedDrugForEditor(drugKey: string, actorId: string) {
-  if (!isNeonConfigured()) return { concept: null, drafts: [], availableSections: [], error: new Error('Neon is not configured.') }
+  if (!isNeonConfigured()) return { concept: null, drafts: [], sources: [], availableSections: [], error: new Error('Neon is not configured.') }
   try {
-    const [conceptRows, drafts, availability] = await Promise.all([
+    const [conceptRows, drafts, sources, availability] = await Promise.all([
       queryNeon<StagingDrugConcept>("select * from public.monograph_staging_drugs where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden' limit 1", [drugKey]),
       queryNeon<EditorialDraft>('select * from public.monograph_editorial_drafts where drug_key = $1 and authored_by = $2::uuid order by section_type', [drugKey, actorId]),
+      queryNeon<StagingSourceDocument>('select source_document_key, drug_key, source_name, source_document_id, source_url, validation_status, usage_scope, retrieved_at from public.monograph_staging_source_documents where drug_key = $1 order by source_name, source_document_id', [drugKey]),
       queryNeon<{ available_section_types: string[] }>(`
         select coalesce(array_agg(available.section_type order by available.section_type), '{}'::text[]) as available_section_types
         from public.monograph_full_label_availability ready
@@ -311,8 +312,8 @@ export async function getStagedDrugForEditor(drugKey: string, actorId: string) {
             where claimed.drug_key = ready.drug_key and claimed.section_type = available.section_type
           )`, [drugKey]),
     ])
-    return { concept: conceptRows[0] || null, drafts, availableSections: availability[0]?.available_section_types || [], error: null }
+    return { concept: conceptRows[0] || null, drafts, sources, availableSections: availability[0]?.available_section_types || [], error: null }
   } catch (error) {
-    return { concept: null, drafts: [] as EditorialDraft[], availableSections: [] as string[], error }
+    return { concept: null, drafts: [] as EditorialDraft[], sources: [] as StagingSourceDocument[], availableSections: [] as string[], error }
   }
 }

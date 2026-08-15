@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Bold, IndentDecrease, IndentIncrease, Italic, List, ListOrdered, Table2, Undo2 } from 'lucide-react'
+import { Bold, BookMarked, IndentDecrease, IndentIncrease, Italic, List, ListOrdered, Table2, Undo2 } from 'lucide-react'
 import { RichTextContent } from '@/components/editor/RichTextContent'
 import { Textarea } from '@/components/ui/Textarea'
 import {
   indentLines,
+  citeSelectedLines,
   insertTable,
   makeBulletList,
   makeNumberedList,
@@ -23,6 +24,7 @@ interface RichTextEditorProps {
   disabled?: boolean
   helperText?: string
   className?: string
+  citationSources?: Array<{ id: string; label: string; href?: string }>
 }
 
 const tools = [
@@ -35,11 +37,16 @@ const tools = [
   { label: 'Tabel', icon: Table2, apply: insertTable },
 ]
 
-export function RichTextEditor({ label, value, onChange, disabled = false, helperText, className }: RichTextEditorProps) {
+export function RichTextEditor({ label, value, onChange, disabled = false, helperText, className, citationSources = [] }: RichTextEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lastValueRef = useRef(value)
   const historyRef = useRef<Array<{ value: string; selectionStart: number; selectionEnd: number }>>([])
   const [canUndo, setCanUndo] = useState(false)
+  const [citationSourceId, setCitationSourceId] = useState(citationSources[0]?.id || '')
+
+  useEffect(() => {
+    if (!citationSources.some((source) => source.id === citationSourceId)) setCitationSourceId(citationSources[0]?.id || '')
+  }, [citationSourceId, citationSources])
 
   useEffect(() => {
     if (value !== lastValueRef.current) {
@@ -104,6 +111,12 @@ export function RichTextEditor({ label, value, onChange, disabled = false, helpe
     applyEdit((selection) => setTextStyle(selection, style))
   }
 
+  function addCitation() {
+    const source = citationSources.find((item) => item.id === citationSourceId)
+    if (!source) return
+    applyEdit((selection) => citeSelectedLines(selection, source.label, source.href))
+  }
+
   return <div className="space-y-3">
     <div className="space-y-1.5">
       <p className="text-sm font-medium leading-none text-text">{label}</p>
@@ -125,6 +138,13 @@ export function RichTextEditor({ label, value, onChange, disabled = false, helpe
             <span>{tool.label}</span>
           </button>
         })}
+        {citationSources.length > 0 && <div className="flex min-h-10 items-stretch gap-1 rounded-xl border border-border bg-surface p-1">
+          <label className="sr-only" htmlFor={`${label}-citation-source`}>Sumber sitasi</label>
+          <select id={`${label}-citation-source`} value={citationSourceId} disabled={disabled} onChange={(event) => setCitationSourceId(event.target.value)} className="max-w-52 bg-transparent px-2 text-xs font-semibold text-text outline-none disabled:opacity-40">
+            {citationSources.map((source) => <option key={source.id} value={source.id}>{source.label}</option>)}
+          </select>
+          <button type="button" disabled={disabled || !citationSourceId} onMouseDown={(event) => event.preventDefault()} onClick={addCitation} className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-white disabled:opacity-40" title="Kaitkan baris yang dipilih dengan sumber"><BookMarked size={15} />Tambah sitasi</button>
+        </div>}
       </div>
     </div>
     <Textarea ref={textareaRef} aria-label={label} value={value} onChange={(event) => handleChange(event.target.value)} onKeyDown={handleKeyDown} disabled={disabled} className={className} helperText={helperText} />

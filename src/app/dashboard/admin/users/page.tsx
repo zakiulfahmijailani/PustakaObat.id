@@ -32,10 +32,16 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
       p.id, p.email, p.full_name, p.role::text AS role, p.account_status,
       p.is_active, p.institution, p.sipa_number, p.professional_license_number,
       p.phone, p.created_at, p.last_login_at,
-      application.application_status, application.review_note, application.submitted_at
+      application.application_status, application.review_note, application.submitted_at,
+      application.work_experience, application.awards, application.publications,
+      application.linkedin_url, application.instagram_url, application.youtube_url,
+      application.cv_file_name, application.cv_file_size,
+      application.terms_version, application.terms_accepted_at
     FROM public.profiles p
     LEFT JOIN LATERAL (
-      SELECT application_status, review_note, submitted_at
+      SELECT application_status, review_note, submitted_at, work_experience, awards, publications,
+        linkedin_url, instagram_url, youtube_url, cv_file_name, cv_file_size,
+        terms_version, terms_accepted_at
       FROM public.reviewer_applications ra
       WHERE ra.profile_id = p.id
       ORDER BY ra.created_at DESC

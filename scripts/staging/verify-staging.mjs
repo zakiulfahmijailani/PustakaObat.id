@@ -45,7 +45,7 @@ try {
   assert(Object.values(unsafe).every((value) => value === 0), `Unsafe staging state detected: ${JSON.stringify(unsafe)}`)
 
   const amoxicillin = (await client.query("select drug_key, identity_status, core_editorial_candidate, is_pilot, public_status, publication_eligible from public.monograph_staging_drugs where normalized_name = 'amoxicillin' and seed_type = 'ingredient'" )).rows[0]
-  assert(amoxicillin?.identity_status === 'validated' && amoxicillin.core_editorial_candidate && amoxicillin.is_pilot, 'Amoxicillin pilot is not validated and editorial-ready')
+  assert(amoxicillin?.identity_status === 'validated' && amoxicillin.core_editorial_candidate && !amoxicillin.is_pilot, 'Amoxicillin cancellation state is invalid')
   assert(amoxicillin.public_status === 'hidden' && amoxicillin.publication_eligible === false, 'Amoxicillin was unexpectedly published')
   const combination = (await client.query("select drug_key from public.monograph_staging_drugs where normalized_name like 'amoxicillin +%' and seed_type = 'combination' limit 1")).rows[0]
   assert(combination && combination.drug_key !== amoxicillin.drug_key, 'Combination record was merged into amoxicillin')

@@ -7,7 +7,7 @@ export const WHO_BPOM_DISCLAIMER =
 
 export const VERIFICATION_LABELS = {
   pending: 'Menunggu tinjauan apoteker',
-  verified: 'Diverifikasi apoteker Apoteq',
+  verified: 'Diverifikasi apoteker PustakaObat.id',
   rejected: 'Ditolak',
   needs_revision: 'Perlu perbaikan',
 } as const

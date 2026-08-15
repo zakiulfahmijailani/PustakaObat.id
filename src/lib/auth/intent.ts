@@ -8,7 +8,7 @@ export const AUTH_INTENTS = [
 
 export type AuthIntent = (typeof AUTH_INTENTS)[number]
 
-export const AUTH_INTENT_COOKIE = 'apoteq_auth_intent'
+export const AUTH_INTENT_COOKIE = 'pustakaobat_auth_intent'
 export const AUTH_INTENT_MAX_AGE_SECONDS = 60 * 10
 
 export function parseAuthIntent(value: unknown): AuthIntent | null {

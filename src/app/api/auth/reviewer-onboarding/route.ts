@@ -4,6 +4,7 @@ import { reviewerOnboardingSchema } from '@/lib/auth/schemas'
 import { getGoogleIdentity, linkExistingProfile } from '@/lib/auth/server'
 import { getSafeRedirectForAccount } from '@/lib/auth/security'
 import { getRequestMetadata, isSameOriginMutation } from '@/lib/auth/request'
+import { CURRENT_TERMS_VERSION } from '@/lib/legal/terms'
 
 export const runtime = 'nodejs'
 
@@ -23,9 +24,32 @@ export async function POST(request: Request) {
     })
   }
 
-  const parsed = reviewerOnboardingSchema.safeParse(await request.json().catch(() => null))
+  const form = await request.formData().catch(() => null)
+  if (!form) return NextResponse.json({ error: 'Formulir pendaftaran tidak valid.' }, { status: 400 })
+  const parsed = reviewerOnboardingSchema.safeParse({
+    fullName: form.get('fullName'),
+    institution: form.get('institution'),
+    professionalLicenseNumber: form.get('professionalLicenseNumber'),
+    sipaNumber: form.get('sipaNumber'),
+    phone: form.get('phone'),
+    workExperience: form.get('workExperience'),
+    awards: form.get('awards'),
+    publications: form.get('publications'),
+    linkedinUrl: form.get('linkedinUrl'),
+    instagramUrl: form.get('instagramUrl'),
+    youtubeUrl: form.get('youtubeUrl'),
+    termsAccepted: form.get('termsAccepted') === 'true',
+  })
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data pendaftaran tidak valid.' }, { status: 400 })
+  }
+  const cv = form.get('cv')
+  if (!(cv instanceof File) || cv.type !== 'application/pdf' || cv.size < 5 || cv.size > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: 'CV wajib berupa PDF dengan ukuran maksimal 5 MB.' }, { status: 400 })
+  }
+  const cvBytes = Buffer.from(await cv.arrayBuffer())
+  if (cvBytes.subarray(0, 4).toString('ascii') !== '%PDF') {
+    return NextResponse.json({ error: 'Isi file CV bukan dokumen PDF yang valid.' }, { status: 400 })
   }
 
   const metadata = getRequestMetadata(request)
@@ -58,16 +82,22 @@ export async function POST(request: Request) {
         RETURNING id
       ), new_application AS (
         INSERT INTO public.reviewer_applications (
-          profile_id, institution, professional_license_number, sipa_number, phone
+          profile_id, institution, professional_license_number, sipa_number, phone,
+          work_experience, awards, publications, linkedin_url, instagram_url, youtube_url,
+          cv_file_name, cv_mime_type, cv_file_size, cv_file_data,
+          terms_version, terms_accepted_at
         )
-        SELECT id, $3, $6, NULLIF($4, ''), NULLIF($5, '') FROM new_profile
+        SELECT id, $3, $6, NULLIF($4, ''), NULLIF($5, ''),
+          $10, NULLIF($11, ''), NULLIF($12, ''), NULLIF($13, ''), NULLIF($14, ''), NULLIF($15, ''),
+          $16, $17, $18, $19, $20, now()
+        FROM new_profile
         RETURNING id, profile_id
       ), audit AS (
         INSERT INTO public.audit_logs (
           user_id, action, resource_type, resource_id, metadata, ip_address
         )
         SELECT profile_id, 'REVIEWER_ONBOARDING_COMPLETED', 'reviewer_application', id,
-          jsonb_build_object('email', $1, 'institution', $3, 'provider', 'google'), $9
+          jsonb_build_object('email', $1, 'institution', $3, 'provider', 'google', 'terms_version', $20), $9
         FROM new_application
       )
       SELECT profile_id FROM new_application
@@ -81,6 +111,17 @@ export async function POST(request: Request) {
       identity.image,
       identity.authUserId,
       metadata.ipAddress,
+      parsed.data.workExperience,
+      parsed.data.awards,
+      parsed.data.publications,
+      parsed.data.linkedinUrl,
+      parsed.data.instagramUrl,
+      parsed.data.youtubeUrl,
+      cv.name.slice(0, 255),
+      cv.type,
+      cv.size,
+      cvBytes,
+      CURRENT_TERMS_VERSION,
     ])
 
     if (!rows[0]) throw new Error('Reviewer application was not created.')
@@ -88,9 +129,8 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
     if (message.includes('profiles_email') || message.includes('profiles_auth_user_id') || message.includes('duplicate key')) {
-      return NextResponse.json({ error: 'Akun Google ini sudah terhubung ke profil Apoteq.' }, { status: 409 })
+      return NextResponse.json({ error: 'Akun Google ini sudah terhubung ke profil PustakaObat.id.' }, { status: 409 })
     }
     return NextResponse.json({ error: 'Pendaftaran belum dapat diproses. Silakan coba lagi.' }, { status: 500 })
   }
 }
-

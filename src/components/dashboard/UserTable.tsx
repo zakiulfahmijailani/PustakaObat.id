@@ -24,6 +24,16 @@ export interface AdminProfileRow {
   application_status: string | null
   review_note: string | null
   submitted_at: string | null
+  work_experience: string | null
+  awards: string | null
+  publications: string | null
+  linkedin_url: string | null
+  instagram_url: string | null
+  youtube_url: string | null
+  cv_file_name: string | null
+  cv_file_size: number | null
+  terms_version: string | null
+  terms_accepted_at: string | null
 }
 
 export const UserTable = ({ profiles, currentUserId }: { profiles: AdminProfileRow[]; currentUserId: string }) => {
@@ -61,6 +71,10 @@ export const UserTable = ({ profiles, currentUserId }: { profiles: AdminProfileR
           <div className="flex gap-5 min-w-0"><div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white ${profile.is_active ? 'bg-primary' : 'bg-text-muted/50'}`}>{profile.full_name?.charAt(0) || <UserIcon />}</div><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-xl font-serif text-text">{profile.full_name}</h2><Badge variant={profile.role === 'admin' ? 'default' : 'secondary'}>{profile.role}</Badge><Badge variant={profile.account_status === 'active' ? 'success' : profile.account_status === 'rejected' || profile.account_status === 'suspended' ? 'destructive' : 'warning'}>{profile.account_status.replace('_', ' ')}</Badge></div><p className="mt-1 text-sm text-text-muted">{profile.email}</p><p className="mt-2 text-xs text-text-muted">{profile.institution || 'Institusi belum diisi'} · STRA/profesi: {profile.professional_license_number || '—'} · SIPA: {profile.sipa_number || '—'}</p></div></div>
           <p className="text-xs text-text-muted">Diajukan {new Date(profile.submitted_at || profile.created_at).toLocaleDateString('id-ID')}</p>
         </div>
+        {profile.role === 'reviewer' && <div className="grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+          <div><p className="text-xs font-bold uppercase tracking-wider text-text-muted">Pengalaman kerja</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text">{profile.work_experience || 'Belum diisi'}</p></div>
+          <div className="space-y-3 text-sm"><p><strong>Penghargaan:</strong> {profile.awards || '—'}</p><p><strong>Publikasi:</strong> {profile.publications || '—'}</p><div className="flex flex-wrap gap-3">{profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="font-bold text-primary">LinkedIn</a>}{profile.instagram_url && <a href={profile.instagram_url} target="_blank" rel="noreferrer" className="font-bold text-primary">Instagram</a>}{profile.youtube_url && <a href={profile.youtube_url} target="_blank" rel="noreferrer" className="font-bold text-primary">YouTube</a>}</div>{profile.cv_file_name && <a href={`/api/admin/reviewer-cv/${profile.id}`} className="inline-flex font-bold text-primary">Unduh CV PDF ({Math.ceil((profile.cv_file_size || 0) / 1024)} KB)</a>}<p className="text-xs text-text-muted">Terms: {profile.terms_version || '—'}{profile.terms_accepted_at ? ` · disetujui ${new Date(profile.terms_accepted_at).toLocaleString('id-ID')}` : ''}</p></div>
+        </div>}
         {profile.role === 'reviewer' && profile.id !== currentUserId && <div className="space-y-3 border-t border-border pt-5">
           <Textarea placeholder="Catatan admin (wajib untuk tolak, revisi, atau penangguhan)" value={notes[profile.id] || ''} onChange={(event) => setNotes((current) => ({ ...current, [profile.id]: event.target.value }))} />
           <div className="flex flex-wrap gap-2">

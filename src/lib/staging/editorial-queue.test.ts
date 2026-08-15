@@ -20,7 +20,7 @@ describe('actionable editorial queues', () => {
   })
 
   it('keeps Editor mutations owner-scoped and lets Reviewers return legacy unbound drafts', async () => {
-    const mutations = await readFile(resolve('src/lib/staging/mutations.ts'), 'utf8')
+    const mutations = (await readFile(resolve('src/lib/staging/mutations.ts'), 'utf8')).replaceAll('\r\n', '\n')
     expect(mutations).toContain("authored_by = $2::uuid\n        and status in ('draft', 'changes_requested')")
     expect(mutations).toContain('public.monograph_editorial_drafts.authored_by = $8::uuid')
     expect(mutations).toContain('public.monograph_editorial_drafts.authored_by = $3::uuid')

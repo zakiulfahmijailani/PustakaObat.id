@@ -4,21 +4,6 @@ import { queryNeon } from '@/lib/neon/server'
 import { validateEditorialEvidenceBinding } from '@/lib/full-label/editorial-binding'
 import type { EditorialDraft } from './types'
 
-export async function selectPilotDrug(drugKey: string, actorId: string) {
-  const rows = await queryNeon<{ drug_key: string }>(`
-    with selected as (
-      update public.monograph_staging_drugs set is_pilot = true, updated_at = now()
-      where drug_key = $1 and editorial_status = 'staging' and public_status = 'hidden'
-      returning drug_key
-    ), audited as (
-      insert into public.monograph_editorial_events (drug_key, actor_id, action, metadata)
-      select drug_key, $2::uuid, 'PILOT_SELECTED', jsonb_build_object('public_status', 'hidden', 'publication_eligible', false) from selected
-    ) select drug_key from selected
-  `, [drugKey, actorId])
-  if (!rows[0]) throw new Error('Staged drug concept was not found.')
-  return rows[0]
-}
-
 export async function saveEditorialDraft(drugKey: string, sectionType: string, contentIndonesian: string, sourceLabelId: string, actorId: string) {
   const binding = await validateEditorialEvidenceBinding(drugKey, sectionType, sourceLabelId)
   const rows = await queryNeon<EditorialDraft>(`

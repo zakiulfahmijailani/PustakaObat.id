@@ -70,10 +70,10 @@ export const MOCK_PROFILES: Profile[] = [
   },
   { 
     id: 'user-3', 
-    full_name: 'Admin Apoteq', 
+    full_name: 'Admin PustakaObat.id',
     role: 'admin', 
     sipa_number: null, 
-    institution: 'Apoteq Central', 
+    institution: 'PustakaObat.id',
     is_active: true, 
     avatar_url: null, 
     created_at: new Date().toISOString(),

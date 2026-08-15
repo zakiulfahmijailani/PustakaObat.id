@@ -131,7 +131,7 @@ export async function readBatchWorkbook(file: File): Promise<readonly (readonly 
 export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
   const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Apoteq";
+  workbook.creator = "PustakaObat.id";
   workbook.created = new Date();
 
   const instructions = workbook.addWorksheet("Petunjuk", { views: [{ state: "frozen", ySplit: 4 }] });
@@ -217,17 +217,17 @@ export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
 }
 
 export async function downloadBatchTemplate(): Promise<void> {
-  downloadBytes(await buildBatchTemplateWorkbook(), "template-batch-apoteq.xlsx");
+  downloadBytes(await buildBatchTemplateWorkbook(), "template-batch-pustakaobat.xlsx");
 }
 
 export async function buildBatchResultWorkbook(result: BatchProcessingResult): Promise<ArrayBuffer> {
   const ExcelJS = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Apoteq";
+  workbook.creator = "PustakaObat.id";
   workbook.created = new Date();
 
   const summary = workbook.addWorksheet("Ringkasan");
-  summary.addRow(["HASIL EVALUASI BATCH APOTEQ"]);
+  summary.addRow(["HASIL EVALUASI BATCH PUSTAKAOBAT.ID"]);
   summary.mergeCells("A1:B1");
   summary.getCell("A1").font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
   summary.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: HEADER_FILL } };
@@ -337,5 +337,5 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
 }
 
 export async function downloadBatchResult(result: BatchProcessingResult): Promise<void> {
-  downloadBytes(await buildBatchResultWorkbook(result), `hasil-batch-apoteq-${timestamp()}.xlsx`);
+  downloadBytes(await buildBatchResultWorkbook(result), `hasil-batch-pustakaobat-${timestamp()}.xlsx`);
 }

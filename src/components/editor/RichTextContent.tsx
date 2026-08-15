@@ -7,6 +7,13 @@ function InlineContent({ content }: { content: RichTextInline[] }) {
     const key = `${part.type}-${index}`
     if (part.type === 'bold') return <strong key={key}>{part.text}</strong>
     if (part.type === 'italic') return <em key={key}>{part.text}</em>
+    if (part.type === 'citation') {
+      const safeHref = part.href && (/^https:\/\//.test(part.href) || part.href.startsWith('/')) ? part.href : undefined
+      const className = "mx-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 align-middle text-[0.7rem] font-bold leading-5 text-primary"
+      return safeHref
+        ? <a key={key} href={safeHref} target={safeHref.startsWith('http') ? '_blank' : undefined} rel={safeHref.startsWith('http') ? 'noreferrer' : undefined} className={className}>[{part.text}]</a>
+        : <span key={key} className={className}>[{part.text}]</span>
+    }
     return <Fragment key={key}>{part.text}</Fragment>
   })
 }
