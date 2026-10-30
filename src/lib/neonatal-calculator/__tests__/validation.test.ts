@@ -21,7 +21,8 @@ describe("input validation", () => {
     ["negative UOP", { urineOutputMlKgHour: -0.1 }],
     ["SCr above upper bound", { serumCreatinineMgDl: 10.01 }],
     ["UOP above upper bound", { urineOutputMlKgHour: 10.01 }],
-    ["PNA above upper bound", { postnatalAgeDays: 366 }],
+    ["PNA above upper bound", { postnatalAgeDays: 29 }],
+    ["GA additional days above upper bound", { gestationalAgeDays: 7 }],
   ])("rejects %s", (_label, override) => {
     expect(validatePatientInput(patient(override)).success).toBe(false);
   });

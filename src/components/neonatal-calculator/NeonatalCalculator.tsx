@@ -40,6 +40,7 @@ type PatientForm = {
   patientLabel: string;
   antibiotic: Antibiotic;
   gestationalAgeWeeks: string;
+  gestationalAgeDays: string;
   postnatalAgeDays: string;
   currentWeightKg: string;
   renalDataAvailable: boolean;
@@ -55,6 +56,7 @@ const initialPatientForm: PatientForm = {
   patientLabel: "",
   antibiotic: "gentamisin",
   gestationalAgeWeeks: "",
+  gestationalAgeDays: "",
   postnatalAgeDays: "",
   currentWeightKg: "",
   renalDataAvailable: false,
@@ -276,6 +278,8 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       antibiotic: patientForm.antibiotic,
       gestationalAgeWeeks:
         patientForm.gestationalAgeWeeks === "" ? Number.NaN : Number(patientForm.gestationalAgeWeeks),
+      gestationalAgeDays:
+        patientForm.gestationalAgeDays === "" ? undefined : Number(patientForm.gestationalAgeDays),
       postnatalAgeDays:
         patientForm.postnatalAgeDays === "" ? Number.NaN : Number(patientForm.postnatalAgeDays),
       currentWeightKg:
@@ -298,7 +302,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       setPatientErrors(issuesByField(validated.issues));
       setResult(null);
       const firstField = validated.issues[0]?.field;
-      const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label" };
+      const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", gestationalAgeDays: "ga-days", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label" };
       window.requestAnimationFrame(() => document.getElementById(fieldIds[firstField] ?? firstField)?.focus());
       return;
     }
@@ -408,8 +412,9 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 </select>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field id="ga" label="Usia gestasi lahir (minggu)" type="number" min="22" max="43" step="0.1" required value={patientForm.gestationalAgeWeeks} onChange={(value) => updatePatient("gestationalAgeWeeks", value)} error={patientErrors.gestationalAgeWeeks} />
-                <Field id="pna" label="Usia pascalahir (hari)" type="number" min="0" max="365" step="1" required value={patientForm.postnatalAgeDays} onChange={(value) => updatePatient("postnatalAgeDays", value)} error={patientErrors.postnatalAgeDays} />
+                <Field id="ga" label="Usia gestasi lahir (minggu lengkap)" type="number" min="22" max="43" step="1" required value={patientForm.gestationalAgeWeeks} onChange={(value) => updatePatient("gestationalAgeWeeks", value)} error={patientErrors.gestationalAgeWeeks} />
+                <Field id="ga-days" label="Tambahan usia gestasi (hari)" type="number" min="0" max="6" step="1" value={patientForm.gestationalAgeDays} onChange={(value) => updatePatient("gestationalAgeDays", value)} error={patientErrors.gestationalAgeDays} helper="Opsional; isi 0–6 hari bila diketahui." />
+                <Field id="pna" label="Usia pascalahir (hari)" type="number" min="0" max="28" step="1" required value={patientForm.postnatalAgeDays} onChange={(value) => updatePatient("postnatalAgeDays", value)} error={patientErrors.postnatalAgeDays} />
                 <Field id="weight" label="Berat badan saat ini (kg)" type="number" min="0.301" max="10" step="0.001" required value={patientForm.currentWeightKg} onChange={(value) => updatePatient("currentWeightKg", value)} error={patientErrors.currentWeightKg} />
               </div>
               <fieldset className="rounded-xl border border-border p-4">
@@ -440,7 +445,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <div className="space-y-5" aria-live="polite">
                 <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
                   <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2></div><Button type="button" variant="outline" onClick={printReport} className="print-hide"><Printer size={17} />Cetak / Simpan sebagai PDF</Button></div>
-                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu / {result.input.postnatalAgeDays} hari / {result.pmaWeeks.toFixed(1)} minggu</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
+                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu{result.input.gestationalAgeDays ? ` ${result.input.gestationalAgeDays} hari` : ""} / {result.input.postnatalAgeDays} hari / {result.pmaWeeks.toFixed(1)} minggu</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
                 {result.globalWarnings.map((warning) => <Warning key={warning.code} warning={warning} />)}

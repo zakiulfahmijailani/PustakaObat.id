@@ -12,7 +12,7 @@ describe("recommendation and evaluation engine", () => {
       "institutionalAgeComparator",
       "anmf2024",
     ]);
-    expect(result.calculatorRuleVersion).toBe("2026.07.13-production-2");
+    expect(result.calculatorRuleVersion).toBe("2026.11.01");
     expect(result.qualitativeReferenceNotes).toHaveLength(4);
     expect(result.qualitativeReferenceNotes.join(" ")).toContain("WHO 2024");
     expect(result.qualitativeReferenceNotes.join(" ")).toContain("Swiss Society of Neonatology 2024");

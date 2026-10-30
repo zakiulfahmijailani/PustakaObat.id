@@ -3,8 +3,9 @@ import type { ClinicalWarning } from "./types";
 export function calculatePmaWeeks(
   gestationalAgeWeeks: number,
   postnatalAgeDays: number,
+  gestationalAgeDays: number = 0,
 ): number {
-  return gestationalAgeWeeks + postnatalAgeDays / 7;
+  return gestationalAgeWeeks + gestationalAgeDays / 7 + postnatalAgeDays / 7;
 }
 
 export function pmaWarnings(pmaWeeks: number): ClinicalWarning[] {

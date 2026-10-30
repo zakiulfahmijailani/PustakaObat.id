@@ -70,12 +70,21 @@ export function evaluateActualInterval(
         "Tidak ada interval rutin untuk dibandingkan. Dosis berikutnya menunggu hasil kadar dan evaluasi klinis.",
     };
   }
-  if (!eligibleForEvaluation || recommendation.kind === "continuous-range") {
+  if (!eligibleForEvaluation) {
     return {
       status: "tidak-dapat-dievaluasi",
       message:
-        "Informasi interval ini tidak disetujui sebagai rentang kepatuhan kontinu; gunakan pembanding interval spesifik.",
+        "Informasi interval ini tidak disetujui untuk evaluasi.",
     };
+  }
+  if (recommendation.kind === "continuous-range") {
+    if (actualHours < recommendation.minHours - FLOAT_EPSILON) {
+      return { status: "lebih-pendek", message: `Lebih pendek dari rentang q${recommendation.minHours}h–q${recommendation.maxHours}h.` };
+    }
+    if (actualHours > recommendation.maxHours + FLOAT_EPSILON) {
+      return { status: "lebih-panjang", message: `Lebih panjang dari rentang q${recommendation.minHours}h–q${recommendation.maxHours}h.` };
+    }
+    return { status: "sesuai", message: `Sesuai dengan rentang q${recommendation.minHours}h–q${recommendation.maxHours}h.` };
   }
   if (recommendation.kind === "single") {
     if (approximatelyEqual(actualHours, recommendation.hours)) {

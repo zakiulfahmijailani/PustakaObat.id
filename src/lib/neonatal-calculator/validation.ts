@@ -40,12 +40,21 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     issues.push({ field: "gestationalAgeWeeks", message: "Usia gestasi harus 22–43 minggu." });
   }
   if (
+    input.gestationalAgeDays !== undefined &&
+    (!finite(input.gestationalAgeDays) ||
+      !Number.isInteger(input.gestationalAgeDays) ||
+      input.gestationalAgeDays < INPUT_LIMITS.gestationalAgeDays.min ||
+      input.gestationalAgeDays > INPUT_LIMITS.gestationalAgeDays.max)
+  ) {
+    issues.push({ field: "gestationalAgeDays", message: "Tambahan hari pada usia gestasi harus bilangan bulat 0–6 hari." });
+  }
+  if (
     !finite(input.postnatalAgeDays) ||
     !Number.isInteger(input.postnatalAgeDays) ||
     input.postnatalAgeDays < INPUT_LIMITS.postnatalAgeDays.min ||
     input.postnatalAgeDays > INPUT_LIMITS.postnatalAgeDays.max
   ) {
-    issues.push({ field: "postnatalAgeDays", message: "Usia pascalahir harus bilangan bulat 0–365 hari." });
+    issues.push({ field: "postnatalAgeDays", message: "Usia pascalahir harus bilangan bulat 0–28 hari." });
   }
   if (
     !finite(input.currentWeightKg) ||

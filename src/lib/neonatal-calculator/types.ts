@@ -4,6 +4,7 @@ export type PatientInput = {
   patientLabel?: string;
   antibiotic: Antibiotic;
   gestationalAgeWeeks: number;
+  gestationalAgeDays?: number;
   postnatalAgeDays: number;
   currentWeightKg: number;
   renalDataAvailable: boolean;
