@@ -16,8 +16,8 @@ export function anmfGentamicin(
   let hours = pmaWeeks < 30 ? 48 : pmaWeeks < 35 ? 36 : 24;
   const notes: string[] = [];
   if (input.therapeuticHypothermia) {
-    hours = Math.max(hours, 36);
-    notes.push("Hipotermia terapeutik: gunakan interval 36 jam (atau pertahankan 48 jam bila prematur ekstrem); periksa kadar trough sebelum setiap dosis.");
+    hours = 36;
+    notes.push("Hipotermia terapeutik: periksa kadar trough sebelum setiap dosis.");
   } else if (input.coxInhibitorTherapy) {
     hours += 12;
     notes.push("Terapi indometasin/ibuprofen: interval awal diperpanjang 12 jam.");

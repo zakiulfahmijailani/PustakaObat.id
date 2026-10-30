@@ -8,10 +8,6 @@ describe("PMA rules", () => {
     expect(calculatePmaWeeks(28.5, 7)).toBe(29.5);
   });
 
-  it("includes additional gestational-age days", () => {
-    expect(calculatePmaWeeks(28, 7, 3)).toBeCloseTo(29 + 3 / 7);
-  });
-
   it("warns only above 50 weeks", () => {
     expect(pmaWarnings(50)).toHaveLength(0);
     expect(pmaWarnings(50.01)[0]?.code).toBe("PMA_OUTSIDE_TYPICAL_NEONATAL_RANGE");

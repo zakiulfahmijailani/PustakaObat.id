@@ -14,7 +14,7 @@ export function institutionalGentamicinDose(weightKg: number): DoseRecommendatio
 }
 
 export function institutionalGentamicinPrimaryInterval(): IntervalRecommendation {
-  return { kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" };
+  return { kind: "discrete", allowedHours: [24, 48], label: "q24h atau q48h" };
 }
 
 export function institutionalGentamicinAgeInterval(input: PatientInput): IntervalRecommendation {
@@ -38,19 +38,19 @@ export function institutionalAmikacinInterval(): IntervalRecommendation {
 }
 
 export function institutionalVancomycinRoutineDose(weightKg: number): DoseRecommendation {
-  return dose(10, 15, weightKg);
+  return dose(15, 15, weightKg);
 }
 
 export function institutionalVancomycinRenalDose(weightKg: number): DoseRecommendation {
   return dose(10, 10, weightKg);
 }
 
-export function institutionalVancomycinRoutineInterval(postnatalAgeDays: number): IntervalRecommendation {
-  const hours = postnatalAgeDays <= 14 ? 12 : 8;
+export function institutionalVancomycinGeneralCoverage(): IntervalRecommendation {
   return {
-    kind: "single",
-    hours,
-    label: `q${hours}h`,
+    kind: "continuous-range",
+    minHours: 8,
+    maxHours: 18,
+    label: "Informasi cakupan umum q8h–q18h; bukan rentang kepatuhan kontinu",
   };
 }
 

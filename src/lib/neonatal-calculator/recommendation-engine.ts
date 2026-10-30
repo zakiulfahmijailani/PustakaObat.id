@@ -10,7 +10,7 @@ import {
   institutionalGentamicinDose,
   institutionalGentamicinPrimaryInterval,
   institutionalVancomycinAgeInterval,
-  institutionalVancomycinRoutineInterval,
+  institutionalVancomycinGeneralCoverage,
   institutionalVancomycinRenalDose,
   institutionalVancomycinRoutineDose,
   singleDoseOnlyInterval,
@@ -34,20 +34,11 @@ const UNC_PROVENANCE =
   "UNC Medical Center Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023); digunakan karena SPO lokal yang dirujuk tidak memuat regimen vankomisin.";
 const ANMF_PROVENANCE = "Australasian Neonatal Medicines Formulary (ANMF), monograf 2024 yang dirujuk notebook.";
 
-function missingRenalWarning(input?: PatientInput): ClinicalWarning {
-  const isHighRisk =
-    input &&
-    (input.gestationalAgeWeeks < 29 ||
-      input.currentWeightKg < 1.5 ||
-      input.therapeuticHypothermia ||
-      input.coxInhibitorTherapy ||
-      input.antibiotic === "vankomisin");
+function missingRenalWarning(): ClinicalWarning {
   return {
-    code: isHighRisk ? "RENAL_DATA_UNAVAILABLE_HIGH_RISK" : "RENAL_DATA_UNAVAILABLE",
-    severity: isHighRisk ? "critical" : "warning",
-    message: isHighRisk
-      ? "Kreatinin serum dan produksi urin tidak diisi pada pasien berisiko tinggi. Asumsi fungsi ginjal normal mungkin tidak tepat; periksa kreatinin serum sesegera mungkin dan sebelum dosis ke-2."
-      : "Kreatinin serum dan produksi urin tidak diisi. Hasil dihitung dengan ASUMSI fungsi ginjal normal sesuai usia; periksa kreatinin serum sebelum dosis ke-2.",
+    code: "RENAL_DATA_UNAVAILABLE",
+    severity: "info",
+    message: "Data fungsi ginjal tidak tersedia. Fungsi ginjal normal tidak boleh diasumsikan.",
   };
 }
 
@@ -226,13 +217,13 @@ function createVancomycinRecommendations(
       provenanceLabel: "UNC Medical Center 2023",
       provenanceDetail: UNC_PROVENANCE,
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),
-      interval: institutionalVancomycinRoutineInterval(input.postnatalAgeDays),
+      interval: institutionalVancomycinGeneralCoverage(),
       notes: [
-        "Dosis 10–15 mg/kg/dosis; interval tiap 12 jam (usia pascalahir 0–14 hari) atau tiap 8 jam (15–28 hari) sesuai UNC 2023.",
+        "Informasi rentang umum; gunakan pembanding PMA/PNA untuk evaluasi interval spesifik.",
         "Target trough 10–20 mg/L; 8–12 mg/L bila indikasi febrile neutropenia.",
       ],
       warnings: [],
-      eligibleForRegimenEvaluation: true,
+      eligibleForRegimenEvaluation: false,
     },
     institutionalAgeComparator: {
       id: "VANC-INST-AGE-COMPARATOR",
@@ -268,11 +259,10 @@ export function calculateRecommendations(input: PatientInput): CalculatorResult 
   const pmaWeeks = calculatePmaWeeks(
     safeInput.gestationalAgeWeeks,
     safeInput.postnatalAgeDays,
-    safeInput.gestationalAgeDays,
   );
   const renalStatus = determineVancomycinRenalStatus(safeInput);
   const globalWarnings = pmaWarnings(pmaWeeks);
-  if (renalStatus === "data-unavailable") globalWarnings.push(missingRenalWarning(safeInput));
+  if (renalStatus === "data-unavailable") globalWarnings.push(missingRenalWarning());
   if (
     safeInput.renalDataAvailable &&
     safeInput.urineOutputMlKgHour === undefined &&
