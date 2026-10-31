@@ -46,9 +46,9 @@ describe("processBatchTable", () => {
 
   it("tetap mengevaluasi dosis aktual ketika seluruh kolom manual kosong", () => {
     const row = [...completeRow];
-    row[14] = "";
-    row[14] = "";
-    row[14] = "";
+    row[11] = "";
+    row[12] = "";
+    row[13] = "";
     row[14] = "";
     const result = processBatchTable([[...BATCH_COLUMNS], row]);
 
