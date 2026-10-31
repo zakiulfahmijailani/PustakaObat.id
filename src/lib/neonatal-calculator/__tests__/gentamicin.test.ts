@@ -39,7 +39,7 @@ describe("gentamicin rules", () => {
 
   it("applies hypothermia first and does not also add COX extension", () => {
     expect(
-      gent({ therapeuticHypothermia: true, coxInhibitorTherapy: true }).recommendations.anmf2024.interval,
+      gent({ therapeuticHypothermia: true, coxInhibitorTherapy: true, gestationalAgeWeeks: 28 }).recommendations.anmf2024.interval,
     ).toMatchObject({ kind: "single", hours: 48 });
   });
 
