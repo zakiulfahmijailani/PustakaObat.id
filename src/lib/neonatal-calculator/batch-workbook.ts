@@ -11,7 +11,8 @@ import {
 const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
   kode_pasien: "Kode kasus unik tanpa identitas langsung. Wajib.",
   antibiotik: "Gentamisin, Amikasin, atau Vankomisin. Wajib.",
-  usia_gestasi_lahir_minggu: "Usia gestasi saat lahir dalam minggu. Wajib.",
+  usia_gestasi_lahir_minggu: "Usia gestasi saat lahir dalam minggu lengkap. Wajib.",
+  usia_gestasi_lahir_hari: "Tambahan hari 0–6. Opsional; kosong = 0.",
   usia_pascalahir_hari: "Usia pascalahir dalam hari. Wajib.",
   berat_badan_kg: "Berat badan saat ini dalam kg. Wajib.",
   kreatinin_serum_mg_dl: "Kreatinin serum dalam mg/dL. Opsional.",
@@ -159,7 +160,7 @@ export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
   });
   dataSheet.addRow([...BATCH_COLUMNS]);
   styleHeader(dataSheet.getRow(1));
-  dataSheet.autoFilter = { from: "A1", to: "P1" };
+  dataSheet.autoFilter = { from: "A1", to: "Q1" };
   dataSheet.addRow([
     "CONTOH-1",
     "Gentamisin",
@@ -252,6 +253,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     "kode_pasien",
     "antibiotik",
     "usia_gestasi_lahir_minggu",
+    "usia_gestasi_lahir_hari",
     "usia_pascalahir_hari",
     "pma_minggu",
     "berat_badan_kg",
@@ -289,6 +291,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
       row.patientCode,
       ANTIBIOTIC_LABELS[input.antibiotic],
       input.gestationalAgeWeeks,
+      input.gestationalAgeDays ?? 0,
       input.postnatalAgeDays,
       row.calculator.pmaWeeks,
       input.currentWeightKg,
