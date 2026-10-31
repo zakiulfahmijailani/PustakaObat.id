@@ -9,21 +9,20 @@ function gent(overrides = {}) {
 }
 
 describe("gentamicin rules", () => {
-  it("returns institutional 5–7.5 mg/kg and discrete q24/q48", () => {
+  it("returns institutional 5–7.5 mg/kg and 24–48h continuous interval", () => {
     const rec = gent().recommendations.institutionalPrimary;
     expect(rec.dose).toMatchObject({ minMgPerKg: 5, maxMgPerKg: 7.5, minTotalMg: 7.5, maxTotalMg: 11.25 });
-    expect(rec.interval).toEqual({ kind: "discrete", allowedHours: [24, 48], label: "q24h atau q48h" });
+    expect(rec.interval).toEqual({ kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" });
   });
 
   it.each([
-    [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 7 }, 48],
-    [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 8 }, 36],
-    [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 28 }, 36],
-    [{ gestationalAgeWeeks: 28.9, postnatalAgeDays: 29 }, 24],
+    [{ gestationalAgeWeeks: 28, postnatalAgeDays: 7 }, 48],
+    [{ gestationalAgeWeeks: 28, postnatalAgeDays: 8 }, 36],
+    [{ gestationalAgeWeeks: 28, postnatalAgeDays: 28 }, 36],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 7 }, 48],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 8 }, 36],
-    [{ gestationalAgeWeeks: 33.9, postnatalAgeDays: 7 }, 36],
-    [{ gestationalAgeWeeks: 33.9, postnatalAgeDays: 8 }, 24],
+    [{ gestationalAgeWeeks: 33, postnatalAgeDays: 7 }, 36],
+    [{ gestationalAgeWeeks: 33, postnatalAgeDays: 8 }, 24],
     [{ gestationalAgeWeeks: 34, postnatalAgeDays: 7 }, 36],
     [{ gestationalAgeWeeks: 34, postnatalAgeDays: 8 }, 24],
   ])("matches notebook GA/PNA comparator boundary %#", (override, hours) => {
@@ -40,8 +39,8 @@ describe("gentamicin rules", () => {
 
   it("applies hypothermia first and does not also add COX extension", () => {
     expect(
-      gent({ therapeuticHypothermia: true, coxInhibitorTherapy: true }).recommendations.anmf2024.interval,
-    ).toMatchObject({ kind: "single", hours: 36 });
+      gent({ therapeuticHypothermia: true, coxInhibitorTherapy: true, gestationalAgeWeeks: 28 }).recommendations.anmf2024.interval,
+    ).toMatchObject({ kind: "single", hours: 48 });
   });
 
   it("extends the initial ANMF interval by 12 hours for COX inhibitor", () => {
@@ -57,7 +56,7 @@ describe("gentamicin rules", () => {
 
   it("warns but does not automatically adjust for renal review signal", () => {
     const result = gent({ serumCreatinineMgDl: 1 });
-    expect(result.recommendations.institutionalPrimary.interval).toMatchObject({ kind: "discrete", allowedHours: [24, 48] });
+    expect(result.recommendations.institutionalPrimary.interval).toMatchObject({ kind: "continuous-range", minHours: 24, maxHours: 48 });
     expect(result.recommendations.institutionalPrimary.warnings[0]?.code).toContain("AMINOGLYCOSIDE");
   });
 });

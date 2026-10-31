@@ -1,3 +1,4 @@
+import { intervalBounds } from "./notebook-results";
 import { anmfAmikacin, anmfGentamicin, anmfVancomycin } from "./anmf-guidelines";
 import {
   CALCULATOR_RULE_VERSION,
@@ -10,7 +11,7 @@ import {
   institutionalGentamicinDose,
   institutionalGentamicinPrimaryInterval,
   institutionalVancomycinAgeInterval,
-  institutionalVancomycinGeneralCoverage,
+  institutionalVancomycinRoutineInterval,
   institutionalVancomycinRenalDose,
   institutionalVancomycinRoutineDose,
   singleDoseOnlyInterval,
@@ -34,18 +35,21 @@ const UNC_PROVENANCE =
   "UNC Medical Center Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023); digunakan karena SPO lokal yang dirujuk tidak memuat regimen vankomisin.";
 const ANMF_PROVENANCE = "Australasian Neonatal Medicines Formulary (ANMF), monograf 2024 yang dirujuk notebook.";
 
-function missingRenalWarning(): ClinicalWarning {
+function missingRenalWarning(input: PatientInput): ClinicalWarning {
+  const highRisk = input.gestationalAgeWeeks + (input.gestationalAgeDays ?? 0)/7 < 29 || input.currentWeightKg < 1.5 || input.therapeuticHypothermia || input.coxInhibitorTherapy || input.antibiotic === "vankomisin";
   return {
     code: "RENAL_DATA_UNAVAILABLE",
-    severity: "info",
-    message: "Data fungsi ginjal tidak tersedia. Fungsi ginjal normal tidak boleh diasumsikan.",
+    title: highRisk ? "Data fungsi ginjal tidak diisi pada pasien berisiko tinggi" : "Data fungsi ginjal tidak diisi",
+    severity: highRisk ? "critical" : "warning",
+    message: highRisk ? "Data fungsi ginjal tidak diisi pada pasien berisiko tinggi. Hasil memakai ASUMSI fungsi ginjal normal sesuai usia; periksa kreatinin serum sesegera mungkin dan sebelum dosis ke-2." : "Data fungsi ginjal tidak diisi. Hasil memakai ASUMSI fungsi ginjal normal sesuai usia; periksa kreatinin serum sebelum dosis ke-2.",
   };
 }
 
 function missingUrineOutputWarning(): ClinicalWarning {
   return {
     code: "RENAL_URINE_OUTPUT_UNAVAILABLE",
-    severity: "info",
+    title: "Produksi urin tidak diisi",
+    severity: "warning",
     message:
       "Data produksi urin tidak tersedia. Kriteria kombinasi SCr/UOP tidak dapat dinilai sepenuhnya; jangan menafsirkan hasil ini sebagai fungsi ginjal normal.",
   };
@@ -206,7 +210,7 @@ function createVancomycinRecommendations(
         interval: anmf.interval,
         notes: anmf.notes,
         warnings: anmfWarnings,
-        eligibleForRegimenEvaluation: false,
+        eligibleForRegimenEvaluation: true,
       },
     } satisfies CalculatorResult["recommendations"];
   }
@@ -217,13 +221,13 @@ function createVancomycinRecommendations(
       provenanceLabel: "UNC Medical Center 2023",
       provenanceDetail: UNC_PROVENANCE,
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),
-      interval: institutionalVancomycinGeneralCoverage(),
+      interval: institutionalVancomycinRoutineInterval(input.postnatalAgeDays),
       notes: [
-        "Informasi rentang umum; gunakan pembanding PMA/PNA untuk evaluasi interval spesifik.",
+        "Interval rutin Pedoman Rumah Sakit mengikuti usia pascalahir 0–14 hari atau 15–28 hari; verifikasi dengan rujukan UNC dan protokol lokal.",
         "Target trough 10–20 mg/L; 8–12 mg/L bila indikasi febrile neutropenia.",
       ],
       warnings: [],
-      eligibleForRegimenEvaluation: false,
+      eligibleForRegimenEvaluation: true,
     },
     institutionalAgeComparator: {
       id: "VANC-INST-AGE-COMPARATOR",
@@ -259,12 +263,15 @@ export function calculateRecommendations(input: PatientInput): CalculatorResult 
   const pmaWeeks = calculatePmaWeeks(
     safeInput.gestationalAgeWeeks,
     safeInput.postnatalAgeDays,
+    safeInput.gestationalAgeDays ?? 0,
   );
   const renalStatus = determineVancomycinRenalStatus(safeInput);
   const globalWarnings = pmaWarnings(pmaWeeks);
-  if (renalStatus === "data-unavailable") globalWarnings.push(missingRenalWarning());
+  if (renalStatus === "data-unavailable") globalWarnings.push(missingRenalWarning(safeInput));
   if (
     safeInput.renalDataAvailable &&
+    (safeInput.serumCreatinineMgDl ?? 0) >= 0.5 &&
+    (safeInput.serumCreatinineMgDl ?? 0) < 1 &&
     safeInput.urineOutputMlKgHour === undefined &&
     renalStatus === "no-renal-impairment-criteria-met"
   ) {
@@ -276,6 +283,15 @@ export function calculateRecommendations(input: PatientInput): CalculatorResult 
       : safeInput.antibiotic === "amikasin"
         ? createAmikacinRecommendations(safeInput, pmaWeeks)
         : createVancomycinRecommendations(safeInput, pmaWeeks, renalStatus);
+  if (renalStatus === "renal-impairment-criteria-met") {
+    globalWarnings.push({ code: "RENAL_REVIEW", title: "Kemungkinan gangguan fungsi ginjal", severity: "critical", message: "Kriteria gangguan fungsi ginjal terpenuhi. Verifikasi kondisi pasien dan pemantauan kadar obat bersama DPJP." });
+    if (safeInput.postnatalAgeDays <= 3) globalWarnings.push({code:"MATERNAL_CREATININE",title:"Kreatinin serum pada 72 jam pertama kehidupan",severity:"warning",message:"Kreatinin serum bayi pada tiga hari pertama masih dapat mencerminkan kreatinin ibu. Nilai tren kreatinin dan produksi urin bersama DPJP."});
+  }
+  if (safeInput.therapeuticHypothermia && safeInput.gestationalAgeWeeks + (safeInput.gestationalAgeDays ?? 0)/7 < 35) globalWarnings.push({code:"HYPOTHERMIA_GESTATION",title:"Periksa isian hipotermia terapeutik",severity:"warning",message:"Hipotermia terapeutik umumnya diberikan pada usia gestasi 35–36 minggu atau lebih. Pastikan isian ini benar."});
+  const [rsMin,rsMax]=intervalBounds(recommendations.institutionalPrimary.interval);
+  const [litMin]=intervalBounds(recommendations.anmf2024.interval);
+  if (rsMin !== null && rsMax !== null && litMin !== null && (litMin > rsMax || litMin < rsMin)) globalWarnings.push({code:"INTERVAL_REFERENCE_DIFFERENCE",title:litMin > rsMax ? "Interval Pedoman RS lebih pendek dari literatur" : "Interval Pedoman RS lebih panjang dari literatur",severity:"warning",message:"Interval kedua rujukan berbeda untuk profil pasien ini. Verifikasi risiko akumulasi atau kadar di bawah target bersama DPJP/Tim Farmasi Klinis."});
+  globalWarnings.sort((a,b)=>({critical:0,warning:1,info:2}[a.severity]-{critical:0,warning:1,info:2}[b.severity]));
   return {
     input: safeInput,
     pmaWeeks,

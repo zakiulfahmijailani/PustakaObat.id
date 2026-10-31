@@ -17,6 +17,7 @@ export const BATCH_COLUMNS = [
   "kode_pasien",
   "antibiotik",
   "usia_gestasi_lahir_minggu",
+  "usia_gestasi_lahir_hari",
   "usia_pascalahir_hari",
   "berat_badan_kg",
   "kreatinin_serum_mg_dl",
@@ -173,6 +174,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
   const headerIndex = new Map<BatchColumn, number>();
   for (const column of BATCH_COLUMNS) {
     const index = headers.indexOf(column);
+    if (column === "usia_gestasi_lahir_hari" && index === -1) continue;
     if (index === -1) throw new Error(`Kolom wajib '${column}' tidak ditemukan.`);
     headerIndex.set(column, index);
   }
@@ -211,6 +213,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
       errors,
       true,
     );
+    const gestationalAgeDays = parseNumber(record.usia_gestasi_lahir_hari, "usia_gestasi_lahir_hari", errors, false);
     const postnatalAgeDays = parseNumber(
       record.usia_pascalahir_hari,
       "usia_pascalahir_hari",
@@ -251,6 +254,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
             patientLabel: patientCode,
             antibiotic,
             gestationalAgeWeeks,
+            gestationalAgeDays: gestationalAgeDays ?? 0,
             postnatalAgeDays,
             currentWeightKg,
             renalDataAvailable: serumCreatinineMgDl !== null,

@@ -32,7 +32,7 @@ describe("representative explicit recommendation fixtures", () => {
           minTotalMg: 7.5,
           maxTotalMg: 11.25,
         },
-        interval: { kind: "discrete", allowedHours: [24, 48], label: "q24h atau q48h" },
+        interval: { kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" },
         notes: [
           "SPO yang digunakan tidak mencantumkan stratifikasi resmi berdasarkan usia gestasi atau usia pascalahir.",
         ],
@@ -82,7 +82,7 @@ describe("representative explicit recommendation fixtures", () => {
     }).toEqual({
       pmaWeeks: 28,
       renalStatus: "data-unavailable",
-      globalWarningCodes: ["RENAL_DATA_UNAVAILABLE"],
+      globalWarningCodes: ["RENAL_DATA_UNAVAILABLE", "INTERVAL_REFERENCE_DIFFERENCE"],
       primaryDose: {
         minMgPerKg: 15,
         maxMgPerKg: 15,
@@ -168,7 +168,7 @@ describe("representative explicit recommendation fixtures", () => {
           maxTotalMg: 27,
         },
         interval: { kind: "single", hours: 12, label: "q12h" },
-        eligible: false,
+        eligible: true,
         warningCodes: ["ANMF_REQUIRES_RENAL_REVIEW"],
       },
     });

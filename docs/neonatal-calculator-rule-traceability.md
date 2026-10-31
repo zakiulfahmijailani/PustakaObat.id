@@ -1,5 +1,8 @@
 # Neonatal Calculator Rule Traceability
 
+Current v18 parity behavior and evidence are documented in [neonatal-notebook-v18-parity.md](neonatal-notebook-v18-parity.md). The table below records the earlier implementation; its missing-renal, evaluation, and deferred-statistics statements are historical and superseded by that parity update.
+
+
 Rule version: `2026.07.13-production-2`. Notebook origin: `kalkulator_dosis_antibiotik_neonatus - updated.ipynb`. The notebook has no stored execution outputs. Cell references below refer to zero-based notebook cell indexes from the inspected source file.
 
 | Rule ID | Antibiotic | Category | Source / notebook origin | Conditions | Production output | Decision and safety note | Automated test |

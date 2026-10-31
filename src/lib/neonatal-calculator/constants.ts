@@ -1,14 +1,15 @@
 import type { Antibiotic } from "./types";
 
-export const CALCULATOR_RULE_VERSION = "2026.07.13-production-2";
+export const CALCULATOR_RULE_VERSION = "2026.11.01-notebook-v18-parity-draft";
 
 export const CLINICAL_DISCLAIMER =
   "Alat ini merupakan clinical decision support dan bukan pengganti penilaian klinis apoteker, dokter penanggung jawab pasien (DPJP), maupun therapeutic drug monitoring. Selalu verifikasi dengan SPO/formularium rumah sakit versi terbaru, kondisi klinis pasien, fungsi ginjal, dan hasil kadar obat bila tersedia.";
 
 export const INPUT_LIMITS = {
   gestationalAgeWeeks: { min: 22, max: 43 },
-  postnatalAgeDays: { min: 0, max: 365 },
-  currentWeightKg: { exclusiveMin: 0.3, max: 10 },
+  gestationalAgeDays: { min: 0, max: 6 },
+  postnatalAgeDays: { min: 0, max: 28 },
+  currentWeightKg: { min: 0.3, max: 10 },
   serumCreatinineMgDl: { min: 0, max: 10 },
   urineOutputMlKgHour: { min: 0, max: 10 },
   patientLabelMaxLength: 60,

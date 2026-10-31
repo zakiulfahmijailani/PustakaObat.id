@@ -1,11 +1,12 @@
+import { pythonRound } from "./python-rounding";
 import type { DoseRecommendation, IntervalRecommendation, PatientInput } from "./types";
 
 function fixedDose(mgPerKg: number, weightKg: number): DoseRecommendation {
   return {
     minMgPerKg: mgPerKg,
     maxMgPerKg: mgPerKg,
-    minTotalMg: mgPerKg * weightKg,
-    maxTotalMg: mgPerKg * weightKg,
+    minTotalMg: pythonRound(mgPerKg * weightKg,4),
+    maxTotalMg: pythonRound(mgPerKg * weightKg,4),
   };
 }
 
@@ -16,7 +17,7 @@ export function anmfGentamicin(
   let hours = pmaWeeks < 30 ? 48 : pmaWeeks < 35 ? 36 : 24;
   const notes: string[] = [];
   if (input.therapeuticHypothermia) {
-    hours = 36;
+    hours = Math.max(hours, 36);
     notes.push("Hipotermia terapeutik: periksa kadar trough sebelum setiap dosis.");
   } else if (input.coxInhibitorTherapy) {
     hours += 12;
@@ -38,11 +39,11 @@ export function anmfAmikacin(
 ): { dose: DoseRecommendation; interval: IntervalRecommendation; notes: string[] } {
   let mgPerKg: number;
   let hours: number;
-  if (pmaWeeks <= 29) {
+  if (pmaWeeks < 30) {
     if (input.postnatalAgeDays <= 7) [mgPerKg, hours] = [14, 48];
     else if (input.postnatalAgeDays <= 28) [mgPerKg, hours] = [12, 36];
     else [mgPerKg, hours] = [12, 24];
-  } else if (pmaWeeks <= 34) {
+  } else if (pmaWeeks < 35) {
     [mgPerKg, hours] = input.postnatalAgeDays <= 7 ? [12, 36] : [12, 24];
   } else {
     [mgPerKg, hours] = [12, 24];
