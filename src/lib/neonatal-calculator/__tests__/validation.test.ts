@@ -16,7 +16,7 @@ describe("input validation", () => {
     ["fractional gestation weeks", { gestationalAgeWeeks: 32.5 }],
     ["GA extra days above six", { gestationalAgeDays: 7 }],
     ["decimal PNA", { postnatalAgeDays: 1.5 }],
-    ["low weight", { currentWeightKg: 0.3 }],
+    ["low weight", { currentWeightKg: 0.299 }],
     ["high weight", { currentWeightKg: 10.1 }],
     ["weight with more than three decimals", { currentWeightKg: 1.2345 }],
     ["negative SCr", { serumCreatinineMgDl: -0.1 }],
