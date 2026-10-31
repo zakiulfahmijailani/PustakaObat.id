@@ -27,6 +27,7 @@ describe("workbook batch", () => {
         "P-001",
         "Gentamisin",
         38,
+        0,
         1,
         3.94,
         "",
