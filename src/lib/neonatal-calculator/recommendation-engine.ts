@@ -10,7 +10,7 @@ import {
   institutionalGentamicinDose,
   institutionalGentamicinPrimaryInterval,
   institutionalVancomycinAgeInterval,
-  institutionalVancomycinGeneralCoverage,
+  institutionalVancomycinRoutineInterval,
   institutionalVancomycinRenalDose,
   institutionalVancomycinRoutineDose,
   singleDoseOnlyInterval,
@@ -217,13 +217,13 @@ function createVancomycinRecommendations(
       provenanceLabel: "UNC Medical Center 2023",
       provenanceDetail: UNC_PROVENANCE,
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),
-      interval: institutionalVancomycinGeneralCoverage(),
+      interval: institutionalVancomycinRoutineInterval(input.postnatalAgeDays),
       notes: [
-        "Informasi rentang umum; gunakan pembanding PMA/PNA untuk evaluasi interval spesifik.",
+        "Interval rutin Pedoman Rumah Sakit mengikuti usia pascalahir 0–14 hari atau 15–28 hari; verifikasi dengan rujukan UNC dan protokol lokal.",
         "Target trough 10–20 mg/L; 8–12 mg/L bila indikasi febrile neutropenia.",
       ],
       warnings: [],
-      eligibleForRegimenEvaluation: false,
+      eligibleForRegimenEvaluation: true,
     },
     institutionalAgeComparator: {
       id: "VANC-INST-AGE-COMPARATOR",
@@ -259,6 +259,7 @@ export function calculateRecommendations(input: PatientInput): CalculatorResult 
   const pmaWeeks = calculatePmaWeeks(
     safeInput.gestationalAgeWeeks,
     safeInput.postnatalAgeDays,
+    safeInput.gestationalAgeDays ?? 0,
   );
   const renalStatus = determineVancomycinRenalStatus(safeInput);
   const globalWarnings = pmaWarnings(pmaWeeks);
