@@ -1,4 +1,4 @@
-import type { BatchProcessingResult, BatchSuccessRow } from "./batch-engine";
+import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
 import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, formatNumber } from ".";
 import type { CalculatorResult, RegimenEvaluationResult, Recommendation } from "./types";
@@ -11,7 +11,7 @@ const clean = (value: unknown): string => String(value ?? "")
 function escapePdf(value:string): string { return clean(value).replaceAll("\\","\\\\").replaceAll("(","\\(").replaceAll(")","\\)"); }
 function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
   // Small, offline PDF writer. Every file is a real PDF, not an HTML print fallback.
-  const pageWidth=595,pageHeight=842,margin=47,printable=pageWidth-2*margin;
+  const pageWidth=595,pageHeight=842,margin=47;
   const pages:ReportLine[][]=[];let current:ReportLine[]=[];let cursor=0;
   const wrapped=(line:ReportLine):ReportLine[]=>{
     const max=line.heading?65:93, words=clean(line.text).split(" ");let result:string[]=[];let part="";
