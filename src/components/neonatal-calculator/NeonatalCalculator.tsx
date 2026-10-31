@@ -336,6 +336,13 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
   const [patientForm, setPatientForm] = useState(initialPatientForm);
   const [patientErrors, setPatientErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<CalculatorResult | null>(null);
+  const [evaluationPatientForm, setEvaluationPatientForm] = useState<PatientForm>(freshPatient(1));
+  const [evaluationPatientErrors, setEvaluationPatientErrors] = useState<Record<string, string>>({});
+  const [evaluationResult, setEvaluationResult] = useState<CalculatorResult | null>(null);
+  const [manualEnabled, setManualEnabled] = useState(false);
+  const [recommendationHistory, setRecommendationHistory] = useState<CalculatorResult[]>([]);
+  const [evaluationHistory, setEvaluationHistory] = useState<Array<{ patient: CalculatorResult; evaluation: RegimenEvaluationResult }>>([]);
+  const [formMessage, setFormMessage] = useState<Tab | null>(null);
   const [evaluationForm, setEvaluationForm] = useState(initialEvaluationForm);
   const [evaluationErrors, setEvaluationErrors] = useState<Record<string, string>>({});
   const [evaluation, setEvaluation] = useState<RegimenEvaluationResult | null>(null);
@@ -377,10 +384,42 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
   const updatePatient = <K extends keyof PatientForm>(key: K, value: PatientForm[K]) => {
     setPatientForm((current) => ({ ...current, [key]: value }));
     setResult(null);
-    setEvaluation(null);
+    setFormMessage(null);
     setPatientErrors((current) => ({ ...current, [key]: "" }));
   };
 
+  const updateEvaluationPatient = <K extends keyof PatientForm>(key: K, value: PatientForm[K]) => {
+    setEvaluationPatientForm(current => key === "renalDataAvailable" && value === false
+      ? { ...current, renalDataAvailable: false, serumCreatinineMgDl: "", urineOutputMlKgHour: "" }
+      : { ...current, [key]: value });
+    setEvaluationResult(null);
+    setEvaluation(null);
+    setFormMessage(null);
+    setEvaluationPatientErrors(current => ({ ...current, [key]: "" }));
+  };
+  const resetCase = (mode: "recommendation" | "evaluation") => {
+    if (mode === "recommendation") {
+      setPatientForm(freshPatient(recommendationHistory.length + 1));
+      setPatientErrors({});
+      setResult(null);
+    } else {
+      setEvaluationPatientForm(freshPatient(evaluationHistory.length + 1));
+      setEvaluationPatientErrors({});
+      setEvaluationForm(initialEvaluationForm);
+      setEvaluationErrors({});
+      setEvaluationResult(null);
+      setEvaluation(null);
+      setManualEnabled(false);
+    }
+    setFormMessage(mode);
+  };
+  const copyPatientFromRecommendation = () => {
+    setEvaluationPatientForm({ ...patientForm });
+    setEvaluationPatientErrors({});
+    setEvaluationResult(null);
+    setEvaluation(null);
+    setFormMessage(null);
+  };
   const calculate = async () => {
     const candidate = buildPatientInput(patientForm);
     const validated = validatePatientInput(candidate);
@@ -396,8 +435,10 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
     setIsCalculating(true);
     await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
     try {
-      setResult(calculateRecommendations(validated.data));
-      setEvaluation(null);
+      const next = calculateRecommendations(validated.data);
+      setResult(next);
+      setRecommendationHistory(current => [...current, next]);
+      setFormMessage(null);
       window.requestAnimationFrame(() => resultContainerRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }));
     } finally {
       setIsCalculating(false);
@@ -405,29 +446,40 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
   };
 
   const runEvaluation = () => {
-    if (!result) return;
-    const intervalsRequired = Object.values(result.recommendations).some(
-      (recommendation) =>
-        recommendation.eligibleForRegimenEvaluation &&
-        recommendation.interval.kind !== "single-dose-only" &&
-        recommendation.interval.kind !== "continuous-range",
-    );
+    const check = validatePatientInput(buildPatientInput(evaluationPatientForm));
+    if (!check.success) {
+      setEvaluationPatientErrors(issuesByField(check.issues));
+      setEvaluationResult(null);
+      setEvaluation(null);
+      return;
+    }
+    const calculated = calculateRecommendations(check.data);
+    const intervalRequired = [calculated.recommendations.institutionalPrimary, calculated.recommendations.anmf2024]
+      .some(r => r.eligibleForRegimenEvaluation && r.interval.kind !== "single-dose-only");
+    const actualDose = evaluationForm.actualDoseMg.trim() === "" ? Number.NaN : Number(evaluationForm.actualDoseMg.replace(",", "."));
+    const actualHours = evaluationForm.actualIntervalHours.trim() === "" ? null : Number(evaluationForm.actualIntervalHours.replace(",", "."));
+    const actualFallback = Number.isFinite(actualDose) && actualDose > 0 ? actualDose : Number.NaN;
     const candidate: RegimenEvaluationInput = {
-      manualDoseMinMg: Number(evaluationForm.manualDoseMinMg),
-      manualDoseMaxMg: Number(evaluationForm.manualDoseMaxMg),
-      actualDoseMg: Number(evaluationForm.actualDoseMg),
-      manualIntervalMinHours: evaluationForm.manualIntervalMinHours === "" ? null : Number(evaluationForm.manualIntervalMinHours),
-      manualIntervalMaxHours: evaluationForm.manualIntervalMaxHours === "" ? null : Number(evaluationForm.manualIntervalMaxHours),
-      actualIntervalHours: evaluationForm.actualIntervalHours === "" ? null : Number(evaluationForm.actualIntervalHours),
+      actualDoseMg: actualDose,
+      actualIntervalHours: actualHours,
+      manualDoseMinMg: manualEnabled ? (evaluationForm.manualDoseMinMg.trim() === "" ? Number.NaN : Number(evaluationForm.manualDoseMinMg.replace(",", "."))) : actualFallback,
+      manualDoseMaxMg: manualEnabled ? (evaluationForm.manualDoseMaxMg.trim() === "" ? Number.NaN : Number(evaluationForm.manualDoseMaxMg.replace(",", "."))) : actualFallback,
+      manualIntervalMinHours: manualEnabled ? (evaluationForm.manualIntervalMinHours.trim() === "" ? null : Number(evaluationForm.manualIntervalMinHours.replace(",", "."))) : actualHours,
+      manualIntervalMaxHours: manualEnabled ? (evaluationForm.manualIntervalMaxHours.trim() === "" ? null : Number(evaluationForm.manualIntervalMaxHours.replace(",", "."))) : actualHours,
     };
-    const validated = validateRegimenEvaluationInput(candidate, intervalsRequired);
+    const validated = validateRegimenEvaluationInput(candidate, intervalRequired);
     if (!validated.success) {
       setEvaluationErrors(issuesByField(validated.issues));
       setEvaluation(null);
       return;
     }
+    const next = evaluateRegimen(calculated, validated.data);
     setEvaluationErrors({});
-    setEvaluation(evaluateRegimen(result, validated.data));
+    setEvaluationPatientErrors({});
+    setEvaluationResult(calculated);
+    setEvaluation(next);
+    setEvaluationHistory(current => [...current, { patient: calculated, evaluation: next }]);
+    setFormMessage(null);
   };
 
   const printReport = () => {
@@ -445,8 +497,8 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
         : result?.input.antibiotic === "vankomisin"
           ? "Kriteria gangguan ginjal UNC untuk vankomisin tidak terpenuhi dari data yang diberikan"
           : "Tidak ada sinyal berdasarkan kriteria kaji ulang UNC dari data yang diberikan; bukan konfirmasi fungsi ginjal normal";
-  const activeIntervalsRequired = result
-    ? Object.values(result.recommendations).some(
+  const activeIntervalsRequired = evaluationResult
+    ? [evaluationResult.recommendations.institutionalPrimary, evaluationResult.recommendations.anmf2024].some(
         (recommendation) =>
           recommendation.eligibleForRegimenEvaluation &&
           recommendation.interval.kind !== "single-dose-only" &&
