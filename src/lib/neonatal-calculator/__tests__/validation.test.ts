@@ -13,6 +13,8 @@ describe("input validation", () => {
 
   it.each([
     ["postnatalAgeDays", { postnatalAgeDays: -1 }],
+    ["fractional gestation weeks", { gestationalAgeWeeks: 32.5 }],
+    ["GA extra days above six", { gestationalAgeDays: 7 }],
     ["decimal PNA", { postnatalAgeDays: 1.5 }],
     ["low weight", { currentWeightKg: 0.3 }],
     ["high weight", { currentWeightKg: 10.1 }],
@@ -21,7 +23,7 @@ describe("input validation", () => {
     ["negative UOP", { urineOutputMlKgHour: -0.1 }],
     ["SCr above upper bound", { serumCreatinineMgDl: 10.01 }],
     ["UOP above upper bound", { urineOutputMlKgHour: 10.01 }],
-    ["PNA above upper bound", { postnatalAgeDays: 366 }],
+    ["PNA above upper bound", { postnatalAgeDays: 29 }],
   ])("rejects %s", (_label, override) => {
     expect(validatePatientInput(patient(override)).success).toBe(false);
   });
