@@ -15,6 +15,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { buildBatchSummaryPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import {
   ANTIBIOTIC_LABELS,
   BATCH_MAX_ROWS,
@@ -140,6 +141,15 @@ export function BatchCalculator() {
     }
   };
 
+  const exportBatchPdf = () => {
+    if (!result) return;
+    try {
+      downloadPdf(buildBatchSummaryPdf(result), "ringkasan-batch-neonatus.pdf");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "PDF gagal dibuat.");
+    }
+  };
+
   const filteredRows = result?.rows.filter((row) => {
     const queryMatches = !searchQuery.trim() || row.patientCode.toLowerCase().includes(searchQuery.trim().toLowerCase());
     const antibioticMatches = antibioticFilter === "all" || (row.status === "berhasil" && row.calculator.input.antibiotic === antibioticFilter);
@@ -245,6 +255,7 @@ export function BatchCalculator() {
                     {busy === "export" ? <LoaderCircle className="animate-spin" size={18} /> : <Download size={18} />}
                     Unduh hasil Excel
                   </Button>
+                  <Button type="button" variant="outline" onClick={exportBatchPdf} disabled={busy !== null}>Unduh PDF Ringkasan Batch</Button>
                 </div>
                 <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
                   <div className="rounded-xl bg-surface-2 p-3"><dt className="text-xs text-text-muted">Kandidat</dt><dd className="mt-1 text-2xl font-bold text-text">{result.candidateRows}</dd></div>
