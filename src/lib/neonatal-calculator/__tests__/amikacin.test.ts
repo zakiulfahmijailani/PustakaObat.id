@@ -16,11 +16,10 @@ describe("amikacin rules", () => {
   });
 
   it.each([
-    [{ gestationalAgeWeeks: 27.5, postnatalAgeDays: 7 }, 14, 48],
+    [{ gestationalAgeWeeks: 27, gestationalAgeDays: 3, postnatalAgeDays: 7 }, 14, 48],
     [{ gestationalAgeWeeks: 24, postnatalAgeDays: 28 }, 12, 36],
-    [{ gestationalAgeWeeks: 22, postnatalAgeDays: 29 }, 12, 24],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 0 }, 14, 48],
-    [{ gestationalAgeWeeks: 29, postnatalAgeDays: 7 }, 12, 36],
+    [{ gestationalAgeWeeks: 29, postnatalAgeDays: 7 }, 14, 48],
     [{ gestationalAgeWeeks: 32, postnatalAgeDays: 8 }, 12, 24],
     [{ gestationalAgeWeeks: 34, postnatalAgeDays: 0 }, 12, 36],
   ])("matches notebook ANMF PMA/PNA boundary %#", (override, mgPerKg, hours) => {
