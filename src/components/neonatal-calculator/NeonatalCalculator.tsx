@@ -264,7 +264,7 @@ function PatientCaseFields({
                   ["therapeuticHypothermia", "Hipotermia terapeutik / HIE"],
                   ["coxInhibitorTherapy", "Terapi indometasin atau ibuprofen (COX inhibitor)"],
                   ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
-                ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && form.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={patientForm[key]} onChange={(event) => onChange(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
+                ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && form.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={form[key]} onChange={(event) => onChange(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
               </fieldset>
 
     </>
@@ -381,14 +381,14 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
     }
   };
 
-  const updatePatient = <K extends keyof PatientForm>(key: K, value: PatientForm[K]) => {
-    setPatientForm((current) => ({ ...current, [key]: value }));
+  const updatePatient = (key: keyof PatientForm, value: string | boolean) => {
+    setPatientForm((current) => key === "renalDataAvailable" && value === false ? { ...current, renalDataAvailable: false, serumCreatinineMgDl: "", urineOutputMlKgHour: "" } : { ...current, [key]: value });
     setResult(null);
     setFormMessage(null);
     setPatientErrors((current) => ({ ...current, [key]: "" }));
   };
 
-  const updateEvaluationPatient = <K extends keyof PatientForm>(key: K, value: PatientForm[K]) => {
+  const updateEvaluationPatient = (key: keyof PatientForm, value: string | boolean) => {
     setEvaluationPatientForm(current => key === "renalDataAvailable" && value === false
       ? { ...current, renalDataAvailable: false, serumCreatinineMgDl: "", urineOutputMlKgHour: "" }
       : { ...current, [key]: value });
