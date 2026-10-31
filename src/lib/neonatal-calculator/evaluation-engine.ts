@@ -1,3 +1,4 @@
+import { categorizeRange, categoryText, frequencyResult, intervalBounds, manualText } from "./notebook-results";
 import {
   compareDirection,
   compareRangeToFixed,
@@ -21,15 +22,8 @@ function evaluateDose(actualMg: number, recommendation: Recommendation): DoseEva
   if (minTotalMg === null || maxTotalMg === null) {
     return { status: "tidak-dapat-dievaluasi", message: "Tidak ada rekomendasi dosis numerik.", deviationPercent: null };
   }
-  if (actualMg < minTotalMg - FLOAT_EPSILON) {
-    const deviation = ((minTotalMg - actualMg) / minTotalMg) * 100;
-    return { status: "kurang", message: `Kurang ${deviation.toFixed(1)}% dari batas bawah rekomendasi.`, deviationPercent: deviation };
-  }
-  if (actualMg > maxTotalMg + FLOAT_EPSILON) {
-    const deviation = ((actualMg - maxTotalMg) / maxTotalMg) * 100;
-    return { status: "berlebih", message: `Berlebih ${deviation.toFixed(1)}% dari batas atas rekomendasi.`, deviationPercent: deviation };
-  }
-  return { status: "sesuai", message: "Berada di dalam batas rekomendasi inklusif.", deviationPercent: 0 };
+  const result = categorizeRange(actualMg,actualMg,minTotalMg,maxTotalMg);
+  return {status: result.category.toLowerCase() as DoseEvaluation["status"], message: categoryText(result), deviationPercent: result.percent === null ? null : Math.abs(result.percent)};
 }
 
 function compareManualDoseRange(
@@ -47,12 +41,14 @@ function compareManualDoseRange(
       lowerBound: compareRangeToFixed(minMg, maxMg, minTotalMg, "mg"),
       upperBound: null,
       fixedRecommendation: true,
+      summary: manualText(minMg,maxMg,minTotalMg,maxTotalMg),
     };
   }
   return {
     lowerBound: compareDirection(minMg, minTotalMg, "mg"),
     upperBound: fixed ? null : compareDirection(maxMg, maxTotalMg, "mg"),
     fixedRecommendation: false,
+    summary: manualText(minMg,maxMg,minTotalMg,maxTotalMg),
   };
 }
 
@@ -78,11 +74,13 @@ export function evaluateActualRegimen(
       recommendationId: recommendation.id,
       recommendationLabel: recommendation.label,
       actualDose: evaluateDose(actualDoseMg, recommendation),
-      actualInterval: evaluateActualInterval(
-        actualIntervalHours ?? 0,
-        recommendation.interval,
-        recommendation.eligibleForRegimenEvaluation,
-      ),
+      actualInterval: (() => {
+        if (actualIntervalHours === null) return {status:"tidak-dapat-dievaluasi" as const,message:"Interval aktual tidak diisi."};
+        const [lower,upper] = intervalBounds(recommendation.interval);
+        const result = frequencyResult(actualIntervalHours,actualIntervalHours,lower,upper);
+        const base = evaluateActualInterval(actualIntervalHours ?? 0,recommendation.interval,recommendation.eligibleForRegimenEvaluation);
+        return { ...base, message: result.category ? categoryText(result) : base.message };
+      })(),
     })),
   };
 }
@@ -92,7 +90,7 @@ export function evaluateRegimen(
   input: RegimenEvaluationInput,
 ): RegimenEvaluationResult {
   const recommendations = Object.values(calculatorResult.recommendations);
-  const intervalsRequired = recommendations.some(
+  const intervalsRequired = calculatorResult.recommendations.institutionalPrimary.interval.kind !== "single-dose-only" && recommendations.some(
     (recommendation) =>
       recommendation.eligibleForRegimenEvaluation &&
       recommendation.interval.kind !== "single-dose-only" &&
@@ -117,12 +115,10 @@ export function evaluateRegimen(
         recommendation,
       ),
       actualInterval: actual.targets[index].actualInterval,
-      manualInterval: compareManualIntervalRange(
-        validated.data.manualIntervalMinHours ?? 0,
-        validated.data.manualIntervalMaxHours ?? 0,
-        recommendation.interval,
-        recommendation.eligibleForRegimenEvaluation,
-      ),
+      manualInterval: {
+        ...compareManualIntervalRange(validated.data.manualIntervalMinHours ?? 0,validated.data.manualIntervalMaxHours ?? 0,recommendation.interval,recommendation.eligibleForRegimenEvaluation),
+        summary: manualText(validated.data.manualIntervalMinHours,validated.data.manualIntervalMaxHours,...intervalBounds(recommendation.interval),true),
+      },
     })),
   };
 }

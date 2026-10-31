@@ -1,0 +1,7 @@
+# Reproduce the notebook oracle, including SciPy statistical method selection.
+numpy==2.4.4
+pandas==2.2.2
+scipy==1.17.1
+ipywidgets==7.8.4
+ipython==8.14.0
+openpyxl==3.1.2

@@ -1,3 +1,4 @@
+import { notebookBatchRecord } from "./notebook-results";
 import type { Antibiotic } from "./types";
 import type { BatchProcessingResult, BatchSuccessRow } from "./batch-engine";
 
@@ -106,8 +107,9 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
   const n=diffs.length;
   if(n<3)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:null,shapiroP:null,note:"n < 3"};
   const sh=shapiroWilk(diffs);
-  if (!sh) return {method:"Tidak diuji",statistic:null,p:null,shapiroW:null,shapiroP:null,note:"Selisih konstan atau uji normalitas tidak dapat dihitung"};
-  if(sh.p>=0.05){
+  if (diffs.every(v => Math.abs(v) <= 1e-8)) return {method:"Tidak diuji",statistic:null,p:1,shapiroW:null,shapiroP:null,note:"Seluruh selisih nol"};
+  if (!sh) return {method:"paired t-test",statistic:null,p:0,shapiroW:null,shapiroP:1,note:"Selisih konstan bukan nol; statistik tak hingga"};
+  if(sh.p>0.05){
     const mean=diffs.reduce((a,b)=>a+b,0)/n;
     const sd=Math.sqrt(diffs.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
     if(sd<=1e-12)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Tidak ada variansi selisih"};
@@ -115,80 +117,65 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
     const p=betaI((n-1)/((n-1)+t*t),(n-1)/2,0.5);
     return {method:"paired t-test",statistic:t,p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi, alfa 0,05"};
   }
-  const nonzero=diffs.filter(v=>Math.abs(v)>1e-12);
+  const nonzero=diffs.filter(v=>v!==0);
   if(nonzero.length===0)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Seluruh selisih nol"};
   const ranked=nonzero.map(v=>({v,abs:Math.abs(v),rank:0})).sort((a,b)=>a.abs-b.abs);
-  let ties=0;for(let i=0;i<ranked.length;){let j=i+1;while(j<ranked.length && Math.abs(ranked[j].abs-ranked[i].abs)<1e-9)j++;const rank=(i+1+j)/2;for(let k=i;k<j;k++)ranked[k].rank=rank;ties+=(j-i)**3-(j-i);i=j;}
+  let ties=0;for(let i=0;i<ranked.length;){let j=i+1;while(j<ranked.length && ranked[j].abs===ranked[i].abs)j++;const rank=(i+1+j)/2;for(let k=i;k<j;k++)ranked[k].rank=rank;ties+=(j-i)**3-(j-i);i=j;}
   const wp=ranked.reduce((a,r)=>a+(r.v>0?r.rank:0),0),wn=ranked.reduce((a,r)=>a+(r.v<0?r.rank:0),0);
   const m=ranked.length;let p:number;
-  if(m<=20 && ties===0){
-    const max=m*(m+1)/2, counts=Array<number>(max+1).fill(0);counts[0]=1;
-    for(let rank=1;rank<=m;rank++)for(let sum=max;sum>=rank;sum--)counts[sum]+=counts[sum-rank];
-    const k=Math.floor(Math.min(wp,wn));
-    p=clamp(2*counts.slice(0,k+1).reduce((a,b)=>a+b,0)/(2**m));
+  if ((n<=50 && ties===0 && m===n) || n<=13) {
+    // DP over twice the average ranks handles ties; zeros leave sign probabilities unchanged.
+    const scaled=ranked.map(r=>Math.round(r.rank*2)), max=scaled.reduce((a,b)=>a+b,0);
+    const counts=Array<number>(max+1).fill(0); counts[0]=1;
+    for(const rank of scaled) for(let sum=max;sum>=rank;sum--) counts[sum]+=counts[sum-rank];
+    const observed=Math.round(wp*2);
+    const low=counts.slice(0,observed+1).reduce((a,b)=>a+b,0);
+    const high=counts.slice(observed).reduce((a,b)=>a+b,0);
+    p=clamp(2*Math.min(low,high)/(2**m));
   }else{
     const mu=m*(m+1)/4;
     const variance=m*(m+1)*(2*m+1)/24-ties/48;
-    p=variance<=0?1:clamp(2*(1-normalCdf((Math.max(0,Math.abs(wp-mu)-0.5))/Math.sqrt(variance))));
+    p=variance<=0?1:clamp(2*(1-normalCdf((Math.abs(wp-mu))/Math.sqrt(variance))));
   }
-  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi; 0 selisih dikeluarkan; exact tanpa ties sampai n=20"};
+  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi; 0 selisih dikeluarkan; auto SciPy: exact tanpa ties sampai n=50; permutasi ties/zero sampai n=13"};
 }
-function intervalHours(row:BatchSuccessRow,reference:ReferenceName):number|null{
-  const interval=(reference==="Pedoman Rumah Sakit"?row.calculator.recommendations.institutionalPrimary:row.calculator.recommendations.anmf2024).interval;
-  if(interval.kind==="single")return interval.hours;
-  if(interval.kind==="continuous-range")return (interval.minHours+interval.maxHours)/2;
-  if(interval.kind==="discrete")return (Math.min(...interval.allowedHours)+Math.max(...interval.allowedHours))/2;
-  return null;
-}
-function refDose(row:BatchSuccessRow,reference:ReferenceName):number|null{
-  const dose=(reference==="Pedoman Rumah Sakit"?row.calculator.recommendations.institutionalPrimary:row.calculator.recommendations.anmf2024).dose;
-  return dose.minTotalMg===null||dose.maxTotalMg===null?null:(dose.minTotalMg+dose.maxTotalMg)/2;
-}
-function status(row:BatchSuccessRow,reference:ReferenceName,metric:ComparisonMetric):string|null{
-  const id=(reference==="Pedoman Rumah Sakit"?row.calculator.recommendations.institutionalPrimary:row.calculator.recommendations.anmf2024).id;
-  const target=(metric.endsWith("aktual")?row.actualEvaluation:row.manualEvaluation)?.targets.find(t=>t.recommendationId===id);
-  if(!target)return null;
-  const v=metric.startsWith("Dosis")?target.actualDose.status:target.actualInterval.status;
-  if(metric.endsWith("manual")){
-    if(!row.manualEvaluation)return null;
-    const x=row.manualEvaluation.targets.find(t=>t.recommendationId===id);
-    if(!x)return null;
-    const direction=metric.startsWith("Dosis")?x.manualDose.lowerBound?.direction:x.manualInterval.lowerBound?.direction;
-    return direction==="sama"?"sesuai":direction==="lebih-besar"?"berlebih":direction==="lebih-kecil"?"kurang":"tidak-dapat-dievaluasi";
-  }
-  return v==="lebih-pendek"?"berlebih":v==="lebih-panjang"?"kurang":v;
+function status(record:ReturnType<typeof notebookBatchRecord>,reference:ReferenceName,metric:ComparisonMetric):string|null {
+  const key = (metric.startsWith("Dosis") ? metric.endsWith("aktual") ? "_ka_" : "_kma_" : metric.endsWith("aktual") ? "_kfa_" : "_kmf_") + (reference === "Pedoman Rumah Sakit" ? "rs" : "lit");
+  const value = record[key];
+  return typeof value === "string" && value ? value.toLowerCase() : null;
 }
 const refs:ReferenceName[]=["Pedoman Rumah Sakit","Literatur Terkini"];
 const metrics:ComparisonMetric[]=["Dosis aktual","Frekuensi aktual","Dosis manual","Frekuensi manual"];
 export function summarizeBatch(result:BatchProcessingResult):{counts:StatusCount[];paired:PairedStatistic[];mcnemar:McNemarStatistic[]} {
   const success=result.rows.filter((r):r is BatchSuccessRow=>r.status==="berhasil");
+  const records = new Map(success.map(row => [row,notebookBatchRecord(row)]));
   const groups:Array<{name:string;rows:BatchSuccessRow[]}>= [{name:"Keseluruhan",rows:success},...(["gentamisin","amikasin","vankomisin"] as Antibiotic[]).map(a=>({name:a,rows:success.filter(r=>r.calculator.input.antibiotic===a)}))];
   const counts:StatusCount[]=[],paired:PairedStatistic[]=[],mcnemar:McNemarStatistic[]=[];
   for(const group of groups){
     for(const metric of metrics){
       for(const reference of refs){
-        const statuses=group.rows.map(r=>status(r,reference,metric)).filter((s):s is string=>s!==null&&s!=="tidak-dapat-dievaluasi");
+        const statuses=group.rows.map(r=>status(records.get(r)!,reference,metric)).filter((s):s is string=>s!==null&&s!=="tidak-dapat-dievaluasi");
         for(const category of ["sesuai","berlebih","kurang","opsi-diskrit-tidak-cocok"]){
           const count=statuses.filter(s=>s===category).length;
           counts.push({group:group.name,metric,reference,category,count,total:statuses.length,percent:statuses.length?100*count/statuses.length:0});
         }
         const diffs=group.rows.map(r=>{
-          const actual=metric==="Dosis aktual"?r.actualEvaluation.actualDoseMg:metric==="Dosis manual"?r.manualEvaluation?(r.manualEvaluation.input.manualDoseMinMg+r.manualEvaluation.input.manualDoseMaxMg)/2:null:metric==="Frekuensi aktual"?r.actualEvaluation.actualIntervalHours:r.manualEvaluation?.input.manualIntervalMinHours??null;
-          const referenceValue=metric.startsWith("Dosis")?refDose(r,reference):intervalHours(r,reference);
-          const value=metric.startsWith("Dosis")?actual:actual && actual>0?24/actual:null;
-          const compare=metric.startsWith("Dosis")?referenceValue:referenceValue && referenceValue>0?24/referenceValue:null;
-          return value===null||compare===null?null:value-compare;
+          const record=records.get(r)!;
+          const actualKey=metric==="Dosis aktual"?"_da_perkg":metric==="Dosis manual"?"_dm_mid_perkg":metric==="Frekuensi aktual"?"_fa_perhari":"_fm_mid_perhari";
+          const refKey=metric.startsWith("Dosis")?(reference==="Pedoman Rumah Sakit"?"_rs_mid_perkg":"_lit_mid_perkg"):(reference==="Pedoman Rumah Sakit"?"_rs_freq_mid":"_lit_freq_mid");
+          const actual=record[actualKey], compare=record[refKey];
+          return typeof actual==="number" && typeof compare==="number" ? actual-compare : null;
         }).filter((v):v is number=>v!==null&&Number.isFinite(v));
         const test=pairedTest(diffs);
         paired.push({group:group.name,metric,reference,n:diffs.length,shapiroW:test.shapiroW,shapiroP:test.shapiroP,method:test.method,statistic:test.statistic,pValue:test.p,note:test.note});
       }
-      const pairs=group.rows.map(r=>[status(r,refs[0],metric),status(r,refs[1],metric)]).filter(v=>v.every(s=>s!==null && s!=="tidak-dapat-dievaluasi"));
+      const pairs=group.rows.map(r=>[status(records.get(r)!,refs[0],metric),status(records.get(r)!,refs[1],metric)]).filter(v=>v.every(s=>s!==null && s!=="tidak-dapat-dievaluasi"));
       const both=pairs.filter(([a,b])=>a==="sesuai"&&b==="sesuai").length;
       const rsOnly=pairs.filter(([a,b])=>a==="sesuai"&&b!=="sesuai").length;
       const literatureOnly=pairs.filter(([a,b])=>a!=="sesuai"&&b==="sesuai").length;
       const neither=pairs.filter(([a,b])=>a!=="sesuai"&&b!=="sesuai").length;
       const discordant=rsOnly+literatureOnly;
-      let method:McNemarStatistic["method"]="Tidak diuji", statistic:number|null=null,pValue:number|null=null,note="Tidak ada pasangan diskordan";
+      let method:McNemarStatistic["method"]="Tidak diuji", statistic:number|null=null,pValue:number|null=pairs.length?1:null,note=pairs.length?"Tidak ada pasangan diskordan":"Tidak ada pasangan valid";
       if(discordant>0 && discordant<25){
         method="McNemar exact";statistic=Math.min(rsOnly,literatureOnly);
         let c=1,sum=1;for(let k=1;k<=Math.min(rsOnly,literatureOnly);k++){c=c*(discordant-k+1)/k;sum+=c;}

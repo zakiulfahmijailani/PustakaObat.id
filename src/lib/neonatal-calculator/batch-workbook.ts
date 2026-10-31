@@ -1,10 +1,9 @@
+import { notebookBatchRecord } from "./notebook-results";
 import { summarizeBatch } from "./batch-statistics";
 import {
-  ANTIBIOTIC_LABELS,
   BATCH_COLUMNS,
   BATCH_SHEET_NAME,
   CALCULATOR_RULE_VERSION,
-  formatInterval,
   type BatchProcessingResult,
   type BatchSuccessRow,
 } from ".";
@@ -60,29 +59,6 @@ function setUsefulWidths(worksheet: import("exceljs").Worksheet, maxWidth = 42):
     });
     column.width = width;
   });
-}
-
-function recommendationCells(row: BatchSuccessRow, key: keyof BatchSuccessRow["calculator"]["recommendations"]): unknown[] {
-  const recommendation = row.calculator.recommendations[key];
-  const actual = row.actualEvaluation.targets.find(
-    (target) => target.recommendationId === recommendation.id,
-  );
-  const manual = row.manualEvaluation?.targets.find(
-    (target) => target.recommendationId === recommendation.id,
-  );
-  return [
-    recommendation.dose.minTotalMg,
-    recommendation.dose.maxTotalMg,
-    formatInterval(recommendation.interval),
-    actual?.actualDose.status ?? "tidak-dapat-dievaluasi",
-    actual?.actualDose.message ?? "Tidak tersedia",
-    actual?.actualInterval.status ?? "tidak-dapat-dievaluasi",
-    actual?.actualInterval.message ?? "Tidak tersedia",
-    manual?.manualDose.lowerBound?.message ?? "Tidak diisi",
-    manual?.manualDose.upperBound?.message ?? "Tidak diisi/tidak berlaku",
-    manual?.manualInterval.lowerBound?.message ?? "Tidak diisi",
-    manual?.manualInterval.upperBound?.message ?? "Tidak diisi/tidak berlaku",
-  ];
 }
 
 function workbookBytes(buffer: import("exceljs").Buffer): ArrayBuffer {
@@ -239,42 +215,12 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: headers.length } };
   };
   const values = workbook.addWorksheet("Hasil per Pasien");
-  addHeader(values, [
-    "Kode Pasien", "Antibiotik", "Usia Gestasi (mgg)", "Usia Gestasi (hari)", "Usia Pascalahir (hari)",
-    "PMA (mgg)", "Berat (kg)", "Fungsi Ginjal", "Dosis RS (mg)", "Frek RS",
-    "Dosis Literatur (mg)", "Frek Literatur", "Dosis Manual (mg)", "Frek Manual",
-    "Dosis Aktual (mg)", "Dosis Aktual (mg/kg/dosis)", "Frek Aktual",
-    "Aktual vs RS (dosis)", "Aktual vs RS (frek)", "Aktual vs Literatur (dosis)",
-    "Aktual vs Literatur (frek)", "Manual vs RS (dosis)", "Manual vs RS (frek)",
-    "Manual vs Literatur (dosis)", "Manual vs Literatur (frek)"
-  ]);
-  const intervalText = (i: BatchSuccessRow["calculator"]["recommendations"]["institutionalPrimary"]["interval"]) =>
-    formatInterval(i).replace(/q(\d+)h/g, "tiap $1 jam");
-  for (const row of result.rows) {
-    if (row.status !== "berhasil") continue;
-    const input = row.calculator.input, rs = row.calculator.recommendations.institutionalPrimary, lit = row.calculator.recommendations.anmf2024;
-    const findActual = (id: string) => row.actualEvaluation.targets.find(t => t.recommendationId === id);
-    const findManual = (id: string) => row.manualEvaluation?.targets.find(t => t.recommendationId === id);
-    const output = values.addRow([
-      row.patientCode, ANTIBIOTIC_LABELS[input.antibiotic], input.gestationalAgeWeeks, input.gestationalAgeDays ?? 0,
-      input.postnatalAgeDays, row.calculator.pmaWeeks, input.currentWeightKg,
-      input.renalDataAvailable ? "Data tersedia" : "Tidak tersedia (normal tidak dapat dipastikan)",
-      rs.dose.minTotalMg === rs.dose.maxTotalMg ? rs.dose.minTotalMg : String(rs.dose.minTotalMg) + "–" + String(rs.dose.maxTotalMg),
-      intervalText(rs.interval), lit.dose.minTotalMg, intervalText(lit.interval),
-      row.manualEvaluation ? String(row.manualEvaluation.input.manualDoseMinMg) + "–" + String(row.manualEvaluation.input.manualDoseMaxMg) : "",
-      row.manualEvaluation ? String(row.manualEvaluation.input.manualIntervalMinHours) + "–" + String(row.manualEvaluation.input.manualIntervalMaxHours) : "",
-      row.actualEvaluation.actualDoseMg, row.actualEvaluation.actualDoseMg / input.currentWeightKg, row.actualEvaluation.actualIntervalHours,
-      findActual(rs.id)?.actualDose.status ?? "", findActual(rs.id)?.actualInterval.status ?? "",
-      findActual(lit.id)?.actualDose.status ?? "", findActual(lit.id)?.actualInterval.status ?? "",
-      findManual(rs.id)?.manualDose.lowerBound?.message ?? "", findManual(rs.id)?.manualInterval.lowerBound?.message ?? "",
-      findManual(lit.id)?.manualDose.lowerBound?.message ?? "", findManual(lit.id)?.manualInterval.lowerBound?.message ?? ""
-    ]);
-    for (let col = 18; col <= 25; col++) {
-      const cell = output.getCell(col), state = String(cell.value ?? "").toLowerCase();
-      const color = state.startsWith("sesuai") ? "FFDCFCE7" : state.startsWith("berlebih") || state.startsWith("lebih-pendek") ? "FFFEE2E2" : state.startsWith("kurang") || state.startsWith("lebih-panjang") ? "FFFEF3C7" : "FFE0F2FE";
-      cell.fill = {type:"pattern",pattern:"solid",fgColor:{argb:color}};
-      cell.alignment = { wrapText:true, vertical:"top" };
-    }
+  const successful = result.rows.filter((row): row is BatchSuccessRow => row.status === "berhasil");
+  const publicHeaders = ["Kode Pasien","Antibiotik","Usia Gestasi (mgg)","Usia Pascalahir (hari)","PMA (mgg)","Berat (kg)","Fungsi Ginjal","Dosis RS (mg)","Frek RS","Dosis Literatur (mg)","Frek Literatur","Dosis Manual (mg)","Frek Manual","Dosis Aktual (mg)","Dosis Aktual (mg/kg/dosis)","Frek Aktual","Aktual vs RS (dosis)","Aktual vs RS (frek)","Aktual vs Literatur (dosis)","Aktual vs Literatur (frek)","Manual vs RS (dosis)","Manual vs RS (frek)","Manual vs Literatur (dosis)","Manual vs Literatur (frek)"];
+  addHeader(values, publicHeaders);
+  for (const row of successful) {
+    const record = notebookBatchRecord(row);
+    values.addRow(publicHeaders.map(key => record[key]));
   }
   setUsefulWidths(values, 40);
   const summary = workbook.addWorksheet("Ringkasan Kesesuaian");

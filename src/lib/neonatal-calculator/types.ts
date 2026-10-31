@@ -35,6 +35,7 @@ export type DoseRecommendation = {
 
 export type ClinicalWarning = {
   code: string;
+  title?: string;
   severity: "info" | "warning" | "critical";
   message: string;
 };
@@ -101,6 +102,7 @@ export type DirectionComparison = {
 };
 
 export type ManualRangeEvaluation = {
+  summary?: string;
   lowerBound: DirectionComparison | null;
   upperBound: DirectionComparison | null;
   fixedRecommendation: boolean;

@@ -82,7 +82,7 @@ describe("representative explicit recommendation fixtures", () => {
     }).toEqual({
       pmaWeeks: 28,
       renalStatus: "data-unavailable",
-      globalWarningCodes: ["RENAL_DATA_UNAVAILABLE"],
+      globalWarningCodes: ["RENAL_DATA_UNAVAILABLE", "INTERVAL_REFERENCE_DIFFERENCE"],
       primaryDose: {
         minMgPerKg: 15,
         maxMgPerKg: 15,
@@ -168,7 +168,7 @@ describe("representative explicit recommendation fixtures", () => {
           maxTotalMg: 27,
         },
         interval: { kind: "single", hours: 12, label: "q12h" },
-        eligible: false,
+        eligible: true,
         warningCodes: ["ANMF_REQUIRES_RENAL_REVIEW"],
       },
     });

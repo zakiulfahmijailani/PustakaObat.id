@@ -1,3 +1,4 @@
+import { pythonFixed } from "./python-rounding";
 import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
 import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, formatNumber } from ".";
@@ -72,8 +73,8 @@ function patientLines(calculated:CalculatorResult):ReportLine[]{
   return [
     {text:"Kode pasien: "+(p.patientLabel??"Tanpa kode")},
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
-    {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+formatNumber(calculated.pmaWeeks)+" minggu; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
-    {text:"Data ginjal: "+(p.renalDataAvailable?"Data diberikan":"Tidak tersedia - tidak diasumsikan normal")},
+    {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+(p.gestationalAgeWeeks+Math.floor(((p.gestationalAgeDays??0)+p.postnatalAgeDays)/7))+" minggu "+(((p.gestationalAgeDays??0)+p.postnatalAgeDays)%7)+" hari; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
+    {text:"Data ginjal: "+(p.renalDataAvailable?"Data diberikan":"Tidak tersedia (diasumsikan normal sesuai usia)")},
     ...calculated.globalWarnings.map(w=>({text:w.message,color:w.severity==="critical"?"red" as const:w.severity==="warning"?"orange" as const:"blue" as const})),
     ...calculated.recommendations.institutionalPrimary.warnings.map(w=>({text:w.message,color:"red" as const})),
     ...calculated.recommendations.anmf2024.warnings.map(w=>({text:w.message,color:"red" as const}))
@@ -99,8 +100,8 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
       lines.push({text:"Dosis aktual: "+target.actualDose.status+" - "+target.actualDose.message,color:target.actualDose.status==="berlebih"?"red":target.actualDose.status==="kurang"?"orange":"green"});
       lines.push({text:"Frekuensi aktual: "+target.actualInterval.status+" - "+target.actualInterval.message});
       if(manualEnabled){
-        lines.push({text:"Manual dosis: "+(target.manualDose.lowerBound?.message??"Tidak tersedia")+"; "+(target.manualDose.upperBound?.message??"")});
-        lines.push({text:"Manual interval: "+(target.manualInterval.lowerBound?.message??"Tidak tersedia")+"; "+(target.manualInterval.upperBound?.message??"")});
+        lines.push({text:"Manual dosis: "+(target.manualDose.summary??target.manualDose.lowerBound?.message??"Tidak tersedia")});
+        lines.push({text:"Manual interval: "+(target.manualInterval.summary??target.manualInterval.lowerBound?.message??"Tidak tersedia")});
       }
     }
   }
@@ -110,11 +111,11 @@ export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
   const summary=summarizeBatch(result), lines:ReportLine[]=[
     {text:"Kandidat: "+result.candidateRows+"; Berhasil: "+result.successCount+"; Gagal: "+result.errorCount+"; Contoh dilewati: "+result.ignoredRows,heading:true},
     {text:"Distribusi Kesesuaian",heading:true},
-    ...summary.counts.filter(x=>x.group==="Keseluruhan"&&x.count>0).map(x=>({text:x.metric+" / "+x.reference+" / "+x.category+": "+x.count+"/"+x.total+" ("+x.percent.toFixed(1)+"%)"})),
+    ...summary.counts.filter(x=>x.group==="Keseluruhan"&&x.count>0).map(x=>({text:x.metric+" / "+x.reference+" / "+x.category+": "+x.count+"/"+x.total+" ("+pythonFixed(x.percent,1)+"%)"})),
     {text:"Uji statistik berpasangan - hasil eksploratif",heading:true},
-    ...summary.paired.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+" / "+x.reference+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":x.pValue.toFixed(4))})),
+    ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>=3).map(x=>({text:x.group+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":pythonFixed(x.pValue,4))})),
     {text:"Uji McNemar: kesesuaian kedua pedoman",heading:true},
-    ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":x.pValue.toFixed(4))})),
+    ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":pythonFixed(x.pValue,4))})),
     {text:"Kesimpulan: hasil statistik memerlukan verifikasi terhadap notebook acuan dan penafsiran oleh peneliti.",color:"orange"},
     ...footer
   ];

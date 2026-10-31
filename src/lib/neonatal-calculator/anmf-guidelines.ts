@@ -1,11 +1,12 @@
+import { pythonRound } from "./python-rounding";
 import type { DoseRecommendation, IntervalRecommendation, PatientInput } from "./types";
 
 function fixedDose(mgPerKg: number, weightKg: number): DoseRecommendation {
   return {
     minMgPerKg: mgPerKg,
     maxMgPerKg: mgPerKg,
-    minTotalMg: mgPerKg * weightKg,
-    maxTotalMg: mgPerKg * weightKg,
+    minTotalMg: pythonRound(mgPerKg * weightKg,4),
+    maxTotalMg: pythonRound(mgPerKg * weightKg,4),
   };
 }
 

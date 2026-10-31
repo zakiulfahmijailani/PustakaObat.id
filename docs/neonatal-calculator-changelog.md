@@ -1,5 +1,15 @@
 # Neonatal Calculator Changelog
 
+## 2026-10-31 — executable notebook v18 parity (draft)
+
+- Execute the original notebook and its 92 self-checks; compare 1,242 age/renal/modifier profiles, 99 precision cases, the 34-row acceptance fixture, and additional statistical cohorts.
+- Match Python ties-to-even decimal formatting, four-place dose products, signed dose/frequency deviations, manual range evaluation, missing-renal warning severity, and the 24 public workbook fields.
+- Correct research dose units to mg/kg and frequency midpoint to the average of reciprocal intervals; match SciPy automatic paired test selection, ties/zeros, and McNemar outcomes.
+- Verify actual browser forms and uploaded/downloaded workbooks against Python. Accept comma decimals; contain tables and wrap actions on mobile. Export per-antibiotic paired tests in the batch PDF.
+- Preserve measured renal status as unknown when absent; expose the notebook assumption explicitly. This is numerical parity work, not clinical sign-off or release approval.
+- See [verification procedure and scope](neonatal-notebook-v18-parity.md).
+
+
 ## 2026-07-18 — local batch evaluation (rule version unchanged)
 
 ### Batch workflow

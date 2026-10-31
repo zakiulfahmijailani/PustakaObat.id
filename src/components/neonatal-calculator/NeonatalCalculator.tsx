@@ -115,6 +115,7 @@ function Field({
         inputMode={inputProps.type === "number" ? "decimal" : inputProps.inputMode}
         className={`min-h-11 w-full rounded-xl border bg-background px-3 py-2.5 text-sm text-text outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${error ? "border-error" : "border-border focus-visible:border-primary"}`}
         {...inputProps}
+        type={inputProps.type === "number" ? "text" : inputProps.type}
       />
       {error ? (
         <p id={`${id}-error`} className="text-xs text-error" role="alert">{error}</p>
@@ -135,68 +136,13 @@ function Warning({ warning }: { warning: ClinicalWarning }) {
   return (
     <div className={`flex items-start gap-2 rounded-xl border p-3 text-sm leading-relaxed ${tone}`}>
       <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.message}</span>
+      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.title && <strong>{warning.title}. </strong>}{warning.message}</span>
     </div>
-  );
-}
-
-function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
-  const dose = recommendation.dose;
-  const totalDose =
-    dose.minTotalMg === null
-      ? "Tidak tersedia"
-      : dose.minTotalMg === dose.maxTotalMg
-        ? `${formatNumber(dose.minTotalMg)} mg`
-        : `${formatNumber(dose.minTotalMg)}–${formatNumber(dose.maxTotalMg ?? dose.minTotalMg)} mg`;
-  const perKg =
-    dose.minMgPerKg === null
-      ? "Tidak tersedia"
-      : dose.minMgPerKg === dose.maxMgPerKg
-        ? `${formatNumber(dose.minMgPerKg)} mg/kg/dosis`
-        : `${formatNumber(dose.minMgPerKg)}–${formatNumber(dose.maxMgPerKg ?? dose.minMgPerKg)} mg/kg/dosis`;
-  return (
-    <article className="flex min-w-0 flex-col rounded-2xl border border-border bg-surface p-5 shadow-sm print-break-inside-avoid">
-      <p className="text-xs font-semibold uppercase tracking-wide text-primary">{recommendation.provenanceLabel}</p>
-      <h3 className="mt-1 text-xl font-semibold text-text">{recommendation.label}</h3>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-        <div className="rounded-xl bg-primary/8 p-3">
-          <p className="text-xs text-text-muted">Dosis per pemberian</p>
-          <p className="mt-1 text-xl font-bold text-primary">{totalDose}</p>
-          <p className="mt-1 text-xs text-text-muted">{perKg}</p>
-        </div>
-        <div className="rounded-xl bg-surface-2 p-3">
-          <p className="text-xs text-text-muted">Interval</p>
-          <p className="mt-1 text-lg font-bold text-text">{formatInterval(recommendation.interval)}</p>
-          <p className="mt-1 text-xs leading-relaxed text-text-muted">{recommendation.interval.label}</p>
-        </div>
-      </div>
-      {recommendation.notes.length > 0 && (
-        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-text-muted">
-          {recommendation.notes.map((note) => <li key={note}>{note}</li>)}
-        </ul>
-      )}
-      {recommendation.warnings.length > 0 && (
-        <div className="mt-4 space-y-2">{recommendation.warnings.map((warning) => <Warning key={warning.code} warning={warning} />)}</div>
-      )}
-      <details className="mt-4 border-t border-border pt-3 text-sm">
-        <summary className="min-h-11 cursor-pointer py-3 font-medium text-primary">Provenans aturan</summary>
-        <p className="pb-2 leading-relaxed text-text-muted">{recommendation.provenanceDetail}</p>
-      </details>
-    </article>
   );
 }
 
 function Direction({ comparison }: { comparison: DirectionComparison | null }) {
   return comparison ? <span>{comparison.message}</span> : <span>Tidak berlaku.</span>;
-}
-
-function formatEvaluationInterval(hours: number | null): string {
-  return hours === null ? "Tidak berlaku" : `q${hours}h`;
-}
-
-function formatEvaluationIntervalRange(minHours: number | null, maxHours: number | null): string {
-  if (minHours === null || maxHours === null) return "Tidak berlaku";
-  return minHours === maxHours ? `q${minHours}h` : `q${minHours}h–q${maxHours}h`;
 }
 
 function EvaluationCard({ target, showManual = true }: { target: RecommendationEvaluation; showManual?: boolean }) {
@@ -214,11 +160,11 @@ function EvaluationCard({ target, showManual = true }: { target: RecommendationE
         </div>
         {showManual && <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Rentang manual vs dosis</dt>
-          <dd className="mt-1 space-y-1 text-text-muted"><div>Batas bawah: <Direction comparison={target.manualDose.lowerBound} /></div>{!target.manualDose.fixedRecommendation && <div>Batas atas: <Direction comparison={target.manualDose.upperBound} /></div>}</dd>
+          <dd className="mt-1 space-y-1 text-text-muted">{target.manualDose.summary ?? <Direction comparison={target.manualDose.lowerBound} />}</dd>
         </div>}
         {showManual && <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Rentang manual vs interval</dt>
-          <dd className="mt-1 space-y-1 text-text-muted"><div>Batas bawah: <Direction comparison={target.manualInterval.lowerBound} /></div>{!target.manualInterval.fixedRecommendation && <div>Batas atas: <Direction comparison={target.manualInterval.upperBound} /></div>}</dd>
+          <dd className="mt-1 space-y-1 text-text-muted">{target.manualInterval.summary ?? <Direction comparison={target.manualInterval.lowerBound} />}</dd>
         </div>}
       </dl>
     </article>
@@ -253,7 +199,7 @@ function PatientCaseFields({
               <fieldset className="rounded-xl border border-border p-4">
                 <legend className="px-1 text-sm font-semibold text-text">Fungsi ginjal</legend>
                 <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-text"><input type="checkbox" className="h-5 w-5 accent-primary" checked={form.renalDataAvailable} onChange={(event) => { const available = event.target.checked; onChange("renalDataAvailable", available); }} />Data fungsi ginjal tersedia</label>
-                {!form.renalDataAvailable && <p className="mt-2 text-xs leading-relaxed text-warning">Data ginjal tidak tersedia. Harap periksa fungsi ginjal sebelum keputusan terapi.</p>}
+                {!form.renalDataAvailable && <p className="mt-2 text-xs leading-relaxed text-warning">Data ginjal tidak tersedia; perhitungan mengikuti asumsi normal sesuai usia pada notebook. Periksa fungsi ginjal sebelum keputusan terapi.</p>}
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
                   <Field id={`${prefix}-scr`} label="Kreatinin serum (mg/dL)" type="number" min="0" max="10" step="0.01" required={form.renalDataAvailable} disabled={!form.renalDataAvailable} placeholder="mis. 0,6" value={form.serumCreatinineMgDl} onChange={(value) => onChange("serumCreatinineMgDl", value)} error={errors.serumCreatinineMgDl} />
                   <Field id={`${prefix}-uop`} label="Produksi urin (mL/kg/jam)" type="number" min="0" max="10" step="0.01" disabled={!form.renalDataAvailable} placeholder="mis. 2,0" value={form.urineOutputMlKgHour} onChange={(value) => onChange("urineOutputMlKgHour", value)} error={errors.urineOutputMlKgHour} helper="Opsional, tetapi sangat dianjurkan." />
@@ -429,7 +375,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       setResult(null);
       const firstField = validated.issues[0]?.field;
       const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", gestationalAgeDays: "ga-days", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label" };
-      window.requestAnimationFrame(() => document.getElementById(fieldIds[firstField] ?? firstField)?.focus());
+      window.requestAnimationFrame(() => document.getElementById(`rec-${fieldIds[firstField] ?? firstField}`)?.focus());
       return;
     }
     setPatientErrors({});
@@ -498,7 +444,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
 
   const renalStatusLabel =
     result?.renalStatus === "data-unavailable"
-      ? "Data fungsi ginjal tidak tersedia"
+      ? "Data fungsi ginjal tidak tersedia (diasumsikan normal sesuai usia)"
       : result?.renalStatus === "renal-impairment-criteria-met"
         ? result.input.antibiotic === "vankomisin"
           ? "Kriteria gangguan ginjal UNC untuk vankomisin terpenuhi"
@@ -516,7 +462,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
     : true;
 
   return (
-    <div className="container max-w-7xl pb-16 print-container">
+    <div className="container max-w-7xl pb-16 print-container [&_button]:whitespace-normal">
       <header className="mb-6">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-primary/10 p-2.5 text-primary"><Calculator size={24} aria-hidden="true" /></div>
@@ -546,7 +492,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       </div>
 
       <section id="recommendation-panel" role="tabpanel" aria-labelledby="recommendation-tab" hidden={tab !== "recommendation"} className="print-always">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
           <div className="rounded-2xl border border-border bg-surface p-5 print-hide">
             <h2 className="text-xl font-semibold text-text">Data kasus</h2>
             <p className="mt-1 text-xs leading-relaxed text-text-muted">Semua field klinis hanya berada dalam memori tab ini.</p>
@@ -558,14 +504,14 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             </div>
           </div>
 
-          <div ref={resultContainerRef} className="scroll-mt-28">
+          <div ref={resultContainerRef} className="min-w-0 scroll-mt-28">
             {!result ? (
-              <div className="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-8 text-center print-hide"><div><FileWarning className="mx-auto text-text-muted" aria-hidden="true" /><h2 className="mt-3 text-xl font-semibold text-text">Belum ada hasil aktif</h2><p className="mt-2 max-w-md text-sm text-text-muted">Isi data kasus dan hitung rekomendasi. Data ginjal yang tidak tersedia akan ditandai, bukan dianggap normal.</p></div></div>
+              <div className="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-8 text-center print-hide"><div><FileWarning className="mx-auto text-text-muted" aria-hidden="true" /><h2 className="mt-3 text-xl font-semibold text-text">Belum ada hasil aktif</h2><p className="mt-2 max-w-md text-sm text-text-muted">Isi data kasus dan hitung rekomendasi. Data ginjal yang tidak tersedia memakai asumsi normal sesuai usia dan ditandai dengan peringatan.</p></div></div>
             ) : (
               <div className="space-y-5" aria-live="polite">
                 <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
-                  <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2></div><div className="flex gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadRecommendation}>Unduh PDF Rekomendasi Dosis</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} />Cetak</Button></div></div>
-                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.pmaWeeks.toFixed(1)} minggu</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
+                  <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2></div><div className="flex flex-wrap gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadRecommendation}>Unduh PDF Rekomendasi Dosis</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} />Cetak</Button></div></div>
+                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
                 <SortedWarnings warnings={[...result.globalWarnings, ...result.recommendations.institutionalPrimary.warnings, ...result.recommendations.anmf2024.warnings]} />
@@ -591,7 +537,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       </section>
 
       <section id="evaluation-panel" role="tabpanel" aria-labelledby="evaluation-tab" hidden={tab !== "evaluation"} className="print-evaluation">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
           <div className="rounded-2xl border border-border bg-surface p-5 print-hide">
             <h2 className="text-xl font-semibold">Data pasien — Evaluasi Pemberian</h2>
             <p className="mt-1 text-sm text-text-muted">Formulir ini berdiri sendiri. Rekomendasi Dosis tidak perlu dihitung lebih dulu.</p>

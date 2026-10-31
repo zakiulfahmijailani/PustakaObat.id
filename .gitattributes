@@ -1,0 +1,2 @@
+# Preserve the original notebook bytes for its pinned SHA256 on every platform.
+tests/fixtures/neonatal/notebook-v18.ipynb -text
