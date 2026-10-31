@@ -9,7 +9,7 @@ function gent(overrides = {}) {
 }
 
 describe("gentamicin rules", () => {
-  it("returns institutional 5–7.5 mg/kg and discrete q24/q48", () => {
+  it("returns institutional 5–7.5 mg/kg and 24–48h continuous interval", () => {
     const rec = gent().recommendations.institutionalPrimary;
     expect(rec.dose).toMatchObject({ minMgPerKg: 5, maxMgPerKg: 7.5, minTotalMg: 7.5, maxTotalMg: 11.25 });
     expect(rec.interval).toEqual({ kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" });
