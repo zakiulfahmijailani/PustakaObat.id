@@ -5,6 +5,7 @@ const completeRow = [
   "P-001",
   "Gentamisin",
   38,
+  0,
   1,
   3.94,
   "",
@@ -45,10 +46,10 @@ describe("processBatchTable", () => {
 
   it("tetap mengevaluasi dosis aktual ketika seluruh kolom manual kosong", () => {
     const row = [...completeRow];
-    row[10] = "";
-    row[11] = "";
-    row[12] = "";
-    row[13] = "";
+    row[14] = "";
+    row[14] = "";
+    row[14] = "";
+    row[14] = "";
     const result = processBatchTable([[...BATCH_COLUMNS], row]);
 
     expect(result.successCount).toBe(1);
@@ -61,7 +62,7 @@ describe("processBatchTable", () => {
     const duplicate = [...completeRow];
     const renalWithoutCreatinine = [...completeRow];
     renalWithoutCreatinine[0] = "P-002";
-    renalWithoutCreatinine[6] = 1.2;
+    renalWithoutCreatinine[7] = 1.2;
 
     const result = processBatchTable([
       [...BATCH_COLUMNS],
@@ -81,8 +82,8 @@ describe("processBatchTable", () => {
 
   it("tetap memproses evaluasi aktual ketika pembanding manual tidak valid", () => {
     const row = [...completeRow];
-    row[10] = 30;
-    row[11] = 20;
+    row[11] = 30;
+    row[12] = 20;
     const result = processBatchTable([[...BATCH_COLUMNS], row]);
 
     expect(result).toMatchObject({ successCount: 1, errorCount: 0, warningCount: 1 });
