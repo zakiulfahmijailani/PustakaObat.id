@@ -28,16 +28,15 @@ describe("vancomycin rules", () => {
     expect(rec.warnings[0]?.severity).toBe("critical");
   });
 
-  it("keeps general q8–q18 coverage informational and non-evaluable", () => {
+  it("uses UNC routine PNA interval for evaluation", () => {
     const rec = vanc().recommendations.institutionalPrimary;
-    expect(rec.interval.kind).toBe("continuous-range");
-    expect(rec.eligibleForRegimenEvaluation).toBe(false);
+    expect(rec.interval).toMatchObject({ kind: "single", hours: 12 });
+    expect(rec.eligibleForRegimenEvaluation).toBe(true);
   });
 
   it.each([
     [{ gestationalAgeWeeks: 27, postnatalAgeDays: 14 }, 18],
-    [{ gestationalAgeWeeks: 27.5, postnatalAgeDays: 7 }, 18],
-    [{ gestationalAgeWeeks: 24, postnatalAgeDays: 29 }, 12],
+    [{ gestationalAgeWeeks: 27, gestationalAgeDays: 3, postnatalAgeDays: 7 }, 18],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 14 }, 12],
     [{ gestationalAgeWeeks: 29, postnatalAgeDays: 15 }, 8],
     [{ gestationalAgeWeeks: 34, postnatalAgeDays: 14 }, 12],
