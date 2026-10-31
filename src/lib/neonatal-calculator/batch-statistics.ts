@@ -58,7 +58,6 @@ export function shapiroWilk(values: number[]): { w: number; p: number } | null {
   const rsn = 1/Math.sqrt(n);
   const a1 = -m[0]/Math.sqrt(summ2) + polynomial([0,0.221157,-0.147981,-2.071190,4.434685,-2.706056],rsn);
   const a2 = n > 5 ? -m[1]/Math.sqrt(summ2) + polynomial([0,0.042981,-0.293762,-1.752461,5.682633,-3.582633],rsn) : 0;
-  const fix = n > 5 ? 2 : 1;
   const numerator = summ2 - 2*m[0]**2 - (n>5 ? 2*m[1]**2 : 0);
   const denominator = 1 - 2*a1**2 - (n>5 ? 2*a2**2 : 0);
   if (numerator <= 0 || denominator <= 0) return null;
@@ -116,9 +115,8 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
     const p=betaI((n-1)/((n-1)+t*t),(n-1)/2,0.5);
     return {method:"paired t-test",statistic:t,p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi, alfa 0,05"};
   }
-  const abs=diffs.map(v=>Math.abs(v)).filter(v=>v>1e-12).sort((a,b)=>a-b);
   const nonzero=diffs.filter(v=>Math.abs(v)>1e-12);
-  if(abs.length===0)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Seluruh selisih nol"};
+  if(nonzero.length===0)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Seluruh selisih nol"};
   const ranked=nonzero.map(v=>({v,abs:Math.abs(v),rank:0})).sort((a,b)=>a.abs-b.abs);
   let ties=0;for(let i=0;i<ranked.length;){let j=i+1;while(j<ranked.length && Math.abs(ranked[j].abs-ranked[i].abs)<1e-9)j++;const rank=(i+1+j)/2;for(let k=i;k<j;k++)ranked[k].rank=rank;ties+=(j-i)**3-(j-i);i=j;}
   const wp=ranked.reduce((a,r)=>a+(r.v>0?r.rank:0),0),wn=ranked.reduce((a,r)=>a+(r.v<0?r.rank:0),0);
