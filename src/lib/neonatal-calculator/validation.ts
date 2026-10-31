@@ -34,10 +34,20 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
   }
   if (
     !finite(input.gestationalAgeWeeks) ||
+    !Number.isInteger(input.gestationalAgeWeeks) ||
     input.gestationalAgeWeeks < INPUT_LIMITS.gestationalAgeWeeks.min ||
     input.gestationalAgeWeeks > INPUT_LIMITS.gestationalAgeWeeks.max
   ) {
     issues.push({ field: "gestationalAgeWeeks", message: "Usia gestasi harus 22–43 minggu." });
+  }
+  if (
+    input.gestationalAgeDays !== undefined &&
+    (!Number.isInteger(input.gestationalAgeDays) ||
+      input.gestationalAgeDays < INPUT_LIMITS.gestationalAgeDays.min ||
+      input.gestationalAgeDays > INPUT_LIMITS.gestationalAgeDays.max ||
+      input.gestationalAgeWeeks + input.gestationalAgeDays / 7 > INPUT_LIMITS.gestationalAgeWeeks.max)
+  ) {
+    issues.push({ field: "gestationalAgeDays", message: "Tambahan usia gestasi harus 0–6 hari dan usia gestasi total maksimal 43 minggu." });
   }
   if (
     !finite(input.postnatalAgeDays) ||
@@ -45,14 +55,14 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     input.postnatalAgeDays < INPUT_LIMITS.postnatalAgeDays.min ||
     input.postnatalAgeDays > INPUT_LIMITS.postnatalAgeDays.max
   ) {
-    issues.push({ field: "postnatalAgeDays", message: "Usia pascalahir harus bilangan bulat 0–365 hari." });
+    issues.push({ field: "postnatalAgeDays", message: "Usia pascalahir harus bilangan bulat 0–28 hari." });
   }
   if (
     !finite(input.currentWeightKg) ||
-    input.currentWeightKg <= INPUT_LIMITS.currentWeightKg.exclusiveMin ||
+    input.currentWeightKg < INPUT_LIMITS.currentWeightKg.min ||
     input.currentWeightKg > INPUT_LIMITS.currentWeightKg.max
   ) {
-    issues.push({ field: "currentWeightKg", message: "Berat badan harus >0,3 hingga 10 kg." });
+    issues.push({ field: "currentWeightKg", message: "Berat badan harus 0,3–10 kg." });
   } else if (Math.abs(input.currentWeightKg * 1000 - Math.round(input.currentWeightKg * 1000)) > 1e-9) {
     issues.push({ field: "currentWeightKg", message: "Berat badan maksimal tiga angka desimal." });
   }
