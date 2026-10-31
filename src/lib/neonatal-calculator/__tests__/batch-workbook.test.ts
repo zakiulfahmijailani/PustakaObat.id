@@ -46,11 +46,13 @@ describe("workbook batch", () => {
     const workbook = await loadWorkbook(await buildBatchResultWorkbook(processed));
 
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
-      "Ringkasan",
-      "Hasil Evaluasi",
-      "Kesalahan",
-      "Peringatan Data",
+      "Hasil per Pasien",
+      "Ringkasan Kesesuaian",
+      "Analisis Statistik",
+      "Interpretasi & Kesimpulan",
+      "Peringatan",
+      "Keterangan Singkatan",
     ]);
-    expect(workbook.getWorksheet("Hasil Evaluasi")?.rowCount).toBe(2);
+    expect(workbook.getWorksheet("Hasil per Pasien")?.rowCount).toBe(2);
   });
 });
