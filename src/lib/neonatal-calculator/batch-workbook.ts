@@ -165,6 +165,7 @@ export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
     "CONTOH-1",
     "Gentamisin",
     32,
+    0,
     3,
     1.5,
     "",
@@ -183,6 +184,7 @@ export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
     "CONTOH-2",
     "Vankomisin",
     38,
+    0,
     7,
     3.1,
     0.6,
@@ -203,7 +205,7 @@ export async function buildBatchTemplateWorkbook(): Promise<ArrayBuffer> {
       allowBlank: false,
       formulae: ['"Gentamisin,Amikasin,Vankomisin"'],
     };
-    for (const column of [8, 9, 10]) {
+    for (const column of [9, 10, 11]) {
       dataSheet.getCell(row, column).dataValidation = {
         type: "list",
         allowBlank: true,
