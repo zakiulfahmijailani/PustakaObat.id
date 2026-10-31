@@ -38,7 +38,7 @@ import {
 type Tab = "recommendation" | "evaluation" | "batch";
 type PatientForm = {
   patientLabel: string;
-  antibiotic: Antibiotic;
+  antibiotic: Antibiotic | "";
   gestationalAgeWeeks: string;
   gestationalAgeDays: string;
   postnatalAgeDays: string;
@@ -53,8 +53,8 @@ type PatientForm = {
 type EvaluationForm = Record<keyof RegimenEvaluationInput, string>;
 
 const initialPatientForm: PatientForm = {
-  patientLabel: "",
-  antibiotic: "gentamisin",
+  patientLabel: "Pasien 1",
+  antibiotic: "",
   gestationalAgeWeeks: "",
   gestationalAgeDays: "",
   postnatalAgeDays: "",
@@ -66,6 +66,8 @@ const initialPatientForm: PatientForm = {
   coxInhibitorTherapy: false,
   severeSepsisOrHighRiskInfection: false,
 };
+
+function freshPatient(n: number): PatientForm { return { ...initialPatientForm, patientLabel: `Pasien ${n}` }; }
 
 const initialEvaluationForm: EvaluationForm = {
   manualDoseMinMg: "",
@@ -132,7 +134,7 @@ function Warning({ warning }: { warning: ClinicalWarning }) {
   return (
     <div className={`flex items-start gap-2 rounded-xl border p-3 text-sm leading-relaxed ${tone}`}>
       <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <span>{warning.message}</span>
+      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.message}</span>
     </div>
   );
 }
@@ -222,6 +224,113 @@ function EvaluationCard({ target }: { target: RecommendationEvaluation }) {
   );
 }
 
+
+function PatientCaseFields({
+  form, errors, onChange, prefix,
+}: {
+  form: PatientForm;
+  errors: Record<string, string>;
+  prefix: string;
+  onChange: (key: keyof PatientForm, value: string | boolean) => void;
+}) {
+  return (
+    <>
+              <Field id={`${prefix}-patient-label`} label="Kode pasien" value={form.patientLabel} onChange={(value) => onChange("patientLabel", value)} maxLength={60} error={errors.patientLabel} helper="Label kasus non-identifying; jangan masukkan nama, nomor rekam medis, NIK, tanggal lahir, atau identitas pasien." />
+              <div>
+                <label htmlFor={`${prefix}-antibiotic`} className="block text-sm font-medium text-text">Antibiotik <span className="text-error">*</span></label>
+                <select id={`${prefix}-antibiotic`} value={form.antibiotic} onChange={(event) => onChange("antibiotic", event.target.value as PatientForm["antibiotic"])} className="mt-1.5 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+                  <option value="">-- pilih antibiotik --</option>
+                  {Object.entries(ANTIBIOTIC_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id={`${prefix}-ga`} label="Usia gestasi saat lahir — minggu" type="number" min="22" max="43" step="1" required placeholder="mis. 32" value={form.gestationalAgeWeeks} onChange={(value) => onChange("gestationalAgeWeeks", value)} error={errors.gestationalAgeWeeks} />
+                <Field id={`${prefix}-ga-days`} label="Usia gestasi saat lahir — tambahan hari (opsional)" type="number" min="0" max="6" step="1" placeholder="mis. 4" value={form.gestationalAgeDays} onChange={(value) => onChange("gestationalAgeDays", value)} error={errors.gestationalAgeDays} />
+                <Field id={`${prefix}-pna`} label="Usia pascalahir (hari)" type="number" min="0" max="28" step="1" required placeholder="mis. 3" value={form.postnatalAgeDays} onChange={(value) => onChange("postnatalAgeDays", value)} error={errors.postnatalAgeDays} />
+                <Field id={`${prefix}-weight`} label="Berat badan saat ini (kg)" type="number" min="0.3" max="10" step="0.001" required placeholder="mis. 1,72" value={form.currentWeightKg} onChange={(value) => onChange("currentWeightKg", value)} error={errors.currentWeightKg} />
+              </div>
+              <fieldset className="rounded-xl border border-border p-4">
+                <legend className="px-1 text-sm font-semibold text-text">Fungsi ginjal</legend>
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-text"><input type="checkbox" className="h-5 w-5 accent-primary" checked={form.renalDataAvailable} onChange={(event) => { const available = event.target.checked; onChange("renalDataAvailable", available); }} />Data fungsi ginjal tersedia</label>
+                {!form.renalDataAvailable && <p className="mt-2 text-xs leading-relaxed text-warning">Data ginjal tidak tersedia. Harap periksa fungsi ginjal sebelum keputusan terapi.</p>}
+                <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                  <Field id={`${prefix}-scr`} label="Kreatinin serum (mg/dL)" type="number" min="0" max="10" step="0.01" required={form.renalDataAvailable} disabled={!form.renalDataAvailable} placeholder="mis. 0,6" value={form.serumCreatinineMgDl} onChange={(value) => onChange("serumCreatinineMgDl", value)} error={errors.serumCreatinineMgDl} />
+                  <Field id={`${prefix}-uop`} label="Produksi urin (mL/kg/jam)" type="number" min="0" max="10" step="0.01" disabled={!form.renalDataAvailable} placeholder="mis. 2,0" value={form.urineOutputMlKgHour} onChange={(value) => onChange("urineOutputMlKgHour", value)} error={errors.urineOutputMlKgHour} helper="Opsional, tetapi sangat dianjurkan." />
+                </div>
+              </fieldset>
+              <fieldset className="space-y-2 rounded-xl border border-border p-4">
+                <legend className="px-1 text-sm font-semibold text-text">Konteks klinis</legend>
+                {([
+                  ["therapeuticHypothermia", "Hipotermia terapeutik / HIE"],
+                  ["coxInhibitorTherapy", "Terapi indometasin atau ibuprofen (COX inhibitor)"],
+                  ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
+                ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && form.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={patientForm[key]} onChange={(event) => onChange(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
+              </fieldset>
+
+    </>
+  );
+}
+
+function buildPatientInput(form: PatientForm): PatientInput {
+  const number = (raw: string) => raw.trim() === "" ? Number.NaN : Number(raw.replace(",", "."));
+  const optional = (raw: string) => raw.trim() === "" ? undefined : number(raw);
+  return {
+    patientLabel: form.patientLabel || undefined,
+    antibiotic: form.antibiotic as Antibiotic,
+    gestationalAgeWeeks: number(form.gestationalAgeWeeks),
+    gestationalAgeDays: optional(form.gestationalAgeDays),
+    postnatalAgeDays: number(form.postnatalAgeDays),
+    currentWeightKg: number(form.currentWeightKg),
+    renalDataAvailable: form.renalDataAvailable,
+    serumCreatinineMgDl: form.renalDataAvailable ? optional(form.serumCreatinineMgDl) : undefined,
+    urineOutputMlKgHour: form.renalDataAvailable ? optional(form.urineOutputMlKgHour) : undefined,
+    therapeuticHypothermia: form.therapeuticHypothermia,
+    coxInhibitorTherapy: form.coxInhibitorTherapy,
+    severeSepsisOrHighRiskInfection: form.severeSepsisOrHighRiskInfection,
+  };
+}
+
+function WarningLegend() {
+  return <div className="flex flex-wrap gap-3 text-xs text-text-muted">
+    <span className="font-semibold text-error">Merah: peringatan</span>
+    <span className="font-semibold text-warning">Kuning: perhatian</span>
+    <span className="font-semibold text-info">Biru: informasi</span>
+    <span className="font-semibold text-primary">Hijau: sesuai</span>
+  </div>;
+}
+
+function SortedWarnings({ warnings }: { warnings: ClinicalWarning[] }) {
+  const priority = { critical: 0, warning: 1, info: 2 };
+  const unique = [...new Map(warnings.map((warning) => [warning.code, warning])).values()];
+  return <div className="space-y-2">{unique.sort((a, b) => priority[a.severity] - priority[b.severity]).map((warning) =>
+    <Warning key={warning.code} warning={warning} />
+  )}</div>;
+}
+
+function RecommendationTable({ calculated }: { calculated: CalculatorResult }) {
+  const rs = calculated.recommendations.institutionalPrimary;
+  const anmf = calculated.recommendations.anmf2024;
+  const doseText = (r: Recommendation) => {
+    const { minTotalMg, maxTotalMg } = r.dose;
+    return minTotalMg === null ? "Tidak tersedia" :
+      minTotalMg === maxTotalMg ? `${formatNumber(minTotalMg)} mg` :
+      `${formatNumber(minTotalMg)}–${formatNumber(maxTotalMg ?? minTotalMg)} mg`;
+  };
+  const mgKg = (r: Recommendation) => r.dose.minMgPerKg === r.dose.maxMgPerKg
+    ? `${formatNumber(r.dose.minMgPerKg ?? 0)} mg/kg per pemberian`
+    : `${formatNumber(r.dose.minMgPerKg ?? 0)}–${formatNumber(r.dose.maxMgPerKg ?? 0)} mg/kg per pemberian`;
+  return <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+    <table className="min-w-[560px] w-full text-left text-sm">
+      <thead className="bg-surface-2"><tr><th className="p-3">Parameter</th><th className="p-3">Pedoman Rumah Sakit</th><th className="p-3">Literatur Terkini (ANMF 2024)</th></tr></thead>
+      <tbody>
+        <tr className="border-t border-border"><th className="p-3">Dosis per pemberian</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}><strong>{doseText(r)}</strong><div className="mt-1 text-xs text-text-muted">{mgKg(r)}</div></td>)}</tr>
+        <tr className="border-t border-border"><th className="p-3">Frekuensi</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}>{r.interval.kind === "single-dose-only" ? "Dosis tunggal (bukan rutin)" : r.interval.label.startsWith("tiap") ? r.interval.label : formatInterval(r.interval).replace(/q(\d+)h/g, "tiap $1 jam")}</td>)}</tr>
+      </tbody>
+    </table>
+    <p className="border-t border-border p-3 text-xs text-text-muted">Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan.</p>
+  </div>;
+}
+
 export function NeonatalCalculator({ initialMode = "recommendation" }: { initialMode?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialMode);
   const [patientForm, setPatientForm] = useState(initialPatientForm);
@@ -273,29 +382,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
   };
 
   const calculate = async () => {
-    const candidate: PatientInput = {
-      patientLabel: patientForm.patientLabel || undefined,
-      antibiotic: patientForm.antibiotic,
-      gestationalAgeWeeks:
-        patientForm.gestationalAgeWeeks === "" ? Number.NaN : Number(patientForm.gestationalAgeWeeks),
-      gestationalAgeDays: patientForm.gestationalAgeDays === "" ? undefined : Number(patientForm.gestationalAgeDays),
-      postnatalAgeDays:
-        patientForm.postnatalAgeDays === "" ? Number.NaN : Number(patientForm.postnatalAgeDays),
-      currentWeightKg:
-        patientForm.currentWeightKg === "" ? Number.NaN : Number(patientForm.currentWeightKg),
-      renalDataAvailable: patientForm.renalDataAvailable,
-      serumCreatinineMgDl:
-        patientForm.renalDataAvailable && patientForm.serumCreatinineMgDl !== ""
-          ? Number(patientForm.serumCreatinineMgDl)
-          : undefined,
-      urineOutputMlKgHour:
-        patientForm.renalDataAvailable && patientForm.urineOutputMlKgHour !== ""
-          ? Number(patientForm.urineOutputMlKgHour)
-          : undefined,
-      therapeuticHypothermia: patientForm.therapeuticHypothermia,
-      coxInhibitorTherapy: patientForm.coxInhibitorTherapy,
-      severeSepsisOrHighRiskInfection: patientForm.severeSepsisOrHighRiskInfection,
-    };
+    const candidate = buildPatientInput(patientForm);
     const validated = validatePatientInput(candidate);
     if (!validated.success) {
       setPatientErrors(issuesByField(validated.issues));
@@ -403,36 +490,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             <h2 className="text-xl font-semibold text-text">Data kasus</h2>
             <p className="mt-1 text-xs leading-relaxed text-text-muted">Semua field klinis hanya berada dalam memori tab ini.</p>
             <div className="mt-5 grid gap-4">
-              <Field id="patient-label" label="Label kasus / kode pasien (opsional)" value={patientForm.patientLabel} onChange={(value) => updatePatient("patientLabel", value)} maxLength={60} error={patientErrors.patientLabel} helper="Label kasus non-identifying; jangan masukkan nama, nomor rekam medis, NIK, tanggal lahir, atau identitas pasien." />
-              <div>
-                <label htmlFor="antibiotic" className="block text-sm font-medium text-text">Antibiotik <span className="text-error">*</span></label>
-                <select id="antibiotic" value={patientForm.antibiotic} onChange={(event) => updatePatient("antibiotic", event.target.value as Antibiotic)} className="mt-1.5 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
-                  {Object.entries(ANTIBIOTIC_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field id="ga" label="Usia gestasi lahir (minggu lengkap)" type="number" min="22" max="43" step="1" required value={patientForm.gestationalAgeWeeks} onChange={(value) => updatePatient("gestationalAgeWeeks", value)} error={patientErrors.gestationalAgeWeeks} />
-                <Field id="ga-days" label="Tambahan usia gestasi (hari, opsional)" type="number" min="0" max="6" step="1" value={patientForm.gestationalAgeDays} onChange={(value) => updatePatient("gestationalAgeDays", value)} error={patientErrors.gestationalAgeDays} />
-                <Field id="pna" label="Usia pascalahir (hari)" type="number" min="0" max="28" step="1" required value={patientForm.postnatalAgeDays} onChange={(value) => updatePatient("postnatalAgeDays", value)} error={patientErrors.postnatalAgeDays} />
-                <Field id="weight" label="Berat badan saat ini (kg)" type="number" min="0.301" max="10" step="0.001" required value={patientForm.currentWeightKg} onChange={(value) => updatePatient("currentWeightKg", value)} error={patientErrors.currentWeightKg} />
-              </div>
-              <fieldset className="rounded-xl border border-border p-4">
-                <legend className="px-1 text-sm font-semibold text-text">Fungsi ginjal</legend>
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-text"><input type="checkbox" className="h-5 w-5 accent-primary" checked={patientForm.renalDataAvailable} onChange={(event) => { const available = event.target.checked; setPatientForm((current) => ({ ...current, renalDataAvailable: available, serumCreatinineMgDl: available ? current.serumCreatinineMgDl : "", urineOutputMlKgHour: available ? current.urineOutputMlKgHour : "" })); setResult(null); setEvaluation(null); }} />Data fungsi ginjal tersedia</label>
-                {!patientForm.renalDataAvailable && <p className="mt-2 text-xs leading-relaxed text-warning">Fungsi ginjal normal tidak akan diasumsikan bila data tidak tersedia.</p>}
-                <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <Field id="scr" label="SCr (mg/dL)" type="number" min="0" max="10" step="0.01" required={patientForm.renalDataAvailable} disabled={!patientForm.renalDataAvailable} value={patientForm.serumCreatinineMgDl} onChange={(value) => updatePatient("serumCreatinineMgDl", value)} error={patientErrors.serumCreatinineMgDl} />
-                  <Field id="uop" label="UOP (mL/kg/jam)" type="number" min="0" max="10" step="0.01" disabled={!patientForm.renalDataAvailable} value={patientForm.urineOutputMlKgHour} onChange={(value) => updatePatient("urineOutputMlKgHour", value)} error={patientErrors.urineOutputMlKgHour} helper="Opsional, tetapi sangat dianjurkan." />
-                </div>
-              </fieldset>
-              <fieldset className="space-y-2 rounded-xl border border-border p-4">
-                <legend className="px-1 text-sm font-semibold text-text">Konteks klinis</legend>
-                {([
-                  ["therapeuticHypothermia", "Hipotermia terapeutik / HIE"],
-                  ["coxInhibitorTherapy", "Terapi indometasin atau ibuprofen (COX inhibitor)"],
-                  ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
-                ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && patientForm.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={patientForm[key]} onChange={(event) => updatePatient(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
-              </fieldset>
+              <PatientCaseFields prefix="rec" form={patientForm} errors={patientErrors} onChange={updatePatient} />
               <Button type="button" onClick={() => void calculate()} disabled={isCalculating} className="min-h-12 rounded-xl">{isCalculating ? <LoaderCircle className="animate-spin" size={18} /> : <Calculator size={18} />}{isCalculating ? "Menghitung…" : "Hitung rekomendasi"}</Button>
             </div>
           </div>
