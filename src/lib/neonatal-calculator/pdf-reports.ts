@@ -14,7 +14,7 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
   const pageWidth=595,pageHeight=842,margin=47;
   const pages:ReportLine[][]=[];let current:ReportLine[]=[];let cursor=0;
   const wrapped=(line:ReportLine):ReportLine[]=>{
-    const max=line.heading?65:93, words=clean(line.text).split(" ");let result:string[]=[];let part="";
+    const max=line.heading?65:93, words=clean(line.text).split(" ");const result:string[]=[];let part="";
     for(const word of words){if(part.length+word.length+1>max && part){result.push(part);part="";}part=part?part+" "+word:word;}
     if(part)result.push(part);return result.map((text,i)=>({...line,text,heading:line.heading&&i===0}));
   };
@@ -54,7 +54,7 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
   }
   objects[catalog-1]="<< /Type /Catalog /Pages "+pageTree+" 0 R >>";
   objects[pageTree-1]="<< /Type /Pages /Kids ["+kids.map(i=>i+" 0 R").join(" ")+"] /Count "+kids.length+" >>";
-  let doc="%PDF-1.4\n", offsets=[0];
+  let doc="%PDF-1.4\n";const offsets=[0];
   for(let i=0;i<objects.length;i++){offsets.push(encoder.encode(doc).length);doc+=(i+1)+" 0 obj\n"+objects[i]+"\nendobj\n";}
   const start=encoder.encode(doc).length;
   doc+="xref\n0 "+(objects.length+1)+"\n0000000000 65535 f \n";
