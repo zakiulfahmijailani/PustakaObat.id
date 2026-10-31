@@ -32,7 +32,7 @@ describe("representative explicit recommendation fixtures", () => {
           minTotalMg: 7.5,
           maxTotalMg: 11.25,
         },
-        interval: { kind: "discrete", allowedHours: [24, 48], label: "q24h atau q48h" },
+        interval: { kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" },
         notes: [
           "SPO yang digunakan tidak mencantumkan stratifikasi resmi berdasarkan usia gestasi atau usia pascalahir.",
         ],
