@@ -198,7 +198,7 @@ function formatEvaluationIntervalRange(minHours: number | null, maxHours: number
   return minHours === maxHours ? `q${minHours}h` : `q${minHours}h–q${maxHours}h`;
 }
 
-function EvaluationCard({ target }: { target: RecommendationEvaluation }) {
+function EvaluationCard({ target, showManual = true }: { target: RecommendationEvaluation; showManual?: boolean }) {
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 print-break-inside-avoid">
       <h3 className="text-lg font-semibold text-text">{target.recommendationLabel}</h3>
@@ -211,14 +211,14 @@ function EvaluationCard({ target }: { target: RecommendationEvaluation }) {
           <dt className="font-semibold text-text">Interval aktual</dt>
           <dd className="mt-1 text-text-muted"><strong className="capitalize text-text">{target.actualInterval.status.replaceAll("-", " ")}</strong> — {target.actualInterval.message}</dd>
         </div>
-        <div className="rounded-xl bg-surface-2 p-3">
+        {showManual && <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Rentang manual vs dosis</dt>
           <dd className="mt-1 space-y-1 text-text-muted"><div>Batas bawah: <Direction comparison={target.manualDose.lowerBound} /></div>{!target.manualDose.fixedRecommendation && <div>Batas atas: <Direction comparison={target.manualDose.upperBound} /></div>}</dd>
-        </div>
-        <div className="rounded-xl bg-surface-2 p-3">
+        </div>}
+        {showManual && <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Rentang manual vs interval</dt>
           <dd className="mt-1 space-y-1 text-text-muted"><div>Batas bawah: <Direction comparison={target.manualInterval.lowerBound} /></div>{!target.manualInterval.fixedRecommendation && <div>Batas atas: <Direction comparison={target.manualInterval.upperBound} /></div>}</dd>
-        </div>
+        </div>}
       </dl>
     </article>
   );
@@ -543,6 +543,8 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             <p className="mt-1 text-xs leading-relaxed text-text-muted">Semua field klinis hanya berada dalam memori tab ini.</p>
             <div className="mt-5 grid gap-4">
               <PatientCaseFields prefix="rec" form={patientForm} errors={patientErrors} onChange={updatePatient} />
+              {formMessage === "recommendation" && <p role="status" className="rounded-lg border border-info/30 bg-info/10 p-3 text-sm text-info">INFORMASI: Formulir siap untuk pasien baru.</p>}
+              <Button type="button" variant="outline" onClick={() => resetCase("recommendation")}>Pasien Baru</Button>
               <Button type="button" onClick={() => void calculate()} disabled={isCalculating} className="min-h-12 rounded-xl">{isCalculating ? <LoaderCircle className="animate-spin" size={18} /> : <Calculator size={18} />}{isCalculating ? "Menghitung…" : "Hitung rekomendasi"}</Button>
             </div>
           </div>
@@ -557,12 +559,9 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.pmaWeeks.toFixed(1)} minggu</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
-                {result.globalWarnings.map((warning) => <Warning key={warning.code} warning={warning} />)}
-                <div className="grid gap-4 xl:grid-cols-3">
-                  <RecommendationCard recommendation={result.recommendations.institutionalPrimary} />
-                  <RecommendationCard recommendation={result.recommendations.institutionalAgeComparator} />
-                  <RecommendationCard recommendation={result.recommendations.anmf2024} />
-                </div>
+                <SortedWarnings warnings={[...result.globalWarnings, ...result.recommendations.institutionalPrimary.warnings, ...result.recommendations.anmf2024.warnings]} />
+                <RecommendationTable calculated={result} />
+                <WarningLegend />
                 <details className="rounded-2xl border border-border bg-surface p-4">
                   <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Catatan Referensi Tambahan</summary>
                   <p className="mb-3 text-sm text-warning">Catatan kualitatif saja; tidak digunakan sebagai nomogram dosis.</p>
@@ -576,74 +575,55 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             )}
           </div>
         </div>
+        {recommendationHistory.length > 0 && <details className="mt-5 rounded-2xl border border-border bg-surface p-4 print-hide">
+          <summary className="cursor-pointer font-semibold">Riwayat Rekomendasi Dosis ({recommendationHistory.length})</summary>
+          <div className="mt-3 overflow-x-auto"><table className="min-w-[550px] w-full text-left text-sm"><thead><tr><th>Kode pasien</th><th>Antibiotik</th><th>Usia lahir</th><th>Berat</th><th>Dosis RS</th><th>Dosis Literatur</th></tr></thead><tbody>{recommendationHistory.map((entry, index)=><tr key={index} className="border-t border-border"><td className="py-2">{entry.input.patientLabel ?? `Pasien ${index+1}`}</td><td>{ANTIBIOTIC_LABELS[entry.input.antibiotic]}</td><td>{entry.input.gestationalAgeWeeks} minggu {entry.input.gestationalAgeDays ?? 0} hari</td><td>{formatNumber(entry.input.currentWeightKg)} kg</td><td>{formatNumber(entry.recommendations.institutionalPrimary.dose.minTotalMg ?? 0)} mg</td><td>{formatNumber(entry.recommendations.anmf2024.dose.minTotalMg ?? 0)} mg</td></tr>)}</tbody></table></div>
+        </details>}
       </section>
 
       <section id="evaluation-panel" role="tabpanel" aria-labelledby="evaluation-tab" hidden={tab !== "evaluation"} className="print-evaluation">
-        {!result ? (
-          <div className="rounded-2xl border border-warning/30 bg-warning/10 p-6 text-sm text-text"><strong>Hitung rekomendasi terlebih dahulu.</strong> Tab evaluasi menggunakan data pasien dan antibiotik dari hasil aktif.</div>
-        ) : (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)]">
-            <div className="rounded-2xl border border-border bg-surface p-5 print-hide">
-              <h2 className="text-xl font-semibold text-text">Regimen yang dievaluasi</h2>
-              <dl className="mt-3 rounded-xl bg-surface-2 p-3 text-sm">
-                <div>
-                  <dt className="text-text-muted">Antibiotik yang dievaluasi</dt>
-                  <dd className="font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}</dd>
-                </div>
-              </dl>
-              <p className="mt-2 text-xs leading-relaxed text-text-muted">Antibiotik dan data pasien digunakan dari hasil rekomendasi aktif. Ubah keduanya pada tab Rekomendasi Dosis lalu hitung ulang bila diperlukan.</p>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {([
-                  ["manualDoseMinMg", "Dosis manual minimum (mg)", "0.001"],
-                  ["manualDoseMaxMg", "Dosis manual maksimum (mg)", "0.001"],
-                  ["manualIntervalMinHours", "Interval manual minimum / paling sering (jam)", "1"],
-                  ["manualIntervalMaxHours", "Interval manual maksimum / paling jarang (jam)", "1"],
-                  ["actualDoseMg", "Dosis aktual diberikan (mg)", "0.001"],
-                  ["actualIntervalHours", "Interval aktual diberikan (jam)", "1"],
-                ] as const).map(([key, label, step]) => { const intervalField = key.toLowerCase().includes("interval"); return <Field key={key} id={key} label={label} type="number" min="0.001" step={step} required={!intervalField || activeIntervalsRequired} disabled={intervalField && !activeIntervalsRequired} helper={intervalField && !activeIntervalsRequired ? "Tidak diperlukan pada jalur dosis tunggal; dosis berikutnya menunggu kadar dan evaluasi klinis." : undefined} value={evaluationForm[key]} onChange={(value) => { setEvaluationForm((current) => ({ ...current, [key]: value })); setEvaluation(null); setEvaluationErrors((current) => ({ ...current, [key]: "" })); }} error={evaluationErrors[key]} />; })}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]">
+          <div className="rounded-2xl border border-border bg-surface p-5 print-hide">
+            <h2 className="text-xl font-semibold">Data pasien — Evaluasi Pemberian</h2>
+            <p className="mt-1 text-sm text-text-muted">Formulir ini berdiri sendiri. Rekomendasi Dosis tidak perlu dihitung lebih dulu.</p>
+            <div className="mt-4 space-y-4">
+              <PatientCaseFields prefix="eval" form={evaluationPatientForm} errors={evaluationPatientErrors} onChange={updateEvaluationPatient} />
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={copyPatientFromRecommendation}>Salin data pasien dari Rekomendasi Dosis</Button>
+                <Button type="button" variant="outline" onClick={() => resetCase("evaluation")}>Pasien Baru</Button>
               </div>
-              <Button type="button" onClick={runEvaluation} className="mt-5 min-h-12 w-full rounded-xl"><CheckCircle2 size={18} />Evaluasi regimen</Button>
-            </div>
-            <div className="space-y-4">
-              {!evaluation ? (
-                <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-text-muted print-hide">Masukkan dosis dan interval manual serta aktual untuk melihat perbandingan tiga sumber secara terpisah.</div>
-              ) : (
-                <>
-                  <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-primary">Hasil evaluasi aktif</p>
-                        <h2 className="text-xl font-semibold text-text">Evaluasi Pemberian — {ANTIBIOTIC_LABELS[result.input.antibiotic]}</h2>
-                      </div>
-                      <Button type="button" variant="outline" onClick={printReport} className="print-hide">
-                        <Printer size={17} />Cetak / Simpan sebagai PDF
-                      </Button>
-                    </div>
-                    <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                      <div>
-                        <dt className="text-text-muted">Rentang dosis manual</dt>
-                        <dd className="font-semibold text-text">{formatNumber(evaluation.input.manualDoseMinMg)}–{formatNumber(evaluation.input.manualDoseMaxMg)} mg</dd>
-                      </div>
-                      <div>
-                        <dt className="text-text-muted">Dosis aktual</dt>
-                        <dd className="font-semibold text-text">{formatNumber(evaluation.input.actualDoseMg)} mg</dd>
-                      </div>
-                      <div>
-                        <dt className="text-text-muted">Rentang interval manual</dt>
-                        <dd className="font-semibold text-text">{formatEvaluationIntervalRange(evaluation.input.manualIntervalMinHours, evaluation.input.manualIntervalMaxHours)}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-text-muted">Interval aktual</dt>
-                        <dd className="font-semibold text-text">{formatEvaluationInterval(evaluation.input.actualIntervalHours)}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                  {evaluation.targets.map((target) => <EvaluationCard key={target.recommendationId} target={target} />)}
-                </>
-              )}
+              {formMessage === "evaluation" && <p role="status" className="rounded-lg border border-info/30 bg-info/10 p-3 text-sm text-info">INFORMASI: Formulir siap untuk pasien baru.</p>}
+              <Field id="eval-actual-dose" type="number" step="0.001" min="0.001" label="Dosis aktual per pemberian (mg)" required value={evaluationForm.actualDoseMg} error={evaluationErrors.actualDoseMg} onChange={v => { setEvaluationForm(p=>({...p, actualDoseMg:v}));setEvaluation(null); }} />
+              <Field id="eval-actual-hours" type="number" step="1" min="1" max="96" label="Frekuensi aktual — diberikan setiap ... jam" required={activeIntervalsRequired} value={evaluationForm.actualIntervalHours} error={evaluationErrors.actualIntervalHours} onChange={v => { setEvaluationForm(p=>({...p, actualIntervalHours:v}));setEvaluation(null); }} />
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-primary" checked={manualEnabled} onChange={e=>{setManualEnabled(e.target.checked);setEvaluation(null);}} />Saya punya hasil hitung manual sebagai pembanding (opsional)</label>
+              {manualEnabled && <div className="grid gap-3 rounded-xl border border-border p-4 sm:grid-cols-2">
+                {([
+                  ["manualDoseMinMg", "Dosis manual batas bawah (mg)", "0.001"],
+                  ["manualDoseMaxMg", "Dosis manual batas atas (mg)", "0.001"],
+                  ["manualIntervalMinHours", "Frekuensi manual paling sering — tiap ... jam", "1"],
+                  ["manualIntervalMaxHours", "Frekuensi manual paling jarang — tiap ... jam", "1"],
+                ] as const).map(([key,label,step]) => <Field key={key} id={`eval-${key}`} label={label} type="number" min="0.001" step={step} required value={evaluationForm[key]} error={evaluationErrors[key]} onChange={v=>{setEvaluationForm(p=>({...p,[key]:v}));setEvaluation(null);}} />)}
+              </div>}
+              <Button type="button" className="w-full" onClick={runEvaluation}><CheckCircle2 size={17}/> Evaluasi Pemberian</Button>
             </div>
           </div>
-        )}
+          <div className="space-y-4">
+            {!evaluation || !evaluationResult ? <div className="rounded-2xl border border-dashed border-border p-8 text-center text-text-muted">Isi data pasien dan dosis aktual, lalu pilih Evaluasi Pemberian.</div> : <>
+              <div className="rounded-2xl border border-border bg-surface p-4"><h2 className="text-lg font-semibold">Evaluasi Pemberian — {ANTIBIOTIC_LABELS[evaluationResult.input.antibiotic]}</h2>
+                <p className="mt-2 text-xs text-text-muted">Kode pasien: {evaluationResult.input.patientLabel ?? "Tanpa kode"} · {evaluationResult.input.gestationalAgeWeeks} minggu {evaluationResult.input.gestationalAgeDays ?? 0} hari · {evaluationResult.input.postnatalAgeDays} hari pascalahir</p>
+                <div className="mt-3"><WarningLegend /></div>
+              </div>
+              <SortedWarnings warnings={[...evaluationResult.globalWarnings, ...evaluationResult.recommendations.institutionalPrimary.warnings, ...evaluationResult.recommendations.anmf2024.warnings]} />
+              {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
+                <EvaluationCard key={target.recommendationId} target={target} showManual={manualEnabled} />
+              )}
+            </>}
+          </div>
+        </div>
+        {evaluationHistory.length > 0 && <details className="mt-5 rounded-2xl border border-border bg-surface p-4 print-hide">
+          <summary className="cursor-pointer font-semibold">Riwayat Evaluasi Pemberian ({evaluationHistory.length})</summary>
+          <div className="mt-3 overflow-x-auto"><table className="min-w-[480px] w-full text-left text-sm"><thead><tr><th>Kode pasien</th><th>Antibiotik</th><th>Dosis aktual</th><th>Interval</th><th>Perbandingan RS</th><th>Perbandingan Literatur</th></tr></thead><tbody>{evaluationHistory.map((entry, index)=><tr key={index} className="border-t border-border"><td className="py-2">{entry.patient.input.patientLabel ?? `Pasien ${index+1}`}</td><td>{ANTIBIOTIC_LABELS[entry.patient.input.antibiotic]}</td><td>{formatNumber(entry.evaluation.input.actualDoseMg)} mg</td><td>{entry.evaluation.input.actualIntervalHours ?? "–"} jam</td><td>{entry.evaluation.targets[0]?.actualDose.status}</td><td>{entry.evaluation.targets[2]?.actualDose.status}</td></tr>)}</tbody></table></div>
+        </details>}
       </section>
 
       <section id="batch-panel" role="tabpanel" aria-labelledby="batch-tab" hidden={tab !== "batch"}>
