@@ -12,6 +12,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { buildRecommendationPdf, buildEvaluationPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import { BatchCalculator } from "./BatchCalculator";
 import {
   ANTIBIOTIC_LABELS,
@@ -486,6 +487,14 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
     setGeneratedAt(new Date().toLocaleString("id-ID"));
     window.requestAnimationFrame(() => window.print());
   };
+  const downloadRecommendation = () => {
+    if (!result) return;
+    downloadPdf(buildRecommendationPdf(result), "rekomendasi-neonatus.pdf");
+  };
+  const downloadEvaluation = () => {
+    if (!evaluationResult || !evaluation) return;
+    downloadPdf(buildEvaluationPdf(evaluationResult, evaluation, manualEnabled), "evaluasi-neonatus.pdf");
+  };
 
   const renalStatusLabel =
     result?.renalStatus === "data-unavailable"
@@ -555,7 +564,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             ) : (
               <div className="space-y-5" aria-live="polite">
                 <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
-                  <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2></div><Button type="button" variant="outline" onClick={printReport} className="print-hide"><Printer size={17} />Cetak / Simpan sebagai PDF</Button></div>
+                  <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2></div><div className="flex gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadRecommendation}>Unduh PDF Rekomendasi Dosis</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} />Cetak</Button></div></div>
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.pmaWeeks.toFixed(1)} minggu</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
@@ -613,6 +622,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 <p className="mt-2 text-xs text-text-muted">Kode pasien: {evaluationResult.input.patientLabel ?? "Tanpa kode"} · {evaluationResult.input.gestationalAgeWeeks} minggu {evaluationResult.input.gestationalAgeDays ?? 0} hari · {evaluationResult.input.postnatalAgeDays} hari pascalahir</p>
                 <div className="mt-3"><WarningLegend /></div>
               </div>
+              <Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button>
               <SortedWarnings warnings={[...evaluationResult.globalWarnings, ...evaluationResult.recommendations.institutionalPrimary.warnings, ...evaluationResult.recommendations.anmf2024.warnings]} />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
                 <EvaluationCard key={target.recommendationId} target={target} showManual={manualEnabled} />
