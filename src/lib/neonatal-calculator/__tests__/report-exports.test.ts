@@ -25,6 +25,43 @@ describe("PDF laporan neonatal", () => {
     expect(decode(buildEvaluationPdf(result,evaluation,false))).not.toContain("Manual dosis:");
     expect(decode(buildEvaluationPdf(result,evaluation,true))).toContain("Manual dosis:");
   });
+  it("menempatkan dosis, frekuensi, dan hasil evaluasi pada kolom rujukan yang benar", () => {
+    const result = calculateRecommendations(patient({
+      antibiotic: "amikasin", gestationalAgeWeeks: 30, postnatalAgeDays: 4, currentWeightKg: 1.38,
+    }));
+    const evaluation = evaluateRegimen(result, {
+      actualDoseMg: 21, actualIntervalHours: 24, manualDoseMinMg: 21, manualDoseMaxMg: 21,
+      manualIntervalMinHours: 24, manualIntervalMaxHours: 24,
+    });
+    const text = decode(buildEvaluationPdf(result, evaluation, true));
+    const cells = [...text.matchAll(/([\d.]+) ([\d.]+) Td\n\((.*)\) Tj/g)];
+    const column = (left: number, right: number) => cells.filter(match => Number(match[1]) >= left && Number(match[1]) < right)
+      .map(match => match[3].replace(/\\([\\()])/g, "$1")).join(" ");
+    const rs = column(166, 353), literature = column(361, 548);
+    expect(rs).toContain("20,7 mg");
+    expect(rs).toContain("tiap 24 jam");
+    expect(rs).toContain("Berlebih (+0,3 mg; +1,4%)");
+    expect(literature).toContain("16,56 mg");
+    expect(literature).toContain("tiap 36 jam");
+    expect(literature).toContain("Berlebih (+4,44 mg; +26,8%)");
+    for (const target of evaluation.targets.filter(target => [result.recommendations.institutionalPrimary.id, result.recommendations.anmf2024.id].includes(target.recommendationId))) {
+      const actualColumn = target.recommendationId === result.recommendations.institutionalPrimary.id ? rs : literature;
+      expect(actualColumn).toContain(target.actualInterval.message);
+      expect(actualColumn).toContain(target.manualDose.summary);
+      expect(actualColumn).toContain(target.manualInterval.summary);
+    }
+  });
+
+  it("mengulang judul kolom saat isi tabel panjang berlanjut dan mempertahankan setiap kata", () => {
+    const result = calculateRecommendations(patient());
+    const markers = Array.from({ length: 500 }, (_, index) => `CATATAN${String(index).padStart(3, "0")}`);
+    result.recommendations.anmf2024.notes.push(markers.join(" ") + " " + "Z".repeat(400));
+    const text = decode(buildRecommendationPdf(result));
+    expect(text).toContain("Rekomendasi dosis \\(lanjutan\\)");
+    expect((text.match(/\(Pedoman Rumah Sakit\) Tj/g) ?? []).length).toBeGreaterThan(1);
+    for (const marker of markers) expect(text).toContain(marker);
+    expect((text.match(/Z/g) ?? []).length).toBeGreaterThanOrEqual(400);
+  });
   it("menghasilkan ringkasan batch PDF", () => {
     const batch=processBatchTable([BATCH_COLUMNS,[
       "P-01","Gentamisin",32,0,5,1.5,0.4,2,"Tidak","Tidak","Tidak",

@@ -1,5 +1,13 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — recommendation and evaluation tables in patient PDFs
+
+- Present recommendation dose, frequency, source, and clinical notes in a table comparing the primary hospital guideline with ANMF 2024. Add a separate evaluation table with actual dose/frequency comparisons and optional manual comparisons under the same reference columns.
+- Wrap text within padded cells, keep ordinary rows together, and repeat the table title and column headers on continuation pages. Split rows exceeding a whole page without losing text. Keep short paragraphs, including the clinical disclaimer, together.
+- Preserve the clinical warning boxes, calculation rules, numeric results, reference messages, and workbook output. For an unavailable actual interval, display `Tidak tersedia` without appending a time unit.
+- Verification: all 263 tests pass, including notebook parity for every public patient-result cell. PDF checks cover 65 documents (81 pages): all 30 valid fixture cases in both report types, colored warnings, long notes, and long tokens. Dose/frequency and evaluation text match the frozen source in the correct reference column; cell padding and page bounds pass. Representative patient reports and continuation pages were visually inspected.
+- Production build, type checks, and changed-source lint pass. Three local-browser downloads (recommendation, evaluation without manual comparisons, and evaluation with manual comparisons) contain extractable tables with the expected values and no page errors. No production publication was performed.
+
 ## 2026-11-03 — colored warning boxes in patient PDFs
 
 - Render recommendation/evaluation clinical warnings in red PERINGATAN, yellow PERHATIAN, or blue INFORMASI boxes with the screen's status palette. Include warning titles, sort by severity, and show identical warning content once.

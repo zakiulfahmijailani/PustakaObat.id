@@ -5,8 +5,12 @@ import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, format
 import type { CalculatorResult, ClinicalWarning, RegimenEvaluationResult, Recommendation } from "./types";
 
 type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title"> };
+type ReportCell = { text: string; color?: ReportLine["color"] };
+type ReportTable = { table: { title: string; columns: { text: string; width: number }[]; rows: ReportCell[][] } };
+type ReportItem = ReportLine | ReportTable;
 type PdfRow = { text: string; fontSize: number; bold: boolean; leading: number; gap?: number };
-type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: ClinicalWarning["severity"] };
+type PdfCell = { rows: PdfRow[]; width: number; color?: ReportLine["color"] };
+type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: ClinicalWarning["severity"]; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
 // Standard Helvetica advance widths for printable ASCII, in 1/1000 em (Adobe font metrics).
 const HELVETICA_WIDTHS = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
 const HELVETICA_BOLD_WIDTHS = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
@@ -41,19 +45,53 @@ function wrapText(text: string, width: number, fontSize: number, bold = false): 
   if (current) lines.push(current);
   return lines;
 }
-function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
+function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
   // Small, offline PDF writer. Every file is a real PDF, not an HTML print fallback.
   const pageWidth=595,pageHeight=842,margin=47;
   const bodyTop = pageHeight - margin - 28, capacity = bodyTop - margin, contentWidth = pageWidth - 2 * margin;
   const padding = 10, afterBox = 8;
   const blocks: PdfBlock[] = [];
   let layoutCursor = 0;
-  const appendBlock = (block: PdfBlock) => {
-    if (layoutCursor + block.height > capacity) layoutCursor = 0;
+  const appendBlock = (block: PdfBlock, newPage = false) => {
+    if (newPage || layoutCursor + block.height > capacity) { layoutCursor = 0; block.pageBreakBefore = true; }
     blocks.push(block); layoutCursor += block.height;
   };
   for(const line of lines){
-    if (line.warning) {
+    if ("table" in line) {
+      const table = line.table, cellPadding = 8, leading = 13, fontSize = 9.5;
+      const makeCells = (values: ReportCell[], bold: boolean): PdfCell[] => table.columns.map((column, index) => ({
+        width: column.width, color: values[index]?.color,
+        rows: wrapText(values[index]?.text ?? "", column.width - 2 * cellPadding, fontSize, bold)
+          .map(text => ({ text, fontSize, bold, leading })),
+      }));
+      const header = makeCells(table.columns.map(column => ({ text: column.text })), true);
+      const headerHeight = Math.max(1, ...header.map(cell => cell.rows.length)) * leading + 2 * cellPadding;
+      const titleHeight = 24;
+      const startTable = (minimumBodyHeight: number, continued: boolean) => {
+        appendBlock({ rows: [{ text: table.title + (continued ? " (lanjutan)" : ""), fontSize: 11, bold: true, leading: titleHeight }], height: titleHeight },
+          layoutCursor + titleHeight + headerHeight + minimumBodyHeight > capacity);
+        appendBlock({ rows: [], cells: header, tableHeader: true, height: headerHeight });
+      };
+      let started = false;
+      for (const values of table.rows) {
+        const cells = makeCells(values, false);
+        const rowCount = Math.max(1, ...cells.map(cell => cell.rows.length));
+        const maxRowLines = Math.floor((capacity - titleHeight - headerHeight - 2 * cellPadding) / leading);
+        const oversized = rowCount > maxRowLines;
+        let offset = 0;
+        while (offset < rowCount) {
+          const minimumLines = oversized ? 1 : rowCount;
+          const minimumHeight = minimumLines * leading + 2 * cellPadding;
+          if (!started || layoutCursor + minimumHeight > capacity) {
+            startTable(minimumHeight, started); started = true;
+          }
+          const count = Math.min(rowCount - offset, Math.floor((capacity - layoutCursor - 2 * cellPadding) / leading));
+          appendBlock({ rows: [], cells: cells.map(cell => ({ ...cell, rows: cell.rows.slice(offset, offset + count) })), height: count * leading + 2 * cellPadding });
+          offset += count;
+        }
+      }
+      if (capacity - layoutCursor >= 8) appendBlock({ rows: [], height: 8 });
+    } else if (line.warning) {
       const { severity, title: warningTitle } = line.warning;
       const label = WARNING_STYLES[severity].label;
       const heading = label + ":" + (warningTitle ? " " + warningTitle + (/[.!?]$/.test(warningTitle) ? "" : ".") : "");
@@ -83,14 +121,19 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
       }
     } else {
       const fontSize = line.heading ? 12 : 9.5, leading = line.heading ? 24 : 16;
-      for (const text of wrapText(line.text, contentWidth, fontSize))
-        appendBlock({ rows: [{ text, fontSize, bold: false, leading }], height: leading, color: line.color });
+      const wrapped = wrapText(line.text, contentWidth, fontSize);
+      const maxRows = Math.floor(capacity / leading);
+      // Keep short paragraphs intact, including the clinical disclaimer at the end.
+      for (let offset = 0; offset < wrapped.length; offset += maxRows) {
+        const rows = wrapped.slice(offset, offset + maxRows).map(text => ({ text, fontSize, bold: false, leading }));
+        appendBlock({ rows, height: rows.length * leading, color: line.color });
+      }
     }
   }
   const pages: PdfBlock[][] = [];
   let current: PdfBlock[] = [], cursor = 0;
   for (const block of blocks) {
-    if (current.length && cursor + block.height > capacity) { pages.push(current); current = []; cursor = 0; }
+    if (current.length && (block.pageBreakBefore || cursor + block.height > capacity)) { pages.push(current); current = []; cursor = 0; }
     current.push(block); cursor += block.height;
   }
   if(current.length||!pages.length)pages.push(current);
@@ -107,6 +150,22 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
     ];
     y=bodyTop;
     for(const block of pages[p]){
+      if (block.cells) {
+        let cellX = margin;
+        for (const cell of block.cells) {
+          const fill = block.tableHeader ? "0.91 0.95 0.94" : "1 1 1";
+          items.push("q", fill + " rg", "0.72 0.79 0.79 RG", "0.5 w", `${cellX} ${y - block.height} ${cell.width} ${block.height} re B`, "Q");
+          let cellTop = y - 8;
+          for (const row of cell.rows) {
+            const color = cell.color ? colors[cell.color] : "0.12 0.18 0.2";
+            items.push("BT", `/${row.bold ? "F2" : "F1"} ${row.fontSize} Tf`, color + " rg", `${cellX + 8} ${cellTop - row.fontSize} Td`, "(" + escapePdf(row.text) + ") Tj", "ET");
+            cellTop -= row.leading;
+          }
+          cellX += cell.width;
+        }
+        y -= block.height;
+        continue;
+      }
       let top = y;
       let color = block.color ? colors[block.color] : "0.12 0.18 0.2";
       let x = margin;
@@ -139,10 +198,25 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
   doc+="trailer\n<< /Size "+(objects.length+1)+" /Root "+catalog+" 0 R >>\nstartxref\n"+start+"\n%%EOF";
   return encoder.encode(doc);
 }
-function recLine(label:string,rec:Recommendation):ReportLine[]{
+function doseText(rec:Recommendation): string {
   const dose=rec.dose.minTotalMg===rec.dose.maxTotalMg?formatNumber(rec.dose.minTotalMg??0):formatNumber(rec.dose.minTotalMg??0)+"-"+formatNumber(rec.dose.maxTotalMg??0);
-  const hours=rec.interval.kind==="single"?"tiap "+rec.interval.hours+" jam":rec.interval.kind==="continuous-range"?"tiap "+rec.interval.minHours+"-"+rec.interval.maxHours+" jam":rec.interval.kind==="single-dose-only"?"Dosis tunggal (bukan rutin)":rec.interval.allowedHours.map(n=>"tiap "+n+" jam").join(" atau ");
-  return [{text:label,heading:true},{text:"Dosis per pemberian: "+dose+" mg; Frekuensi: "+hours},{text:rec.provenanceDetail},...rec.notes.map(text=>({text}))];
+  return dose + " mg";
+}
+function intervalText(rec:Recommendation): string {
+  return rec.interval.kind==="single"?"tiap "+rec.interval.hours+" jam":rec.interval.kind==="continuous-range"?"tiap "+rec.interval.minHours+"-"+rec.interval.maxHours+" jam":rec.interval.kind==="single-dose-only"?"Dosis tunggal (bukan rutin)":rec.interval.allowedHours.map(n=>"tiap "+n+" jam").join(" atau ");
+}
+const recommendationColumns = [
+  { text: "Parameter", width: 111 },
+  { text: "Pedoman Rumah Sakit", width: 195 },
+  { text: "Literatur Terkini - ANMF 2024", width: 195 },
+];
+function recommendationTable(calculated: CalculatorResult): ReportTable {
+  const refs = [calculated.recommendations.institutionalPrimary, calculated.recommendations.anmf2024];
+  const row = (label: string, value: (rec: Recommendation) => string): ReportCell[] => [{ text: label }, ...refs.map(rec => ({ text: value(rec) }))];
+  return { table: { title: "Rekomendasi dosis", columns: recommendationColumns, rows: [
+    row("Dosis per pemberian", doseText), row("Frekuensi pemberian", intervalText),
+    row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
+  ] } };
 }
 function patientLines(calculated:CalculatorResult):ReportLine[]{
   const p=calculated.input;
@@ -165,27 +239,26 @@ const footer:ReportLine[]=[{text:"Versi aturan: "+CALCULATOR_RULE_VERSION},{text
 export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
   return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",[
     ...patientLines(calculated),
-    ...recLine("Pedoman Rumah Sakit",calculated.recommendations.institutionalPrimary),
-    ...recLine("Literatur Terkini - ANMF 2024",calculated.recommendations.anmf2024),
+    recommendationTable(calculated),
     ...footer
   ]);
 }
 export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean):Uint8Array{
   const refs=[calculated.recommendations.institutionalPrimary,calculated.recommendations.anmf2024];
-  const lines:ReportLine[]=[...patientLines(calculated),
-    {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+String(evaluation.input.actualIntervalHours??"Tidak tersedia")+" jam",heading:true}];
-  for(const rec of refs){
-    lines.push(...recLine(rec.label,rec));
-    const target=evaluation.targets.find(t=>t.recommendationId===rec.id);
-    if(target){
-      lines.push({text:"Dosis aktual: "+target.actualDose.status+" - "+target.actualDose.message,color:target.actualDose.status==="berlebih"?"red":target.actualDose.status==="kurang"?"orange":"green"});
-      lines.push({text:"Frekuensi aktual: "+target.actualInterval.status+" - "+target.actualInterval.message});
-      if(manualEnabled){
-        lines.push({text:"Manual dosis: "+(target.manualDose.summary??target.manualDose.lowerBound?.message??"Tidak tersedia")});
-        lines.push({text:"Manual interval: "+(target.manualInterval.summary??target.manualInterval.lowerBound?.message??"Tidak tersedia")});
-      }
-    }
-  }
+  const targets = refs.map(rec => evaluation.targets.find(target => target.recommendationId === rec.id));
+  const rows: ReportCell[][] = [
+    [{ text: "Dosis aktual:" }, ...targets.map(target => ({ text: target ? target.actualDose.status + " - " + target.actualDose.message : "Tidak tersedia", color: target?.actualDose.status === "berlebih" ? "red" as const : target?.actualDose.status === "kurang" ? "orange" as const : target?.actualDose.status === "sesuai" ? "green" as const : undefined }))],
+    [{ text: "Frekuensi aktual:" }, ...targets.map(target => ({ text: target ? target.actualInterval.status + " - " + target.actualInterval.message : "Tidak tersedia" }))],
+  ];
+  if (manualEnabled) rows.push(
+    [{ text: "Manual dosis:" }, ...targets.map(target => ({ text: target?.manualDose.summary ?? target?.manualDose.lowerBound?.message ?? "Tidak tersedia" }))],
+    [{ text: "Manual interval:" }, ...targets.map(target => ({ text: target?.manualInterval.summary ?? target?.manualInterval.lowerBound?.message ?? "Tidak tersedia" }))],
+  );
+  const lines:ReportItem[]=[...patientLines(calculated),
+    {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
+    recommendationTable(calculated),
+    { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
+  ];
   return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",[...lines,...footer]);
 }
 export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
