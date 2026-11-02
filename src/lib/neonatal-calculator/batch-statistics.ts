@@ -8,7 +8,7 @@ export type PairedStatistic = {
   group: string; metric: ComparisonMetric; reference: ReferenceName; n: number;
   shapiroW: number | null; shapiroP: number | null;
   method: "paired t-test" | "Wilcoxon signed-rank" | "Tidak diuji";
-  statistic: number | null; pValue: number | null; note: string;
+  statistic: number | null; pValue: number | null; medianDifference: number | null; note: string;
 };
 export type McNemarStatistic = {
   group: string; metric: "Dosis aktual" | "Frekuensi aktual" | "Dosis manual" | "Frekuensi manual";
@@ -167,7 +167,11 @@ export function summarizeBatch(result:BatchProcessingResult):{counts:StatusCount
           return typeof actual==="number" && typeof compare==="number" ? actual-compare : null;
         }).filter((v):v is number=>v!==null&&Number.isFinite(v));
         const test=pairedTest(diffs);
-        paired.push({group:group.name,metric,reference,n:diffs.length,shapiroW:test.shapiroW,shapiroP:test.shapiroP,method:test.method,statistic:test.statistic,pValue:test.p,note:test.note});
+        const sortedDiffs = [...diffs].sort((a,b)=>a-b);
+        const middle = Math.floor(sortedDiffs.length / 2);
+        const medianDifference = sortedDiffs.length === 0 ? null : sortedDiffs.length % 2
+          ? sortedDiffs[middle] : (sortedDiffs[middle-1] + sortedDiffs[middle]) / 2;
+        paired.push({group:group.name,metric,reference,n:diffs.length,shapiroW:test.shapiroW,shapiroP:test.shapiroP,method:test.method,statistic:test.statistic,pValue:test.p,note:test.note,medianDifference});
       }
       const pairs=group.rows.map(r=>[status(records.get(r)!,refs[0],metric),status(records.get(r)!,refs[1],metric)]).filter(v=>v.every(s=>s!==null && s!=="tidak-dapat-dievaluasi"));
       const both=pairs.filter(([a,b])=>a==="sesuai"&&b==="sesuai").length;

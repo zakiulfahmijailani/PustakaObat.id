@@ -1,5 +1,14 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — notebook v19 narrative in the batch Excel export
+
+- Replace the p-value list in `Interpretasi & Kesimpulan` with the five data-dependent sections from notebook v19: actual-regimen distribution, paired-test interpretation, manual comparison, conclusions and follow-up, and methodological limitations.
+- Include signed median differences, p-values with comma decimals, insufficient-data wording, and the notebook's all-zero difference handling. Wrap narrative rows and highlight important paragraphs.
+- Keep the current report metadata and rule-version label. Other requested export and screen changes remain separate work.
+- Add executable paragraph-by-paragraph checks against the original v19 interpretation fragment, including empty, small, all-zero, constant, tied, and manual cohorts. Retain the 24-column patient-result parity checks.
+- Verification: all 253 project tests, TypeScript checks, source lint and the production build pass. A browser upload/download on the local build reproduces all 35 reference narrative lines and all 720 patient-result cells without page errors. The other five sheets retain their pre-change cell values; the rendered interpretation sheet was visually inspected.
+- This is a local implementation change; it does not publish a production release or establish independent clinical validation.
+
 ## 2026-10-31 — executable notebook v18 parity (draft)
 
 - Execute the original notebook and its 92 self-checks; compare 1,242 age/renal/modifier profiles, 99 precision cases, the 34-row acceptance fixture, and additional statistical cohorts.

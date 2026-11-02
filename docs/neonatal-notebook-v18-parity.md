@@ -58,6 +58,14 @@ The browser runner checks 30 individual recommendation results, 30 independent e
 
 ## Limits and release status
 
+### Notebook v19 narrative export added 3 November 2026
+
+`tests/fixtures/neonatal/notebook-v19-interpretation.py` contains the unchanged `_distribusi_kol`, `_pct`, and `buat_interpretasi` functions extracted from cell 14 of the supplied v19 notebook. Its header records the source notebook SHA256 (`1042149e8a81ac48db9997c2262642b3d64324db058be0fac6cad1312003ab66`) and fragment checksum. The test suite pins the extracted file's SHA256, and `.gitattributes` preserves its bytes across platforms.
+
+The oracle executes this fragment separately from the v18 numerical namespace and compares every section title, paragraph kind, and paragraph text with the TypeScript narrative generator. Coverage includes the 34-row input, 99 precision cases, existing zero/constant/normal/tied cohorts, empty and one-patient batches, and manual-equal/manual-different cohorts. The exported interpretation sheet is checked against the same reference. Numerical recommendation, patient-result, and statistical parity checks remain in place.
+
+This change applies to the narrative in the batch Excel export. PDF narrative, other export formatting, screen warnings, and the draft rule-version label are outside this change.
+
 The original acceptance workbooks and nine-case admin instructions are not available locally. Direct Python differential comparison is independently reproducible, but it does not claim that a missing official workbook's `Cek` sheet has run. Validation remains stricter than the notebook on malformed/out-of-range inputs.
 
 This is a numerical/software parity result, not independent clinical validation. The missing-renal assumption requires clinical review under `neonatal-priority4-acceptance.md`. Draft stacked branches are not permission to merge or release. No production release is claimed by these checks.

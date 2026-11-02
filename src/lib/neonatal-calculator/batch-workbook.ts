@@ -1,5 +1,6 @@
 import { notebookBatchRecord } from "./notebook-results";
 import { summarizeBatch } from "./batch-statistics";
+import { buildBatchInterpretation } from "./batch-interpretation";
 import {
   BATCH_COLUMNS,
   BATCH_SHEET_NAME,
@@ -241,15 +242,29 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     ["Ringkasan Analisis Batch","DRAF — hasil harus diverifikasi terhadap notebook acuan sebelum digunakan dalam penelitian/keputusan klinis"],
     ["Kandidat",result.candidateRows],["Berhasil",result.successCount],["Gagal",result.errorCount],
     ["Baris contoh diabaikan",result.ignoredRows],["Versi aturan",CALCULATOR_RULE_VERSION],
-    ["Metode","Uji normalitas Shapiro–Wilk dilakukan pada selisih berpasangan, lalu paired t-test atau Wilcoxon; McNemar membandingkan status kesesuaian pasangan."],
-    ["Frekuensi","Uji frekuensi dalam dosis per hari (24 / interval jam)."],
-    ["Interpretasi","Nilai p < 0,05 dapat menunjukkan perbedaan statistik, bukan kesesuaian klinis. Hasil kosong berarti tidak dapat diuji."],
-    ["Keamanan","Tidak ada data disimpan oleh aplikasi. Hindari identitas pasien dalam kode kasus."]
   ]);
-  for(const p of statistics.paired.filter(x=>x.pValue!==null).slice(0,40))
-    interpretation.addRow([p.group + " — " + p.metric, p.reference + ": " + p.method + "; n=" + p.n + "; p=" + String(p.pValue)]);
-  interpretation.getColumn(1).width=38; interpretation.getColumn(2).width=110;
-  interpretation.getColumn(2).alignment={wrapText:true};
+  interpretation.getColumn(1).width = 32;
+  interpretation.getColumn(2).width = 92;
+  interpretation.getColumn(2).alignment = { wrapText: true, vertical: "top" };
+  interpretation.getRow(1).height = 36;
+  interpretation.views = [{ showGridLines: false }];
+  for (const section of buildBatchInterpretation(result, statistics)) {
+    interpretation.addRow([]);
+    const heading = interpretation.addRow([section.title]);
+    interpretation.mergeCells(heading.number, 1, heading.number, 2);
+    styleHeader(heading);
+    for (const paragraph of section.paragraphs) {
+      const row = interpretation.addRow([paragraph.text]);
+      interpretation.mergeCells(row.number, 1, row.number, 2);
+      const cell = row.getCell(1);
+      cell.alignment = { wrapText: true, vertical: "top" };
+      cell.font = { size: 11, bold: paragraph.kind === "penting" };
+      if (paragraph.kind === "penting") {
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF3CD" } };
+      }
+      row.height = Math.max(34, Math.ceil(paragraph.text.length / 100) * 17 + 10);
+    }
+  }
   const warnings = workbook.addWorksheet("Peringatan");
   addHeader(warnings,["Baris sumber","Kode pasien","Kategori","Catatan"]);
   for (const row of result.rows) {

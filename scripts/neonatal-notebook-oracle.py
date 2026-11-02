@@ -70,6 +70,12 @@ def main():
     ns, sha, checks = load_notebook(args.notebook)
     header, rows = official_input(root)
     import pandas as pd
+    # Only narrative generation uses the original v19 fragment. Numerical v18 references remain unchanged.
+    interpretation_path = root / "tests/fixtures/neonatal/notebook-v19-interpretation.py"
+    interpretation_ns = {"pd": pd}
+    exec(compile(interpretation_path.read_text(encoding="utf-8"), str(interpretation_path), "exec"), interpretation_ns)
+    def interpretation(records, statistics=None):
+        return interpretation_ns["buat_interpretasi"](records, statistics if statistics is not None else ns["hitung_statistik"](records))
     records, warnings = ns["proses_dataframe"](pd.DataFrame(rows, columns=header), ns["bangun_rekomendasi"], ns["_kategori_dosis"], ns["_fmt_num"])
     extra_rows = []
     for drug in ["Gentamisin", "Amikasin", "Vankomisin"]:
@@ -114,13 +120,33 @@ def main():
                 dosis_aktual_mg=dose,frekuensi_aktual_jam=24)
             cohort_rows.append([rec.get(key) for key in header])
         cohort_records, _ = ns["proses_dataframe"](pd.DataFrame(cohort_rows, columns=header), ns["bangun_rekomendasi"], ns["_kategori_dosis"], ns["_fmt_num"])
-        cohorts.append({"name":name,"rows":cohort_rows,"statistics":ns["hitung_statistik"](cohort_records)})
+        cohort_statistics = ns["hitung_statistik"](cohort_records)
+        cohorts.append({"name":name,"rows":cohort_rows,"statistics":cohort_statistics,
+                        "interpretationV19": interpretation(cohort_records, cohort_statistics)})
+    interpretation_cases = []
+    for name, count, manual, dose in [("empty", 0, False, 5), ("small", 1, False, 5),
+                                     ("manual-equal", 6, True, 6.25), ("manual-different", 6, True, 9)]:
+        case_rows = []
+        for i in range(count):
+            row = dict(zip(header, rows[0]))
+            row.update(kode_pasien=f"{name}-{i}", antibiotik="Gentamisin", usia_gestasi_lahir_minggu=35,
+                       usia_pascalahir_hari=8, berat_badan_kg=1, dosis_aktual_mg=dose, frekuensi_aktual_jam=24)
+            if manual:
+                row.update(dosis_manual_min_mg=5 if name == "manual-equal" else 9,
+                           dosis_manual_max_mg=7.5 if name == "manual-equal" else 9,
+                           frekuensi_manual_min_jam=24, frekuensi_manual_max_jam=48)
+            case_rows.append([row.get(key) for key in header])
+        case_records, _ = ns["proses_dataframe"](pd.DataFrame(case_rows, columns=header), ns["bangun_rekomendasi"], ns["_kategori_dosis"], ns["_fmt_num"])
+        interpretation_cases.append({"name": name, "rows": case_rows, "expected": interpretation(case_records)})
     import scipy
     result = {"source": {"filename": args.notebook.name, "sha256": sha, "ruleVersion": ns["VERSI_ATURAN"], "scipyVersion": scipy.__version__,
                          "executedCells": [3,5,6,8,10,14,17]}, "notebookChecks": checks,
               "header": header, "inputRows": rows, "batchRecords": records, "batchWarnings": warnings,
               "statistics": ns["hitung_statistik"](records), "summary": ns["ringkasan_kesesuaian"](records),
-              "recommendations": patients,"extraInputRows":extra_rows,"extraRecords":extra_records,"extraWarnings":extra_warnings,"cohorts":cohorts}
+              "recommendations": patients,"extraInputRows":extra_rows,"extraRecords":extra_records,"extraWarnings":extra_warnings,"cohorts":cohorts,
+              "interpretationV19": interpretation(records), "extraInterpretationV19": interpretation(extra_records),
+              "interpretationCases": interpretation_cases,
+              "interpretationSource": {"filename": interpretation_path.name, "sha256": hashlib.sha256(interpretation_path.read_bytes()).hexdigest()}}
     print(json.dumps(clean(result), ensure_ascii=False, allow_nan=False, separators=(",", ":")))
 
 
