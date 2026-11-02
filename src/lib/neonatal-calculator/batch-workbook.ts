@@ -256,12 +256,20 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
   const tests = workbook.addWorksheet("Analisis Statistik");
   addHeader(tests, ["Kelompok","Metrik","Referensi","n","Shapiro-Wilk W","Shapiro p","Uji Berpasangan","Statistik","p dua sisi","Catatan"]);
-  for(const p of statistics.paired) tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),fmt(p.pValue),p.note]);
+  for(const p of statistics.paired) {
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),fmt(p.pValue),p.note]);
+    for (const column of [5, 6, 9]) row.getCell(column).numFmt = "0.0000";
+    row.getCell(8).numFmt = "0.000";
+  }
   tests.addRow([]);
   const start = tests.rowCount + 1;
   tests.addRow(["McNemar: Kelompok","Metrik","N pasangan","Sesuai keduanya","Hanya RS","Hanya Literatur","Tidak sesuai keduanya","Uji","Statistik","p dua sisi"]);
   styleHeader(tests.getRow(start));
-  for(const p of statistics.mcnemar) tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),fmt(p.pValue)]);
+  for(const p of statistics.mcnemar) {
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),fmt(p.pValue)]);
+    row.getCell(9).numFmt = "0.000";
+    row.getCell(10).numFmt = "0.0000";
+  }
   setUsefulWidths(tests,42);
   const interpretation = workbook.addWorksheet("Interpretasi & Kesimpulan");
   interpretation.addRows([

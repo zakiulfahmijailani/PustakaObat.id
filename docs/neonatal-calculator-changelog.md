@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — decimal formatting in the statistics workbook
+
+- Format Shapiro–Wilk W, normality p, paired-test p, and McNemar p to four decimal places; format paired-test and McNemar statistics to three decimal places.
+- Apply numeric formats per data row because paired-test and McNemar column positions differ. Preserve integer counts, empty results, and the full numeric precision stored in each cell.
+- Use Excel's invariant `0.0000` and `0.000` format codes. Indonesian regional settings display the decimal separator as a comma; do not replace numeric values with text.
+- Verification: 38 relevant tests, TypeScript, and changed-source lint pass. All workbook cell values, including the 720 patient-result cells, retain their precision. Round-trip checks confirm 160 format assignments, integer counts, and blank results. Paired-test/McNemar previews were inspected and Indonesian-locale comma examples checked separately; the preview renderer uses its own decimal locale.
+
 ## 2026-11-03 — capitalize workbook antibiotic and category labels
 
 - Display Gentamisin, Amikasin, Vankomisin, Sesuai, Berlebih, and Kurang with initial capitals in `Ringkasan Kesesuaian`. Apply the same antibiotic naming to paired-test and McNemar rows in `Analisis Statistik`.
