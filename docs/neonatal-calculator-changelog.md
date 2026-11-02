@@ -1,5 +1,11 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — hide the internal summary category in Excel
+
+- Omit `opsi-diskrit-tidak-cocok` rows from the exported `Ringkasan Kesesuaian` sheet. Keep the Sesuai/Berlebih/Kurang counts, denominators, percentages, and row order.
+- Apply the filter only when writing the workbook. Internal interval handling and statistical results remain unchanged.
+- Verification: 38 relevant tests, TypeScript, and changed-source lint pass. The 34-case export removes 32 internal-category rows (128 to 96 summary rows), preserving every remaining summary value and the other five sheets. All 720 patient-result cells still match the notebook.
+
 ## 2026-11-03 — duplicate clinical warnings in the batch workbook
 
 - Show identical clinical messages with the same severity once per patient in the `Peringatan` sheet. This removes the duplicate renal-review messages for T11 and T19 contributed by both reference sources.

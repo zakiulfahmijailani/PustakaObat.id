@@ -250,7 +250,8 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   setUsefulWidths(values, 40);
   const summary = workbook.addWorksheet("Ringkasan Kesesuaian");
   addHeader(summary, ["Kelompok", "Metrik", "Referensi", "Kategori", "Jumlah", "N dapat dinilai", "Persentase"]);
-  for(const c of statistics.counts) summary.addRow([c.group,c.metric,c.reference,c.category,c.count,c.total,c.percent / 100]);
+  for(const c of statistics.counts.filter(count => count.category !== "opsi-diskrit-tidak-cocok"))
+    summary.addRow([c.group,c.metric,c.reference,c.category,c.count,c.total,c.percent / 100]);
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
   const tests = workbook.addWorksheet("Analisis Statistik");
   addHeader(tests, ["Kelompok","Metrik","Referensi","n","Shapiro-Wilk W","Shapiro p","Uji Berpasangan","Statistik","p dua sisi","Catatan"]);
