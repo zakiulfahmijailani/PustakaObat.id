@@ -2,35 +2,101 @@ import { pythonFixed } from "./python-rounding";
 import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
 import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, formatNumber } from ".";
-import type { CalculatorResult, RegimenEvaluationResult, Recommendation } from "./types";
+import type { CalculatorResult, ClinicalWarning, RegimenEvaluationResult, Recommendation } from "./types";
 
-type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean };
+type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title"> };
+type PdfRow = { text: string; fontSize: number; bold: boolean; leading: number; gap?: number };
+type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: ClinicalWarning["severity"] };
+// Standard Helvetica advance widths for printable ASCII, in 1/1000 em (Adobe font metrics).
+const HELVETICA_WIDTHS = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+const HELVETICA_BOLD_WIDTHS = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+const WARNING_STYLES = {
+  critical: { label: "PERINGATAN", text: "0.7059 0.2863 0.2471", fill: "0.9725 0.9294 0.9255" },
+  warning: { label: "PERHATIAN", text: "0.6549 0.4353 0.1412", fill: "1 0.9529 0.8039" },
+  info: { label: "INFORMASI", text: "0.2471 0.4353 0.5608", fill: "0.9255 0.9451 0.9569" },
+} as const;
 const clean = (value: unknown): string => String(value ?? "")
   .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+  .replaceAll("≥", ">=").replaceAll("≤", "<=").replaceAll("−", "-")
   .replace(/[^\x20-\x7E]/g, ch => ch === "–" || ch === "—" ? "-" : " ")
   .replace(/\s+/g," ").trim();
 function escapePdf(value:string): string { return clean(value).replaceAll("\\","\\\\").replaceAll("(","\\(").replaceAll(")","\\)"); }
+function textWidth(text: string, fontSize: number, bold: boolean): number {
+  const widths = bold ? HELVETICA_BOLD_WIDTHS : HELVETICA_WIDTHS;
+  return [...text].reduce((sum, character) => sum + (widths[character.charCodeAt(0) - 32] ?? 556), 0) * fontSize / 1000;
+}
+function wrapText(text: string, width: number, fontSize: number, bold = false): string[] {
+  const lines: string[] = [];
+  let current = "";
+  for (const word of clean(text).split(" ").filter(Boolean)) {
+    const candidate = current ? current + " " + word : word;
+    if (textWidth(candidate, fontSize, bold) <= width) { current = candidate; continue; }
+    if (current) { lines.push(current); current = ""; }
+    // Split unbroken tokens as well, so a long label or identifier cannot cross the right margin.
+    for (const character of word) {
+      if (current && textWidth(current + character, fontSize, bold) > width) { lines.push(current); current = ""; }
+      current += character;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
 function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
   // Small, offline PDF writer. Every file is a real PDF, not an HTML print fallback.
   const pageWidth=595,pageHeight=842,margin=47;
-  const pages:ReportLine[][]=[];let current:ReportLine[]=[];let cursor=0;
-  const wrapped=(line:ReportLine):ReportLine[]=>{
-    const max=line.heading?65:93, words=clean(line.text).split(" ");const result:string[]=[];let part="";
-    for(const word of words){if(part.length+word.length+1>max && part){result.push(part);part="";}part=part?part+" "+word:word;}
-    if(part)result.push(part);return result.map((text,i)=>({...line,text,heading:line.heading&&i===0}));
+  const bodyTop = pageHeight - margin - 28, capacity = bodyTop - margin, contentWidth = pageWidth - 2 * margin;
+  const padding = 10, afterBox = 8;
+  const blocks: PdfBlock[] = [];
+  let layoutCursor = 0;
+  const appendBlock = (block: PdfBlock) => {
+    if (layoutCursor + block.height > capacity) layoutCursor = 0;
+    blocks.push(block); layoutCursor += block.height;
   };
   for(const line of lines){
-    const chunks=wrapped(line);
-    for(const chunk of chunks){
-      const height=chunk.heading?24:16;
-      if(cursor+height>pageHeight-2*margin-35){pages.push(current);current=[];cursor=0;}
-      current.push(chunk);cursor+=height;
+    if (line.warning) {
+      const { severity, title: warningTitle } = line.warning;
+      const label = WARNING_STYLES[severity].label;
+      const heading = label + ":" + (warningTitle ? " " + warningTitle + (/[.!?]$/.test(warningTitle) ? "" : ".") : "");
+      // Some screen warnings repeat their title as the first sentence of the message.
+      const body = warningTitle && line.text.startsWith(warningTitle + ". ")
+        ? line.text.slice(warningTitle.length + 2) : line.text;
+      const headingRows = wrapText(heading, contentWidth - 2 * padding, 10, true).map(text => ({ text, fontSize: 10, bold: true, leading: 14 }));
+      const rows: PdfRow[] = [
+        ...headingRows,
+        ...wrapText(body, contentWidth - 2 * padding, 9.5).map((text, index) => ({ text, fontSize: 9.5, bold: false, leading: 14, gap: index === 0 ? 4 : 0 })),
+      ];
+      const oversized = 2 * padding + afterBox + rows.reduce((sum, row) => sum + row.leading + (row.gap ?? 0), 0) > capacity;
+      let offset = 0;
+      while (offset < rows.length) {
+        const part: PdfRow[] = offset === 0 ? [] : [{ text: label + ": (lanjutan)", fontSize: 10, bold: true, leading: 14 }];
+        let height = 2 * padding + afterBox + part.reduce((sum, row) => sum + row.leading, 0);
+        const minimumRows = offset === 0 ? Math.min(rows.length, headingRows.length + 1) : 1;
+        const minimumHeight = height + rows.slice(offset, offset + minimumRows).reduce((sum, row) => sum + row.leading + (row.gap ?? 0), 0);
+        const remaining = capacity - layoutCursor;
+        const limit = oversized && remaining >= minimumHeight ? remaining : capacity;
+        while (offset < rows.length) {
+          const row = rows[offset], nextHeight = row.leading + (row.gap ?? 0);
+          if (height + nextHeight > limit) break;
+          part.push(row); height += nextHeight; offset++;
+        }
+        appendBlock({ rows: part, height, warning: severity });
+      }
+    } else {
+      const fontSize = line.heading ? 12 : 9.5, leading = line.heading ? 24 : 16;
+      for (const text of wrapText(line.text, contentWidth, fontSize))
+        appendBlock({ rows: [{ text, fontSize, bold: false, leading }], height: leading, color: line.color });
     }
+  }
+  const pages: PdfBlock[][] = [];
+  let current: PdfBlock[] = [], cursor = 0;
+  for (const block of blocks) {
+    if (current.length && cursor + block.height > capacity) { pages.push(current); current = []; cursor = 0; }
+    current.push(block); cursor += block.height;
   }
   if(current.length||!pages.length)pages.push(current);
   const encoder=new TextEncoder(),objects:string[]=[];
   const add=(s:string)=>{objects.push(s);return objects.length;};
-  const catalog=add(""),pageTree=add(""),font=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const catalog=add(""),pageTree=add(""),font=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"),boldFont=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
   const kids:number[]=[];
   const colors={red:"0.72 0.1 0.1",orange:"0.57 0.32 0.02",blue:"0.08 0.32 0.67",green:"0.05 0.43 0.27"};
   for(let p=0;p<pages.length;p++){
@@ -39,18 +105,28 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
       "q", "0.05 0.43 0.39 rg", "0 "+(pageHeight-12)+" "+pageWidth+" 12 re f","Q",
       "BT","/F1 15 Tf","0.08 0.2 0.25 rg",margin+" "+y+" Td","("+escapePdf(title)+") Tj","ET"
     ];
-    y-=34;
-    for(const line of pages[p]){
-      const fontSize=line.heading?12:9.5;
-      const color=line.color?colors[line.color]:"0.12 0.18 0.2";
-      items.push("BT","/F1 "+fontSize+" Tf",color+" rg",margin+" "+y+" Td","("+escapePdf(line.text)+") Tj","ET");
-      y-=line.heading?24:16;
+    y=bodyTop;
+    for(const block of pages[p]){
+      let top = y;
+      let color = block.color ? colors[block.color] : "0.12 0.18 0.2";
+      let x = margin;
+      if (block.warning) {
+        const style = WARNING_STYLES[block.warning], boxHeight = block.height - afterBox;
+        items.push("q", style.fill + " rg", style.text + " RG", "0.7 w", `${margin} ${y - boxHeight} ${contentWidth} ${boxHeight} re B`, "Q");
+        top -= padding; x += padding; color = style.text;
+      }
+      for (const row of block.rows) {
+        top -= row.gap ?? 0;
+        items.push("BT", `/${row.bold ? "F2" : "F1"} ${row.fontSize} Tf`, color + " rg", `${x} ${top - row.fontSize} Td`, "("+escapePdf(row.text)+") Tj", "ET");
+        top -= row.leading;
+      }
+      y -= block.height;
     }
     items.push("BT","/F1 8 Tf","0.4 0.4 0.4 rg",margin+" 27 Td","("+escapePdf("PustakaObat.id - Halaman "+(p+1)+"/"+pages.length)+") Tj","ET");
     const stream=items.join("\n")+"\n";
     const length=encoder.encode(stream).length;
     const streamRef=add("<< /Length "+length+" >>\nstream\n"+stream+"endstream");
-    const page=add("<< /Type /Page /Parent "+pageTree+" 0 R /MediaBox [0 0 "+pageWidth+" "+pageHeight+"] /Resources << /Font << /F1 "+font+" 0 R >> >> /Contents "+streamRef+" 0 R >>");
+    const page=add("<< /Type /Page /Parent "+pageTree+" 0 R /MediaBox [0 0 "+pageWidth+" "+pageHeight+"] /Resources << /Font << /F1 "+font+" 0 R /F2 "+boldFont+" 0 R >> >> /Contents "+streamRef+" 0 R >>");
     kids.push(page);
   }
   objects[catalog-1]="<< /Type /Catalog /Pages "+pageTree+" 0 R >>";
@@ -70,14 +146,19 @@ function recLine(label:string,rec:Recommendation):ReportLine[]{
 }
 function patientLines(calculated:CalculatorResult):ReportLine[]{
   const p=calculated.input;
+  const priority = { critical: 0, warning: 1, info: 2 };
+  const warnings = [...new Map([
+    ...calculated.globalWarnings,
+    ...calculated.recommendations.institutionalPrimary.warnings,
+    ...calculated.recommendations.anmf2024.warnings,
+  ].map(warning => [JSON.stringify([warning.severity, warning.title ?? "", warning.message]), warning])).values()]
+    .sort((a, b) => priority[a.severity] - priority[b.severity]);
   return [
     {text:"Kode pasien: "+(p.patientLabel??"Tanpa kode")},
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
     {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+(p.gestationalAgeWeeks+Math.floor(((p.gestationalAgeDays??0)+p.postnatalAgeDays)/7))+" minggu "+(((p.gestationalAgeDays??0)+p.postnatalAgeDays)%7)+" hari; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
     {text:"Data ginjal: "+(p.renalDataAvailable?"Data diberikan":"Tidak tersedia (diasumsikan normal sesuai usia)")},
-    ...calculated.globalWarnings.map(w=>({text:w.message,color:w.severity==="critical"?"red" as const:w.severity==="warning"?"orange" as const:"blue" as const})),
-    ...calculated.recommendations.institutionalPrimary.warnings.map(w=>({text:w.message,color:"red" as const})),
-    ...calculated.recommendations.anmf2024.warnings.map(w=>({text:w.message,color:"red" as const}))
+    ...warnings.map(warning => ({ text: warning.message, warning }))
   ];
 }
 const footer:ReportLine[]=[{text:"Versi aturan: "+CALCULATOR_RULE_VERSION},{text:CLINICAL_DISCLAIMER},{text:"PERINGATAN: Belum diverifikasi secara klinis dan belum sesuai untuk keputusan terapi tanpa pemeriksaan profesional.",color:"red"}];

@@ -34,6 +34,41 @@ describe("PDF laporan neonatal", () => {
     expect(decode(bytes)).toContain("Ringkasan Evaluasi Batch");
     expect(bytes[0]).toBe(37);
   });
+
+  it("menampilkan kotak berlabel sesuai tingkat peringatan, berurutan, tanpa pesan ganda", () => {
+    const result = calculateRecommendations(patient({
+      antibiotic: "amikasin", gestationalAgeWeeks: 30, postnatalAgeDays: 4, currentWeightKg: 1.38,
+      renalDataAvailable: false, serumCreatinineMgDl: undefined, urineOutputMlKgHour: undefined,
+    }));
+    result.recommendations.anmf2024.warnings.push(result.globalWarnings[0]);
+    result.globalWarnings.push({ code: "INFO_RENDER", severity: "info", title: "Informasi tambahan", message: "Periksa simbol ≥ 0,5 dan ≤ 1,0." });
+    const evaluation = evaluateRegimen(result, {
+      manualDoseMinMg: 21, manualDoseMaxMg: 21, manualIntervalMinHours: 24, manualIntervalMaxHours: 24,
+      actualDoseMg: 21, actualIntervalHours: 24,
+    });
+    for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, false)]) {
+      const text = decode(bytes);
+      expect(text).toContain(" re B");
+      expect(text).toContain("PERINGATAN: Data fungsi ginjal");
+      expect(text).toContain("PERHATIAN: Interval Pedoman RS");
+      expect(text).toContain("INFORMASI: Informasi tambahan.");
+      expect(text).toContain("Periksa simbol >= 0,5 dan <= 1,0.");
+      expect(text.indexOf("PERINGATAN: Data fungsi ginjal")).toBeLessThan(text.indexOf("PERHATIAN: Interval Pedoman RS"));
+      expect(text.indexOf("PERHATIAN: Interval Pedoman RS")).toBeLessThan(text.indexOf("INFORMASI: Informasi tambahan."));
+      expect(text.match(/Data fungsi ginjal tidak diisi pada pasien berisiko tinggi/g)).toHaveLength(1);
+    }
+  });
+
+  it("mempertahankan seluruh pesan panjang dan menandai kelanjutan pada halaman berikutnya", () => {
+    const result = calculateRecommendations(patient());
+    const markers = Array.from({ length: 600 }, (_, index) => `MARCADOR${String(index).padStart(3, "0")}`);
+    result.globalWarnings = [{ code: "LONG_RENDER", severity: "critical", title: "Pesan panjang", message: markers.join(" ") + " " + "Z".repeat(400) }];
+    const text = decode(buildRecommendationPdf(result));
+    expect((text.match(/\/Type \/Page\b/g) ?? []).length).toBeGreaterThan(1);
+    expect(text).toContain("lanjutan");
+    for (const marker of markers) expect(text).toContain(marker);
+    expect((text.match(/Z/g) ?? []).length).toBeGreaterThanOrEqual(400);
+  });
 });
 
 describe("statistik batch eksploratif", () => {

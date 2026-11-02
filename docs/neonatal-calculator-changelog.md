@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — colored warning boxes in patient PDFs
+
+- Render recommendation/evaluation clinical warnings in red PERINGATAN, yellow PERHATIAN, or blue INFORMASI boxes with the screen's status palette. Include warning titles, sort by severity, and show identical warning content once.
+- Measure text with standard Helvetica metrics, add padding, and keep normal warning boxes together across page breaks. Split oversized warnings into explicitly labeled continuation boxes without dropping text or letting long tokens cross the margin.
+- Preserve comparison symbols using ASCII equivalents in the offline PDF font. Keep dosing, evaluation values, clinical messages, and workbook outputs intact.
+- Verification: all 261 project tests pass; the seven report tests and changed-source lint were rechecked after the pagination adjustment. Production build (including type checks) passes. Content and page bounds pass for 64 generated PDFs (70 pages, 110 warning boxes); representative and stress-case pages were visually inspected. Both patient PDF downloads also pass through the local browser with no page errors and unchanged calculation values.
+
 ## 2026-11-03 — concise Wilcoxon explanation
 
 - Replace the technical SciPy implementation note with `Uji dua sisi; selisih 0 dikeluarkan` in exported statistical results, as requested in the review.
