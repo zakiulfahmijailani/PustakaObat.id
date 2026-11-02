@@ -113,9 +113,9 @@ export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
     {text:"Distribusi Kesesuaian",heading:true},
     ...summary.counts.filter(x=>x.group==="Keseluruhan"&&x.count>0).map(x=>({text:x.metric+" / "+x.reference+" / "+x.category+": "+x.count+"/"+x.total+" ("+pythonFixed(x.percent,1)+"%)"})),
     {text:"Uji statistik berpasangan - hasil eksploratif",heading:true},
-    ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>=3).map(x=>({text:x.group+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":pythonFixed(x.pValue,4))})),
+    ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>=3).map(x=>({text:x.group+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
     {text:"Uji McNemar: kesesuaian kedua pedoman",heading:true},
-    ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+x.method+", n="+x.n+", p="+(x.pValue===null?"tidak diuji":pythonFixed(x.pValue,4))})),
+    ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+x.method+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
     {text:"Kesimpulan: hasil statistik memerlukan verifikasi terhadap notebook acuan dan penafsiran oleh peneliti.",color:"orange"},
     ...footer
   ];

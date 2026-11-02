@@ -233,7 +233,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
 
 
   const statistics = summarizeBatch(result);
-  const fmt = (value: number | null) => value === null || !Number.isFinite(value) ? "" : value;
+  const fmt = (value: number | null) => value === null || !Number.isFinite(value) ? null : value;
   const capitalizeLabel = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
   const addHeader = (sheet: import("exceljs").Worksheet, headers: string[]) => {
     sheet.addRow(headers); styleHeader(sheet.getRow(1));
@@ -260,7 +260,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     const available = p.n >= 3 && p.pValue !== null && Number.isFinite(p.pValue);
     const conclusion = !available ? (p.n < 3 ? "Tidak diuji (n<3)" : "Tidak dapat diuji")
       : p.pValue! < 0.05 ? "Berbeda signifikan (p<0,05)" : "Tidak berbeda signifikan (p≥0,05)";
-    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),fmt(p.pValue),available ? fmt(p.medianDifference) : "",p.metric.startsWith("Dosis") ? "mg/kg" : "dosis/hari",conclusion,p.note]);
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,available ? fmt(p.medianDifference) : null,p.metric.startsWith("Dosis") ? "mg/kg" : "dosis/hari",conclusion,p.note]);
     for (const column of [5, 6, 9]) row.getCell(column).numFmt = "0.0000";
     for (const column of [8, 10]) row.getCell(column).numFmt = "0.000";
     row.getCell(12).alignment = { wrapText: true, vertical: "middle" };
@@ -272,10 +272,11 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   tests.addRow(["McNemar: Kelompok","Metrik","N pasangan","Sesuai keduanya","Hanya RS","Hanya Literatur","Tidak sesuai keduanya","Uji","Statistik","p dua sisi","Kesimpulan"]);
   styleHeader(tests.getRow(start));
   for(const p of statistics.mcnemar) {
-    const conclusion = p.pValue === null || !Number.isFinite(p.pValue) ? "Tidak dapat diuji"
-      : p.pValue < 0.05 ? "Proporsi kesesuaian BERBEDA signifikan antara RS & Literatur (p<0,05)"
+    const available = p.n > 0 && p.pValue !== null && Number.isFinite(p.pValue);
+    const conclusion = !available ? "Tidak dapat diuji"
+      : p.pValue! < 0.05 ? "Proporsi kesesuaian BERBEDA signifikan antara RS & Literatur (p<0,05)"
         : "Proporsi kesesuaian TIDAK berbeda signifikan (p≥0,05)";
-    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),fmt(p.pValue),conclusion]);
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,conclusion]);
     row.getCell(9).numFmt = "0.000";
     row.getCell(10).numFmt = "0.0000";
     row.getCell(11).alignment = { wrapText: true, vertical: "middle" };

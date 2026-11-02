@@ -7,13 +7,13 @@ export type ReferenceName = "Pedoman Rumah Sakit" | "Literatur Terkini";
 export type PairedStatistic = {
   group: string; metric: ComparisonMetric; reference: ReferenceName; n: number;
   shapiroW: number | null; shapiroP: number | null;
-  method: "paired t-test" | "Wilcoxon signed-rank" | "Tidak diuji";
+  method: "paired t-test" | "Wilcoxon signed-rank" | "Semua selisih nol" | "Tidak diuji";
   statistic: number | null; pValue: number | null; medianDifference: number | null; note: string;
 };
 export type McNemarStatistic = {
   group: string; metric: "Dosis aktual" | "Frekuensi aktual" | "Dosis manual" | "Frekuensi manual";
   n: number; rsOnly: number; literatureOnly: number; both: number; neither: number;
-  method: "McNemar exact" | "McNemar chi-square koreksi kontinuitas" | "Tidak diuji";
+  method: "McNemar exact" | "McNemar chi-square koreksi kontinuitas" | "Tidak ada pasangan diskordan" | "Tidak diuji";
   statistic: number | null; pValue: number | null; note: string;
 };
 export type StatusCount = { group: string; metric: string; reference: ReferenceName; category: string; count: number; total: number; percent: number };
@@ -107,7 +107,7 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
   const n=diffs.length;
   if(n<3)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:null,shapiroP:null,note:"n < 3"};
   const sh=shapiroWilk(diffs);
-  if (diffs.every(v => Math.abs(v) <= 1e-8)) return {method:"Tidak diuji",statistic:null,p:1,shapiroW:null,shapiroP:null,note:"Seluruh selisih nol"};
+  if (diffs.every(v => Math.abs(v) <= 1e-8)) return {method:"Semua selisih nol",statistic:null,p:1,shapiroW:null,shapiroP:null,note:"Seluruh selisih nol"};
   if (!sh) return {method:"paired t-test",statistic:null,p:0,shapiroW:null,shapiroP:1,note:"Selisih konstan bukan nol; statistik tak hingga"};
   if(sh.p>0.05){
     const mean=diffs.reduce((a,b)=>a+b,0)/n;
@@ -179,7 +179,7 @@ export function summarizeBatch(result:BatchProcessingResult):{counts:StatusCount
       const literatureOnly=pairs.filter(([a,b])=>a!=="sesuai"&&b==="sesuai").length;
       const neither=pairs.filter(([a,b])=>a!=="sesuai"&&b!=="sesuai").length;
       const discordant=rsOnly+literatureOnly;
-      let method:McNemarStatistic["method"]="Tidak diuji", statistic:number|null=null,pValue:number|null=pairs.length?1:null,note=pairs.length?"Tidak ada pasangan diskordan":"Tidak ada pasangan valid";
+      let method:McNemarStatistic["method"]=pairs.length?"Tidak ada pasangan diskordan":"Tidak diuji", statistic:number|null=null,pValue:number|null=pairs.length?1:null,note=pairs.length?"Tidak ada pasangan diskordan":"Tidak ada pasangan valid";
       if(discordant>0 && discordant<25){
         method="McNemar exact";statistic=Math.min(rsOnly,literatureOnly);
         let c=1,sum=1;for(let k=1;k<=Math.min(rsOnly,literatureOnly);k++){c=c*(discordant-k+1)/k;sum+=c;}

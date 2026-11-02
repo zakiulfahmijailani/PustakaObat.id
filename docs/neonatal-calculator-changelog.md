@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — distinguish untested and all-zero statistical results
+
+- Label paired comparisons with at least three all-zero differences as `Semua selisih nol`, retaining the notebook's p=1 and median. Comparisons with fewer than three valid pairs remain `Tidak diuji` with a genuinely empty p-value cell in Excel. Store all unavailable numeric statistics as blank cells rather than empty text.
+- Label valid McNemar comparisons with no discordant pairs `Tidak ada pasangan diskordan` and retain p=1. With no valid pairs, keep `Tidak diuji` and leave p blank.
+- Apply the labels consistently to batch PDFs and omit the p field for unavailable results. Statistical calculations, patient results, and v19 narrative text remain unchanged.
+- Verification: 47 relevant tests, TypeScript, and changed-source lint pass. Regression cases cover 0/1/2 versus 3 all-zero pairs and valid McNemar comparisons without discordance. Excel cells were checked after export with two readers and visually inspected; PDF labels and all 720 patient-result cells retain the expected results.
+
 ## 2026-11-03 — export paired tests per antibiotic
 
 - Omit the eight pooled `Keseluruhan` paired-test rows from `Analisis Statistik`. Keep paired tests for Gentamisin, Amikasin, and Vankomisin, with their medians, units, and conclusions.

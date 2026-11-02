@@ -85,7 +85,7 @@ describe("live Python notebook v18 differential parity", () => {
         if(key==="pesan") continue;
         const actual=result.paired.find(r=>r.group==="gentamisin" && r.metric===(key.startsWith("aktual")?"Dosis aktual":"Dosis manual") && r.reference===(key.endsWith("RS")?"Pedoman Rumah Sakit":"Literatur Terkini"))!;
         expect(actual.n,cohort.name+key).toBe(expected.n);
-        if(expected.uji==="(semua selisih = 0)") { expect(actual.pValue).toBe(1); continue; }
+        if(expected.uji==="(semua selisih = 0)") { expect(actual.method).toBe("Semua selisih nol"); expect(actual.pValue).toBe(1); continue; }
         expect(actual.method.toLowerCase(),cohort.name+key).toBe(expected.uji.toLowerCase());
         if(expected.statistik!==null) expect(actual.statistic,cohort.name+key).toBeCloseTo(expected.statistik,7);
         expect(actual.pValue,cohort.name+key).toBeCloseTo(expected.p,6);
@@ -171,7 +171,7 @@ describe("notebook v19 narrative parity", () => {
       expect(mcNemarRows.filter(row => row.getCell(1).value === "Keseluruhan")).toHaveLength(4);
       for (const row of pairedRows) {
         if (Number(row.getCell(4).value) < 3) {
-          expect(row.getCell(10).value).toBe("");
+          expect(row.getCell(10).value).toBeNull();
           expect(row.getCell(12).value).toBe("Tidak diuji (n<3)");
         }
       }
