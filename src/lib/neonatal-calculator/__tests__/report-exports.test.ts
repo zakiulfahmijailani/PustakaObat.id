@@ -54,6 +54,20 @@ describe("PDF laporan neonatal", () => {
     }
   });
 
+  it("menyertakan ringkasan aktual sebelum peringatan pasien pada PDF evaluasi saja", () => {
+    const result = calculateRecommendations(patient({ antibiotic: "amikasin", gestationalAgeWeeks: 30, postnatalAgeDays: 4, currentWeightKg: 1.38, renalDataAvailable: false, serumCreatinineMgDl: undefined, urineOutputMlKgHour: undefined }));
+    const evaluation = evaluateRegimen(result, {
+      actualDoseMg: 21, actualIntervalHours: 24, manualDoseMinMg: 1, manualDoseMaxMg: 1,
+      manualIntervalMinHours: 72, manualIntervalMaxHours: 72,
+    });
+    const text = plainText(buildEvaluationPdf(result, evaluation, true));
+    expect(text).toContain("PERINGATAN: Pemberian aktual BERLEBIH dibanding rujukan");
+    expect(text).toContain("Dosis aktual vs Pedoman RS: Berlebih (+0,3 mg; +1,4%)");
+    expect(text).toContain("Frekuensi aktual vs Literatur Terkini: Berlebih (+0,333 dosis/hari; +50,0%");
+    expect(text.indexOf("Pemberian aktual BERLEBIH")).toBeLessThan(text.indexOf("Data fungsi ginjal tidak diisi"));
+    expect(plainText(buildRecommendationPdf(result))).not.toContain("Pemberian aktual BERLEBIH");
+  });
+
   it("mengulang judul kolom saat isi tabel panjang berlanjut dan mempertahankan setiap kata", () => {
     const result = calculateRecommendations(patient());
     const markers = Array.from({ length: 500 }, (_, index) => `CATATAN${String(index).padStart(3, "0")}`);

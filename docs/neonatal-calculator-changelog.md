@@ -1,5 +1,13 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — actual-regimen summary on screen and in evaluation PDFs
+
+- Add a labeled summary above the individual evaluation results and patient warnings. Show all four actual dose/frequency comparisons against the primary hospital guideline and ANMF, with the notebook's exact numeric differences and percentages. Use red for excess or mixed excess/deficit, yellow for deficit, and green when all four comparisons conform.
+- Derive the summary from the existing notebook comparison functions without changing dosing or evaluation engines. Exclude the hidden age comparator and all manual comparisons. When comparisons are unavailable or an interval falls between discrete options, show an informational summary rather than claiming full conformity.
+- Reuse the same summary in evaluation PDFs, with four separate paragraphs inside the colored box. Recommendation and batch PDFs retain their existing behavior. The screen summary follows the existing reset/invalidation behavior and supports screen readers and narrow screens.
+- Verification: all 275 tests pass, including notebook parity for all 720 patient-result cells. After the final paragraph-layout adjustment, all 21 summary/report tests pass again. Checks across 65 PDFs (107 pages) preserve reference-specific numeric results, match summary categories to the frozen source, and pass page, table, and box bounds.
+- Production build (after rebuilding the local webpack cache), type checks, and changed-source lint pass. Eight local-browser scenarios verify excess, deficit, mixed results, conformity, manual-only deviations, frequency directions, and a single-dose reference. Input changes, invalid submissions, and new-patient reset remove the old summary. Desktop/mobile screenshots and four downloaded PDFs were inspected; no page errors occur. All 35 non-evaluation PDF fixtures remain byte-identical. Changes remain local and unpublished.
+
 ## 2026-11-03 — PDF glossary and readable result terms
 
 - Add a blue `Keterangan singkatan` box to downloaded reports, selecting definitions for abbreviations actually used in the report or disclaimer. Follow the v19 notebook glossary, explain interval notation such as `q24h`, and retain the notebook's explanation of `tiap X jam` as the interval between doses.

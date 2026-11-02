@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { buildRecommendationPdf, buildEvaluationPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import { BatchCalculator } from "./BatchCalculator";
+import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
 import {
   ANTIBIOTIC_LABELS,
   CALCULATOR_RULE_VERSION,
@@ -568,6 +569,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 <p className="mt-2 text-xs text-text-muted">Kode pasien: {evaluationResult.input.patientLabel ?? "Tanpa kode"} · {evaluationResult.input.gestationalAgeWeeks} minggu {evaluationResult.input.gestationalAgeDays ?? 0} hari · {evaluationResult.input.postnatalAgeDays} hari pascalahir</p>
                 <div className="mt-3"><WarningLegend /></div>
               </div>
+              <ActualEvaluationSummary calculated={evaluationResult} evaluation={evaluation} />
               <Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button>
               <SortedWarnings warnings={[...evaluationResult.globalWarnings, ...evaluationResult.recommendations.institutionalPrimary.warnings, ...evaluationResult.recommendations.anmf2024.warnings]} />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>

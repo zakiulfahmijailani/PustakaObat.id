@@ -1,16 +1,18 @@
 import { pythonFixed } from "./python-rounding";
+import { buildActualEvaluationSummary } from "./actual-evaluation-summary";
 import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
 import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, formatNumber } from ".";
 import type { CalculatorResult, ClinicalWarning, DoseEvaluation, IntervalEvaluation, RegimenEvaluationResult, Recommendation } from "./types";
 
-type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title">; panelTitle?: string };
+type BoxTone = ClinicalWarning["severity"] | "success";
+type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title">; panelTitle?: string; panelTone?: BoxTone; panelParagraphs?: string[] };
 type ReportCell = { text: string; color?: ReportLine["color"] };
 type ReportTable = { table: { title: string; columns: { text: string; width: number }[]; rows: ReportCell[][] } };
 type ReportItem = ReportLine | ReportTable;
 type PdfRow = { text: string; fontSize: number; bold: boolean; leading: number; gap?: number };
 type PdfCell = { rows: PdfRow[]; width: number; color?: ReportLine["color"] };
-type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: ClinicalWarning["severity"]; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
+type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: BoxTone; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
 // Standard Helvetica advance widths for printable ASCII, in 1/1000 em (Adobe font metrics).
 const HELVETICA_WIDTHS = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
 const HELVETICA_BOLD_WIDTHS = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
@@ -18,6 +20,7 @@ const WARNING_STYLES = {
   critical: { label: "PERINGATAN", text: "0.7059 0.2863 0.2471", fill: "0.9725 0.9294 0.9255" },
   warning: { label: "PERHATIAN", text: "0.6549 0.4353 0.1412", fill: "1 0.9529 0.8039" },
   info: { label: "INFORMASI", text: "0.2471 0.4353 0.5608", fill: "0.9255 0.9451 0.9569" },
+  success: { label: "SESUAI", text: "0.05 0.43 0.39", fill: "0.91 0.96 0.94" },
 } as const;
 const clean = (value: unknown): string => String(value ?? "")
   .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
@@ -92,7 +95,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
       }
       if (capacity - layoutCursor >= 8) appendBlock({ rows: [], height: 8 });
     } else if (line.warning || line.panelTitle) {
-      const severity = line.warning?.severity ?? "info", warningTitle = line.warning?.title ?? line.panelTitle;
+      const severity = line.warning?.severity ?? line.panelTone ?? "info", warningTitle = line.warning?.title ?? line.panelTitle;
       const label = line.warning ? WARNING_STYLES[severity].label : "";
       const heading = line.warning ? label + ":" + (warningTitle ? " " + warningTitle + (/[.!?]$/.test(warningTitle) ? "" : ".") : "") : warningTitle!;
       // Some screen warnings repeat their title as the first sentence of the message.
@@ -101,7 +104,8 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
       const headingRows = wrapText(heading, contentWidth - 2 * padding, 10, true).map(text => ({ text, fontSize: 10, bold: true, leading: 14 }));
       const rows: PdfRow[] = [
         ...headingRows,
-        ...wrapText(body, contentWidth - 2 * padding, 9.5).map((text, index) => ({ text, fontSize: 9.5, bold: false, leading: 14, gap: index === 0 ? 4 : 0 })),
+        ...(line.panelParagraphs ?? [body]).flatMap(paragraph => wrapText(paragraph, contentWidth - 2 * padding, 9.5)
+          .map((text, index) => ({ text, fontSize: 9.5, bold: false, leading: 14, gap: index === 0 ? 4 : 0 }))),
       ];
       const oversized = 2 * padding + afterBox + rows.reduce((sum, row) => sum + row.leading + (row.gap ?? 0), 0) > capacity;
       let offset = 0;
@@ -218,7 +222,7 @@ function recommendationTable(calculated: CalculatorResult): ReportTable {
     row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
   ] } };
 }
-function patientLines(calculated:CalculatorResult):ReportLine[]{
+function patientLines(calculated:CalculatorResult, actualSummary?:ReportLine):ReportLine[]{
   const p=calculated.input;
   const priority = { critical: 0, warning: 1, info: 2 };
   const warnings = [...new Map([
@@ -232,6 +236,7 @@ function patientLines(calculated:CalculatorResult):ReportLine[]{
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
     {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+(p.gestationalAgeWeeks+Math.floor(((p.gestationalAgeDays??0)+p.postnatalAgeDays)/7))+" minggu "+(((p.gestationalAgeDays??0)+p.postnatalAgeDays)%7)+" hari; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
     {text:"Data ginjal: "+(p.renalDataAvailable?"Data diberikan":"Tidak tersedia (diasumsikan normal sesuai usia)")},
+    ...(actualSummary ? [actualSummary] : []),
     ...warnings.map(warning => ({ text: warning.message, warning }))
   ];
 }
@@ -286,6 +291,13 @@ export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
   ]));
 }
 export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean):Uint8Array{
+  const summary = buildActualEvaluationSummary(calculated, evaluation.input);
+  const actualSummary: ReportLine = {
+    panelTitle: WARNING_STYLES[summary.tone].label + ": " + summary.title,
+    panelTone: summary.tone,
+    text: summary.items.map(item => item.label + ": " + item.message).join(" "),
+    panelParagraphs: summary.items.map(item => item.label + ": " + item.message),
+  };
   const refs=[calculated.recommendations.institutionalPrimary,calculated.recommendations.anmf2024];
   const targets = refs.map(rec => evaluation.targets.find(target => target.recommendationId === rec.id));
   const rows: ReportCell[][] = [
@@ -296,7 +308,7 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
     [{ text: "Manual dosis:" }, ...targets.map(target => ({ text: resultMessage(target?.manualDose.summary ?? target?.manualDose.lowerBound?.message ?? "Tidak tersedia") }))],
     [{ text: "Manual interval:" }, ...targets.map(target => ({ text: resultMessage(target?.manualInterval.summary ?? target?.manualInterval.lowerBound?.message ?? "Tidak tersedia") }))],
   );
-  const lines:ReportItem[]=[...patientLines(calculated),
+  const lines:ReportItem[]=[...patientLines(calculated, actualSummary),
     {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
     recommendationTable(calculated),
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
