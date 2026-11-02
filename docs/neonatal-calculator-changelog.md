@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — duplicate clinical warnings in the batch workbook
+
+- Show identical clinical messages with the same severity once per patient in the `Peringatan` sheet. This removes the duplicate renal-review messages for T11 and T19 contributed by both reference sources.
+- Keep the first occurrence and preserve its position. Keep different messages or severities, and keep the same message for different patients. The calculation engine, input-data warnings, and other sheets are unchanged.
+- Add regression coverage for T11/T19 and for distinct messages or severities sharing a warning code.
+- Verification: 38 relevant tests, TypeScript, and changed-source lint pass. The 34-case export has 47 warning rows instead of 49, removing one duplicate each for T11 and T19. All 720 patient-result cells still match the notebook, the other five sheets retain their values, and the renal-warning export was visually inspected.
+
 ## 2026-11-03 — warning labels and colors in the batch workbook
 
 - Export clinical warning categories as `PERINGATAN` (red), `PERHATIAN` (yellow), and `INFORMASI` (blue), matching screen labels and status text colors instead of exposing internal severity keys.

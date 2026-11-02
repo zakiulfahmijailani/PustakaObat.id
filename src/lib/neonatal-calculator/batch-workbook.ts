@@ -295,8 +295,13 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     if(row.status==="gagal") addWarningRow(warnings, row.sourceRow, row.patientCode, "critical", "Baris dilewati: " + row.errors.join(" | "));
     else {
       for(const warning of row.warnings) addWarningRow(warnings, row.sourceRow, row.patientCode, "warning", "Peringatan data: " + warning);
-      for(const warning of [...row.calculator.globalWarnings,...row.calculator.recommendations.institutionalPrimary.warnings,...row.calculator.recommendations.anmf2024.warnings])
+      const seenWarnings = new Set<string>();
+      for(const warning of [...row.calculator.globalWarnings,...row.calculator.recommendations.institutionalPrimary.warnings,...row.calculator.recommendations.anmf2024.warnings]) {
+        const key = JSON.stringify([warning.severity, warning.message]);
+        if (seenWarnings.has(key)) continue;
+        seenWarnings.add(key);
         addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, warning.message);
+      }
     }
   }
   setUsefulWidths(warnings,75);
