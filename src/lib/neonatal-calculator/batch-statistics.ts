@@ -137,7 +137,7 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
     const variance=m*(m+1)*(2*m+1)/24-ties/48;
     p=variance<=0?1:clamp(2*(1-normalCdf((Math.abs(wp-mu))/Math.sqrt(variance))));
   }
-  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi; 0 selisih dikeluarkan; auto SciPy: exact tanpa ties sampai n=50; permutasi ties/zero sampai n=13"};
+  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi; selisih 0 dikeluarkan"};
 }
 function status(record:ReturnType<typeof notebookBatchRecord>,reference:ReferenceName,metric:ComparisonMetric):string|null {
   const key = (metric.startsWith("Dosis") ? metric.endsWith("aktual") ? "_ka_" : "_kma_" : metric.endsWith("aktual") ? "_kfa_" : "_kmf_") + (reference === "Pedoman Rumah Sakit" ? "rs" : "lit");

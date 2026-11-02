@@ -1,5 +1,11 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — concise Wilcoxon explanation
+
+- Replace the technical SciPy implementation note with `Uji dua sisi; selisih 0 dikeluarkan` in exported statistical results, as requested in the review.
+- Keep test selection, zero handling, p-values, statistics, medians, and all other result notes unchanged.
+- Verification: 25 relevant tests, TypeScript, and changed-source lint pass. All 12 exported Wilcoxon notes in the 34-case workbook use the short text with no SciPy implementation details. Statistical values and all 720 patient-result cells remain unchanged; the note column was visually inspected.
+
 ## 2026-11-03 — distinguish untested and all-zero statistical results
 
 - Label paired comparisons with at least three all-zero differences as `Semua selisih nol`, retaining the notebook's p=1 and median. Comparisons with fewer than three valid pairs remain `Tidak diuji` with a genuinely empty p-value cell in Excel. Store all unavailable numeric statistics as blank cells rather than empty text.
