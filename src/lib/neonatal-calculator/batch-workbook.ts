@@ -234,6 +234,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
 
   const statistics = summarizeBatch(result);
   const fmt = (value: number | null) => value === null || !Number.isFinite(value) ? "" : value;
+  const capitalizeLabel = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
   const addHeader = (sheet: import("exceljs").Worksheet, headers: string[]) => {
     sheet.addRow(headers); styleHeader(sheet.getRow(1));
     sheet.views = [{ state: "frozen", ySplit: 1, xSplit: 2 }];
@@ -251,16 +252,16 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   const summary = workbook.addWorksheet("Ringkasan Kesesuaian");
   addHeader(summary, ["Kelompok", "Metrik", "Referensi", "Kategori", "Jumlah", "N dapat dinilai", "Persentase"]);
   for(const c of statistics.counts.filter(count => count.category !== "opsi-diskrit-tidak-cocok"))
-    summary.addRow([c.group,c.metric,c.reference,c.category,c.count,c.total,c.percent / 100]);
+    summary.addRow([capitalizeLabel(c.group),c.metric,c.reference,capitalizeLabel(c.category),c.count,c.total,c.percent / 100]);
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
   const tests = workbook.addWorksheet("Analisis Statistik");
   addHeader(tests, ["Kelompok","Metrik","Referensi","n","Shapiro-Wilk W","Shapiro p","Uji Berpasangan","Statistik","p dua sisi","Catatan"]);
-  for(const p of statistics.paired) tests.addRow([p.group,p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),fmt(p.pValue),p.note]);
+  for(const p of statistics.paired) tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),fmt(p.pValue),p.note]);
   tests.addRow([]);
   const start = tests.rowCount + 1;
   tests.addRow(["McNemar: Kelompok","Metrik","N pasangan","Sesuai keduanya","Hanya RS","Hanya Literatur","Tidak sesuai keduanya","Uji","Statistik","p dua sisi"]);
   styleHeader(tests.getRow(start));
-  for(const p of statistics.mcnemar) tests.addRow([p.group,p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),fmt(p.pValue)]);
+  for(const p of statistics.mcnemar) tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),fmt(p.pValue)]);
   setUsefulWidths(tests,42);
   const interpretation = workbook.addWorksheet("Interpretasi & Kesimpulan");
   interpretation.addRows([

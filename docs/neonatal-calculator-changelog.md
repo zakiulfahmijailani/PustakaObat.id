@@ -1,5 +1,11 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — capitalize workbook antibiotic and category labels
+
+- Display Gentamisin, Amikasin, Vankomisin, Sesuai, Berlebih, and Kurang with initial capitals in `Ringkasan Kesesuaian`. Apply the same antibiotic naming to paired-test and McNemar rows in `Analisis Statistik`.
+- Format labels only when writing Excel. Preserve internal statistical keys, numeric values, patient-result cells, narrative text, and warning labels.
+- Verification: 38 relevant tests, TypeScript, and changed-source lint pass. The generated workbook uses all three capitalized antibiotic and category labels; every other summary/statistical cell and all 720 patient-result cells retain their values.
+
 ## 2026-11-03 — hide the internal summary category in Excel
 
 - Omit `opsi-diskrit-tidak-cocok` rows from the exported `Ringkasan Kesesuaian` sheet. Keep the Sesuai/Berlebih/Kurang counts, denominators, percentages, and row order.
