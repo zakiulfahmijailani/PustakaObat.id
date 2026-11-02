@@ -8,6 +8,8 @@ import { summarizeBatch, shapiroWilk } from "../batch-statistics";
 
 describe("PDF laporan neonatal", () => {
   const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
+  const plainText = (bytes: Uint8Array) => [...decode(bytes).matchAll(/\((.*)\) Tj/g)]
+    .map(match => match[1].replace(/\\([\\()])/g, "$1")).join(" ");
   it("menghasilkan berkas PDF rekomendasi nyata", () => {
     const bytes = buildRecommendationPdf(calculateRecommendations(patient()));
     expect(decode(bytes).startsWith("%PDF-1.4")).toBe(true);
@@ -70,6 +72,72 @@ describe("PDF laporan neonatal", () => {
     const bytes=buildBatchSummaryPdf(batch);
     expect(decode(bytes)).toContain("Ringkasan Evaluasi Batch");
     expect(bytes[0]).toBe(37);
+  });
+
+  it("menjelaskan singkatan yang dipakai dan menghapus label evaluasi ganda tanpa mengubah hasil", () => {
+    const result = calculateRecommendations(patient({ antibiotic: "amikasin", gestationalAgeWeeks: 30, postnatalAgeDays: 4, currentWeightKg: 1.38 }));
+    const evaluation = evaluateRegimen(result, {
+      actualDoseMg: 21, actualIntervalHours: 24, manualDoseMinMg: 21, manualDoseMaxMg: 21,
+      manualIntervalMinHours: 24, manualIntervalMaxHours: 24,
+    });
+    const before = JSON.stringify({ result, evaluation });
+    for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)]) {
+      const text = plainText(bytes);
+      expect(text).toContain("Keterangan singkatan");
+      expect(text).toContain("PMA = usia pascamenstruasi");
+      expect(text).toContain("GA = usia gestasi; PNA = usia pascalahir");
+      expect(text).toContain("ANMF = Australasian Neonatal Medicines Formulary");
+      expect(text).toContain("q24h = tiap 24 jam");
+      expect(text).toContain("RS = Rumah Sakit; RSUP = Rumah Sakit Umum Pusat");
+      expect(text).toContain("interval antardosis");
+      expect(text).not.toMatch(/berlebih -|sesuai -|lebih-pendek|tidak-dapat-dievaluasi/);
+      expect(text).not.toContain("COX =");
+    }
+    const text = plainText(buildEvaluationPdf(result, evaluation, true));
+    expect(text).toContain("Berlebih (+0,3 mg; +1,4%)");
+    expect(text).toContain("Berlebih (+4,44 mg; +26,8%)");
+    expect(text).toContain("+0,333 dosis/hari; +50,0%");
+    expect(JSON.stringify({ result, evaluation })).toBe(before);
+  });
+
+  it("menjelaskan kondisi tanpa interval rutin dan mengganti ringkasan manual kosong dengan istilah yang jelas", () => {
+    const result = calculateRecommendations(patient({ antibiotic: "vankomisin", serumCreatinineMgDl: 1.2 }));
+    const evaluation = evaluateRegimen(result, {
+      actualDoseMg: 15, actualIntervalHours: null, manualDoseMinMg: 15, manualDoseMaxMg: 15,
+      manualIntervalMinHours: null, manualIntervalMaxHours: null,
+    });
+    const text = plainText(buildEvaluationPdf(result, evaluation, true));
+    expect(text).toContain("Tidak dapat dievaluasi. Interval aktual tidak diisi.");
+    expect(text).toContain("Manual interval: Tidak dapat dievaluasi Tidak dapat dievaluasi");
+    expect(text).not.toContain("tidak-dapat-dievaluasi");
+    expect(text).toContain("UNC = University of North Carolina Medical Center");
+    expect(text).not.toContain("GA =");
+  });
+
+  it("mempertahankan arti status opsi interval yang tidak cocok meskipun ringkasan frekuensi menyebut Sesuai", () => {
+    const result = calculateRecommendations(patient());
+    result.recommendations.institutionalPrimary.interval = { kind: "discrete", allowedHours: [24, 48], label: "24 atau 48 jam" };
+    const evaluation = evaluateRegimen(result, {
+      actualDoseMg: 8, actualIntervalHours: 36, manualDoseMinMg: 8, manualDoseMaxMg: 8,
+      manualIntervalMinHours: 36, manualIntervalMaxHours: 36,
+    });
+    expect(evaluation.targets[0].actualInterval.status).toBe("opsi-diskrit-tidak-cocok");
+    expect(evaluation.targets[0].actualInterval.message).toBe("Sesuai");
+    const text = plainText(buildEvaluationPdf(result, evaluation, true));
+    expect(text).toContain("Tidak sesuai opsi interval. Interval aktual: tiap 36 jam; opsi rujukan: tiap 24 jam atau tiap 48 jam.");
+    expect(text).not.toContain("opsi-diskrit-tidak-cocok");
+    expect(text).toContain("Minimum:");
+    expect(text).toContain("Maksimum:");
+  });
+
+  it("mengapitalisasi kategori dan antibiotik pada PDF batch tanpa mengubah jumlah atau statistik", () => {
+    const row = ["P-01","Gentamisin",32,0,5,1.5,0.4,2,"Tidak","Tidak","Tidak",7.5,11.25,24,48,8,24];
+    const batch = processBatchTable([BATCH_COLUMNS, ...[1, 2, 3].map(n => [`P-${n}`, ...row.slice(1)])]);
+    const text = plainText(buildBatchSummaryPdf(batch));
+    expect(text).toContain("Pedoman Rumah Sakit / Sesuai: 3/3 (100.0%)");
+    expect(text).toContain("Gentamisin / Dosis aktual");
+    expect(text).not.toContain("gentamisin /");
+    expect(text).toContain("Keterangan singkatan");
   });
 
   it("menampilkan kotak berlabel sesuai tingkat peringatan, berurutan, tanpa pesan ganda", () => {

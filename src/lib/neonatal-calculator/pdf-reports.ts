@@ -2,9 +2,9 @@ import { pythonFixed } from "./python-rounding";
 import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
 import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, formatNumber } from ".";
-import type { CalculatorResult, ClinicalWarning, RegimenEvaluationResult, Recommendation } from "./types";
+import type { CalculatorResult, ClinicalWarning, DoseEvaluation, IntervalEvaluation, RegimenEvaluationResult, Recommendation } from "./types";
 
-type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title"> };
+type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title">; panelTitle?: string };
 type ReportCell = { text: string; color?: ReportLine["color"] };
 type ReportTable = { table: { title: string; columns: { text: string; width: number }[]; rows: ReportCell[][] } };
 type ReportItem = ReportLine | ReportTable;
@@ -91,10 +91,10 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
         }
       }
       if (capacity - layoutCursor >= 8) appendBlock({ rows: [], height: 8 });
-    } else if (line.warning) {
-      const { severity, title: warningTitle } = line.warning;
-      const label = WARNING_STYLES[severity].label;
-      const heading = label + ":" + (warningTitle ? " " + warningTitle + (/[.!?]$/.test(warningTitle) ? "" : ".") : "");
+    } else if (line.warning || line.panelTitle) {
+      const severity = line.warning?.severity ?? "info", warningTitle = line.warning?.title ?? line.panelTitle;
+      const label = line.warning ? WARNING_STYLES[severity].label : "";
+      const heading = line.warning ? label + ":" + (warningTitle ? " " + warningTitle + (/[.!?]$/.test(warningTitle) ? "" : ".") : "") : warningTitle!;
       // Some screen warnings repeat their title as the first sentence of the message.
       const body = warningTitle && line.text.startsWith(warningTitle + ". ")
         ? line.text.slice(warningTitle.length + 2) : line.text;
@@ -106,7 +106,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
       const oversized = 2 * padding + afterBox + rows.reduce((sum, row) => sum + row.leading + (row.gap ?? 0), 0) > capacity;
       let offset = 0;
       while (offset < rows.length) {
-        const part: PdfRow[] = offset === 0 ? [] : [{ text: label + ": (lanjutan)", fontSize: 10, bold: true, leading: 14 }];
+        const part: PdfRow[] = offset === 0 ? [] : [{ text: (label || warningTitle) + ": (lanjutan)", fontSize: 10, bold: true, leading: 14 }];
         let height = 2 * padding + afterBox + part.reduce((sum, row) => sum + row.leading, 0);
         const minimumRows = offset === 0 ? Math.min(rows.length, headingRows.length + 1) : 1;
         const minimumHeight = height + rows.slice(offset, offset + minimumRows).reduce((sum, row) => sum + row.leading + (row.gap ?? 0), 0);
@@ -236,44 +236,85 @@ function patientLines(calculated:CalculatorResult):ReportLine[]{
   ];
 }
 const footer:ReportLine[]=[{text:"Versi aturan: "+CALCULATOR_RULE_VERSION},{text:CLINICAL_DISCLAIMER},{text:"PERINGATAN: Belum diverifikasi secara klinis dan belum sesuai untuk keputusan terapi tanpa pemeriksaan profesional.",color:"red"}];
+// Presentation definitions follow the v19 notebook's SINGKATAN list and the workbook glossary.
+const PDF_ABBREVIATIONS = [
+  ["RS", "Rumah Sakit"], ["RSUP", "Rumah Sakit Umum Pusat"],
+  ["SPO", "Standar Prosedur Operasional"], ["PNPK", "Pedoman Nasional Pelayanan Kedokteran"],
+  ["ANMF", "Australasian Neonatal Medicines Formulary"], ["UNC", "University of North Carolina Medical Center"],
+  ["GA", "usia gestasi"], ["PNA", "usia pascalahir"],
+  ["PMA", "usia pascamenstruasi (usia gestasi saat lahir + usia pascalahir)"],
+  ["SCr", "kreatinin serum"], ["UOP", "produksi urin"],
+  ["HIE", "ensefalopati hipoksik-iskemik"], ["COX", "siklooksigenase"],
+  ["TDM", "pemantauan kadar obat dalam darah"], ["DPJP", "dokter penanggung jawab pasien"],
+  ["Kemenkes", "Kementerian Kesehatan"], ["RI", "Republik Indonesia"],
+] as const;
+function withGlossary(lines: ReportItem[], patientReport = true): ReportItem[] {
+  const fullText = [...lines, ...footer].map(line => "table" in line
+    ? [line.table.title, ...line.table.columns.map(column => column.text), ...line.table.rows.flat().map(cell => cell.text)].join(" ")
+    : line.text + " " + (line.warning?.title ?? "")).join(" ");
+  const entries = PDF_ABBREVIATIONS.filter(([abbreviation]) => new RegExp(`\\b${abbreviation}\\b`).test(fullText));
+  const intervalCodes = [...new Set([...fullText.matchAll(/\bq(\d+)h\b/g)].map(match => match[0] + " = tiap " + match[1] + " jam"))];
+  const glossary = [...entries.map(([abbreviation, meaning]) => abbreviation + " = " + meaning), ...intervalCodes].join("; ");
+  const intervalNote = "Frekuensi ditulis sebagai 'tiap X jam' (interval antardosis).";
+  return [...lines, ...(glossary ? [{ panelTitle: "Keterangan singkatan", text: glossary + "." + (patientReport ? " " + intervalNote : "") }] : []), ...footer];
+}
+function resultMessage(message: string): string {
+  const text = message.trim();
+  if (!text || text === "-") return "Tidak dapat dievaluasi";
+  return (text[0].toUpperCase() + text.slice(1)).replace(/\bMin:/g, "Minimum:").replace(/\bMaks:/g, "Maksimum:");
+}
+function unevaluableMessage(message: string): string {
+  const text = resultMessage(message);
+  return text.startsWith("Tidak dapat dievaluasi") ? text : "Tidak dapat dievaluasi. " + text;
+}
+function doseEvaluationText(result: DoseEvaluation): string {
+  return result.status === "tidak-dapat-dievaluasi" ? unevaluableMessage(result.message) : resultMessage(result.message);
+}
+function intervalEvaluationText(result: IntervalEvaluation, rec: Recommendation, actualHours: number | null): string {
+  if (result.status === "tidak-dapat-dievaluasi") return unevaluableMessage(result.message);
+  if (result.status === "opsi-diskrit-tidak-cocok")
+    return "Tidak sesuai opsi interval. Interval aktual: " + (actualHours === null ? "tidak tersedia" : "tiap " + actualHours + " jam") + "; opsi rujukan: " + intervalText(rec) + ".";
+  return resultMessage(result.message);
+}
+function categoryLabel(category: string): string {
+  return category === "opsi-diskrit-tidak-cocok" ? "Tidak sesuai opsi interval" : resultMessage(category);
+}
 export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
-  return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",[
+  return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",withGlossary([
     ...patientLines(calculated),
     recommendationTable(calculated),
-    ...footer
-  ]);
+  ]));
 }
 export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean):Uint8Array{
   const refs=[calculated.recommendations.institutionalPrimary,calculated.recommendations.anmf2024];
   const targets = refs.map(rec => evaluation.targets.find(target => target.recommendationId === rec.id));
   const rows: ReportCell[][] = [
-    [{ text: "Dosis aktual:" }, ...targets.map(target => ({ text: target ? target.actualDose.status + " - " + target.actualDose.message : "Tidak tersedia", color: target?.actualDose.status === "berlebih" ? "red" as const : target?.actualDose.status === "kurang" ? "orange" as const : target?.actualDose.status === "sesuai" ? "green" as const : undefined }))],
-    [{ text: "Frekuensi aktual:" }, ...targets.map(target => ({ text: target ? target.actualInterval.status + " - " + target.actualInterval.message : "Tidak tersedia" }))],
+    [{ text: "Dosis aktual:" }, ...targets.map(target => ({ text: target ? doseEvaluationText(target.actualDose) : "Tidak tersedia", color: target?.actualDose.status === "berlebih" ? "red" as const : target?.actualDose.status === "kurang" ? "orange" as const : target?.actualDose.status === "sesuai" ? "green" as const : undefined }))],
+    [{ text: "Frekuensi aktual:" }, ...targets.map((target, index) => ({ text: target ? intervalEvaluationText(target.actualInterval, refs[index], evaluation.input.actualIntervalHours) : "Tidak tersedia" }))],
   ];
   if (manualEnabled) rows.push(
-    [{ text: "Manual dosis:" }, ...targets.map(target => ({ text: target?.manualDose.summary ?? target?.manualDose.lowerBound?.message ?? "Tidak tersedia" }))],
-    [{ text: "Manual interval:" }, ...targets.map(target => ({ text: target?.manualInterval.summary ?? target?.manualInterval.lowerBound?.message ?? "Tidak tersedia" }))],
+    [{ text: "Manual dosis:" }, ...targets.map(target => ({ text: resultMessage(target?.manualDose.summary ?? target?.manualDose.lowerBound?.message ?? "Tidak tersedia") }))],
+    [{ text: "Manual interval:" }, ...targets.map(target => ({ text: resultMessage(target?.manualInterval.summary ?? target?.manualInterval.lowerBound?.message ?? "Tidak tersedia") }))],
   );
   const lines:ReportItem[]=[...patientLines(calculated),
     {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
     recommendationTable(calculated),
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
   ];
-  return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",[...lines,...footer]);
+  return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",withGlossary(lines));
 }
 export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
   const summary=summarizeBatch(result), lines:ReportLine[]=[
     {text:"Kandidat: "+result.candidateRows+"; Berhasil: "+result.successCount+"; Gagal: "+result.errorCount+"; Contoh dilewati: "+result.ignoredRows,heading:true},
     {text:"Distribusi Kesesuaian",heading:true},
-    ...summary.counts.filter(x=>x.group==="Keseluruhan"&&x.count>0).map(x=>({text:x.metric+" / "+x.reference+" / "+x.category+": "+x.count+"/"+x.total+" ("+pythonFixed(x.percent,1)+"%)"})),
+    ...summary.counts.filter(x=>x.group==="Keseluruhan"&&x.count>0).map(x=>({text:x.metric+" / "+x.reference+" / "+categoryLabel(x.category)+": "+x.count+"/"+x.total+" ("+pythonFixed(x.percent,1)+"%)"})),
     {text:"Uji statistik berpasangan - hasil eksploratif",heading:true},
-    ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>=3).map(x=>({text:x.group+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
+    ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>=3).map(x=>({text:categoryLabel(x.group)+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
     {text:"Uji McNemar: kesesuaian kedua pedoman",heading:true},
     ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+x.method+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
     {text:"Kesimpulan: hasil statistik memerlukan verifikasi terhadap notebook acuan dan penafsiran oleh peneliti.",color:"orange"},
-    ...footer
   ];
-  return pdfDocument("Ringkasan Evaluasi Batch Neonatus",lines);
+  return pdfDocument("Ringkasan Evaluasi Batch Neonatus",withGlossary(lines, false));
 }
 export function downloadPdf(bytes:Uint8Array,filename:string):void {
   const copy=new Uint8Array(bytes.byteLength);copy.set(bytes);

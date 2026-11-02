@@ -1,5 +1,13 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — PDF glossary and readable result terms
+
+- Add a blue `Keterangan singkatan` box to downloaded reports, selecting definitions for abbreviations actually used in the report or disclaimer. Follow the v19 notebook glossary, explain interval notation such as `q24h`, and retain the notebook's explanation of `tiap X jam` as the interval between doses.
+- Show each actual comparison message once with its existing capitalized category and numeric details. Replace internal unevaluable/discrete-option status codes with readable descriptions; preserve the discrete mismatch status even when the engine's frequency-range summary says `Sesuai`. Expand manual `Min`/`Maks` labels and describe unavailable manual comparisons as `Tidak dapat dievaluasi`.
+- Capitalize antibiotic names and categories in batch PDFs. Keep calculation objects, clinical warnings, doses, intervals, differences, percentages, statistical values, and workbook output unchanged.
+- Verification: all 267 tests pass, including all 720 public patient-result cells against the notebook. Checks across 65 PDFs (102 pages) preserve numeric and warning content, match comparisons to the correct reference column, and verify cell/box padding and page bounds. New tests cover contextual glossary entries, repeated labels, absent intervals, manual comparisons, and discrete-option mismatches. Representative glossary and continuation pages were visually inspected.
+- Production build, type checks, and changed-source lint pass. Three local-browser downloads include the glossary, clean result labels, and the expected values with/without manual comparisons; no page errors occur. Changes remain local and have not been published to production.
+
 ## 2026-11-03 — recommendation and evaluation tables in patient PDFs
 
 - Present recommendation dose, frequency, source, and clinical notes in a table comparing the primary hospital guideline with ANMF 2024. Add a separate evaluation table with actual dose/frequency comparisons and optional manual comparisons under the same reference columns.
