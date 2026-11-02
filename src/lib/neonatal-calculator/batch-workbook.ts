@@ -256,7 +256,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
   const tests = workbook.addWorksheet("Analisis Statistik");
   addHeader(tests, ["Kelompok","Metrik","Referensi","n","Shapiro-Wilk W","Shapiro p","Uji Berpasangan","Statistik","p dua sisi","Median selisih","Satuan","Kesimpulan","Catatan"]);
-  for(const p of statistics.paired) {
+  for(const p of statistics.paired.filter(test => test.group !== "Keseluruhan")) {
     const available = p.n >= 3 && p.pValue !== null && Number.isFinite(p.pValue);
     const conclusion = !available ? (p.n < 3 ? "Tidak diuji (n<3)" : "Tidak dapat diuji")
       : p.pValue! < 0.05 ? "Berbeda signifikan (p<0,05)" : "Tidak berbeda signifikan (p≥0,05)";

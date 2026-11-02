@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — export paired tests per antibiotic
+
+- Omit the eight pooled `Keseluruhan` paired-test rows from `Analisis Statistik`. Keep paired tests for Gentamisin, Amikasin, and Vankomisin, with their medians, units, and conclusions.
+- Preserve every McNemar row, including the four `Keseluruhan` comparisons. Keep overall conformity summaries and internal statistical results unchanged.
+- Locate exported test blocks by their headers in the notebook-parity checks so verification remains valid when row positions change.
+- Verification: 39 relevant tests, TypeScript, and changed-source lint pass. The 34-case workbook contains 24 per-antibiotic paired-test rows and all 16 McNemar rows, including four Overall comparisons. Retained statistics and all 720 patient-result cells preserve their values; the exported block labels were visually inspected.
+
 ## 2026-11-03 — median differences and statistical conclusions in Excel
 
 - Add numeric `Median selisih`, `Satuan`, and `Kesimpulan` columns to the paired-test table in `Analisis Statistik`. Dose differences use mg/kg; frequency differences use doses/day (`dosis/hari`). Display medians to three decimals while retaining stored precision.

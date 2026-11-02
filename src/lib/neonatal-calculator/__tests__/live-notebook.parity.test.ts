@@ -163,7 +163,13 @@ describe("notebook v19 narrative parity", () => {
       const book = new ExcelJS.Workbook();
       await book.xlsx.load(Buffer.from(await buildBatchResultWorkbook(processBatchTable([oracle.header, ...cohort.rows]))) as unknown as import("exceljs").Buffer);
       const sheet = book.getWorksheet("Analisis Statistik")!;
-      for (const row of sheet.getRows(2, 32)!) {
+      const mcNemarHeader = sheet.getRows(2, sheet.rowCount - 1)!.find(row => row.getCell(1).value === "McNemar: Kelompok")!;
+      const pairedRows = sheet.getRows(2, mcNemarHeader.number - 2)!.filter(row => row.getCell(1).value);
+      const mcNemarRows = sheet.getRows(mcNemarHeader.number + 1, sheet.rowCount - mcNemarHeader.number)!;
+      expect(pairedRows).toHaveLength(24);
+      expect([...new Set(pairedRows.map(row => row.getCell(1).value))]).toEqual(["Gentamisin", "Amikasin", "Vankomisin"]);
+      expect(mcNemarRows.filter(row => row.getCell(1).value === "Keseluruhan")).toHaveLength(4);
+      for (const row of pairedRows) {
         if (Number(row.getCell(4).value) < 3) {
           expect(row.getCell(10).value).toBe("");
           expect(row.getCell(12).value).toBe("Tidak diuji (n<3)");
@@ -175,7 +181,7 @@ describe("notebook v19 narrative parity", () => {
             if (!expected.cukup) continue;
             const metric = (family === "dosis" ? "Dosis " : "Frekuensi ") + (key.startsWith("aktual") ? "aktual" : "manual");
             const reference = key.endsWith("RS") ? "Pedoman Rumah Sakit" : "Literatur Terkini";
-            const row = sheet.getRows(2, 32)!.find(row => row.getCell(1).value === drug && row.getCell(2).value === metric && row.getCell(3).value === reference)!;
+            const row = pairedRows.find(row => row.getCell(1).value === drug && row.getCell(2).value === metric && row.getCell(3).value === reference)!;
             expect(row.getCell(10).value, drug + metric + reference).toBeCloseTo(expected.median_selisih, 9);
             expect(row.getCell(10).numFmt).toBe("0.000");
             expect(row.getCell(11).value).toBe(family === "dosis" ? "mg/kg" : "dosis/hari");
@@ -186,7 +192,7 @@ describe("notebook v19 narrative parity", () => {
           const expected = cohort.statistics[family]["mcnemar_" + calculation];
           if (!expected) continue;
           const metric = (family === "dosis" ? "Dosis " : "Frekuensi ") + calculation;
-          const row = sheet.getRows(36, 16)!.find(row => row.getCell(1).value === "Keseluruhan" && row.getCell(2).value === metric)!;
+          const row = mcNemarRows.find(row => row.getCell(1).value === "Keseluruhan" && row.getCell(2).value === metric)!;
           expect(row.getCell(11).value).toBe(expected.signifikan
             ? "Proporsi kesesuaian BERBEDA signifikan antara RS & Literatur (p<0,05)"
             : "Proporsi kesesuaian TIDAK berbeda signifikan (p≥0,05)");
