@@ -1,6 +1,7 @@
 import { notebookBatchRecord } from "./notebook-results";
 import { summarizeBatch } from "./batch-statistics";
 import { buildBatchInterpretation } from "./batch-interpretation";
+import type { ClinicalWarning } from "./types";
 import {
   BATCH_COLUMNS,
   BATCH_SHEET_NAME,
@@ -31,6 +32,29 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
 
 const HEADER_FILL = "FF0F766E";
 const HEADER_FONT = { color: { argb: "FFFFFFFF" }, bold: true } as const;
+
+// Public warning labels match the calculator screen; text colors use its light-theme status palette.
+const WARNING_PRESENTATION = {
+  critical: { label: "PERINGATAN", foreground: "FFB4493F", background: "FFF8EDEC" },
+  warning: { label: "PERHATIAN", foreground: "FFA76F24", background: "FFFFF3CD" },
+  info: { label: "INFORMASI", foreground: "FF3F6F8F", background: "FFECF1F4" },
+} as const;
+
+function addWarningRow(
+  sheet: import("exceljs").Worksheet,
+  sourceRow: number,
+  patientCode: string,
+  severity: ClinicalWarning["severity"],
+  message: string,
+): void {
+  const presentation = WARNING_PRESENTATION[severity];
+  const row = sheet.addRow([sourceRow, patientCode, presentation.label, message]);
+  const category = row.getCell(3);
+  category.font = { bold: true, color: { argb: presentation.foreground } };
+  category.fill = { type: "pattern", pattern: "solid", fgColor: { argb: presentation.background } };
+  row.eachCell(cell => { cell.alignment = { vertical: "middle", wrapText: true }; });
+  row.height = Math.max(28, Math.ceil(message.length / 70) * 16 + 8);
+}
 
 function cellPrimitive(value: unknown): unknown {
   if (value === null || value === undefined || typeof value !== "object") return value;
@@ -268,11 +292,11 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   const warnings = workbook.addWorksheet("Peringatan");
   addHeader(warnings,["Baris sumber","Kode pasien","Kategori","Catatan"]);
   for (const row of result.rows) {
-    if(row.status==="gagal") warnings.addRow([row.sourceRow,row.patientCode,"Baris dilewati",row.errors.join(" | ")]);
+    if(row.status==="gagal") addWarningRow(warnings, row.sourceRow, row.patientCode, "critical", "Baris dilewati: " + row.errors.join(" | "));
     else {
-      for(const warning of row.warnings) warnings.addRow([row.sourceRow,row.patientCode,"Peringatan data",warning]);
+      for(const warning of row.warnings) addWarningRow(warnings, row.sourceRow, row.patientCode, "warning", "Peringatan data: " + warning);
       for(const warning of [...row.calculator.globalWarnings,...row.calculator.recommendations.institutionalPrimary.warnings,...row.calculator.recommendations.anmf2024.warnings])
-        warnings.addRow([row.sourceRow,row.patientCode,warning.severity,warning.message]);
+        addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, warning.message);
     }
   }
   setUsefulWidths(warnings,75);

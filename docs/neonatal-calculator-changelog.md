@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — warning labels and colors in the batch workbook
+
+- Export clinical warning categories as `PERINGATAN` (red), `PERHATIAN` (yellow), and `INFORMASI` (blue), matching screen labels and status text colors instead of exposing internal severity keys.
+- Give rejected input rows the red category and optional input-data warnings the yellow category. Preserve their context in the note text as `Baris dilewati` or `Peringatan data`.
+- Color category cells, wrap warning text, and provide enough row height to read long notes. Keep warning messages, order, duplicates, and calculation results intact.
+- Verification: 36 relevant tests, TypeScript, and changed-source lint pass. All 720 patient-result cells still match the notebook. The 49 warning rows retain their original messages and order, and exported red/yellow/blue categories, rejected rows, and data warnings were checked and visually inspected.
+
 ## 2026-11-03 — rule-version label and draft text
 
 - Normalize the displayed rule version to `2026.11.01` across calculator results, screen/print output, Excel metadata, and PDF reports.
