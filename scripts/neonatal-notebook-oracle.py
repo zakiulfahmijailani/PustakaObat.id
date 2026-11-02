@@ -143,7 +143,7 @@ def main():
                          "executedCells": [3,5,6,8,10,14,17]}, "notebookChecks": checks,
               "header": header, "inputRows": rows, "batchRecords": records, "batchWarnings": warnings,
               "statistics": ns["hitung_statistik"](records), "summary": ns["ringkasan_kesesuaian"](records),
-              "recommendations": patients,"extraInputRows":extra_rows,"extraRecords":extra_records,"extraWarnings":extra_warnings,"cohorts":cohorts,
+              "recommendations": patients,"extraInputRows":extra_rows,"extraRecords":extra_records,"extraWarnings":extra_warnings,"extraStatistics":ns["hitung_statistik"](extra_records),"cohorts":cohorts,
               "interpretationV19": interpretation(records), "extraInterpretationV19": interpretation(extra_records),
               "interpretationCases": interpretation_cases,
               "interpretationSource": {"filename": interpretation_path.name, "sha256": hashlib.sha256(interpretation_path.read_bytes()).hexdigest()}}

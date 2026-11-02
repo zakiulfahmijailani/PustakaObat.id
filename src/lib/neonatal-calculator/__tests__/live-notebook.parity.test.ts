@@ -150,6 +150,48 @@ describe("notebook v19 narrative parity", () => {
     expect(exported).toEqual(expected);
     expect(exported.some(text => /\d\.\d/.test(text))).toBe(false);
     const paired = book.getWorksheet("Analisis Statistik")!;
-    expect(paired.getRow(1).values).toEqual([undefined, "Kelompok", "Metrik", "Referensi", "n", "Shapiro-Wilk W", "Shapiro p", "Uji Berpasangan", "Statistik", "p dua sisi", "Catatan"]);
+    expect(paired.getRow(1).values).toEqual([undefined, "Kelompok", "Metrik", "Referensi", "n", "Shapiro-Wilk W", "Shapiro p", "Uji Berpasangan", "Statistik", "p dua sisi", "Median selisih", "Satuan", "Kesimpulan", "Catatan"]);
+  });
+
+  it("exports reference medians with the correct units and significance conclusions", async () => {
+    const ExcelJS = await import("exceljs");
+    for (const cohort of [
+      { rows: oracle.inputRows, statistics: oracle.statistics },
+      { rows: oracle.extraInputRows, statistics: oracle.extraStatistics },
+      ...oracle.cohorts,
+    ]) {
+      const book = new ExcelJS.Workbook();
+      await book.xlsx.load(Buffer.from(await buildBatchResultWorkbook(processBatchTable([oracle.header, ...cohort.rows]))) as unknown as import("exceljs").Buffer);
+      const sheet = book.getWorksheet("Analisis Statistik")!;
+      for (const row of sheet.getRows(2, 32)!) {
+        if (Number(row.getCell(4).value) < 3) {
+          expect(row.getCell(10).value).toBe("");
+          expect(row.getCell(12).value).toBe("Tidak diuji (n<3)");
+        }
+      }
+      for (const family of ["dosis", "frekuensi"]) {
+        for (const [drug, block] of Object.entries(cohort.statistics[family].per_antibiotik) as [string, Record<string, { cukup: boolean; n: number; p: number; median_selisih: number; signifikan: boolean }>][]) {
+          for (const [key, expected] of Object.entries(block)) {
+            if (!expected.cukup) continue;
+            const metric = (family === "dosis" ? "Dosis " : "Frekuensi ") + (key.startsWith("aktual") ? "aktual" : "manual");
+            const reference = key.endsWith("RS") ? "Pedoman Rumah Sakit" : "Literatur Terkini";
+            const row = sheet.getRows(2, 32)!.find(row => row.getCell(1).value === drug && row.getCell(2).value === metric && row.getCell(3).value === reference)!;
+            expect(row.getCell(10).value, drug + metric + reference).toBeCloseTo(expected.median_selisih, 9);
+            expect(row.getCell(10).numFmt).toBe("0.000");
+            expect(row.getCell(11).value).toBe(family === "dosis" ? "mg/kg" : "dosis/hari");
+            expect(row.getCell(12).value).toBe(expected.signifikan ? "Berbeda signifikan (p<0,05)" : "Tidak berbeda signifikan (p≥0,05)");
+          }
+        }
+        for (const calculation of ["aktual", "manual"]) {
+          const expected = cohort.statistics[family]["mcnemar_" + calculation];
+          if (!expected) continue;
+          const metric = (family === "dosis" ? "Dosis " : "Frekuensi ") + calculation;
+          const row = sheet.getRows(36, 16)!.find(row => row.getCell(1).value === "Keseluruhan" && row.getCell(2).value === metric)!;
+          expect(row.getCell(11).value).toBe(expected.signifikan
+            ? "Proporsi kesesuaian BERBEDA signifikan antara RS & Literatur (p<0,05)"
+            : "Proporsi kesesuaian TIDAK berbeda signifikan (p≥0,05)");
+        }
+      }
+    }
   });
 });

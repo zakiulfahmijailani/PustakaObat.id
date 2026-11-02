@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — median differences and statistical conclusions in Excel
+
+- Add numeric `Median selisih`, `Satuan`, and `Kesimpulan` columns to the paired-test table in `Analisis Statistik`. Dose differences use mg/kg; frequency differences use doses/day (`dosis/hari`). Display medians to three decimals while retaining stored precision.
+- Determine significance from the unrounded p-value at 0.05. Leave the median blank and report insufficient data when n<3; retain the notebook's valid all-zero results.
+- Add the notebook's proportion-comparison conclusion to McNemar rows. Keep existing statistical values, calculation rules, and patient-result cells intact.
+- Verification: 39 relevant tests pass, including executable notebook checks of medians, units, significance, and insufficient-data rows across the 34-case, 99-case, and statistical cohorts. TypeScript and changed-source lint pass. Existing workbook values and all 720 patient-result cells remain unchanged; paired-test and McNemar previews were visually inspected.
+
 ## 2026-11-03 — decimal formatting in the statistics workbook
 
 - Format Shapiro–Wilk W, normality p, paired-test p, and McNemar p to four decimal places; format paired-test and McNemar statistics to three decimal places.
