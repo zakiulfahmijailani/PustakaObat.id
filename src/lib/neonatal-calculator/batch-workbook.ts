@@ -239,7 +239,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   setUsefulWidths(tests,42);
   const interpretation = workbook.addWorksheet("Interpretasi & Kesimpulan");
   interpretation.addRows([
-    ["Ringkasan Analisis Batch","DRAF — hasil harus diverifikasi terhadap notebook acuan sebelum digunakan dalam penelitian/keputusan klinis"],
+    ["Ringkasan Analisis Batch","Ringkasan kesesuaian, analisis statistik, dan interpretasi hasil batch."],
     ["Kandidat",result.candidateRows],["Berhasil",result.successCount],["Gagal",result.errorCount],
     ["Baris contoh diabaikan",result.ignoredRows],["Versi aturan",CALCULATOR_RULE_VERSION],
   ]);

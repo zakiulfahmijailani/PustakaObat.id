@@ -1,6 +1,6 @@
 # Neonatal Calculator Known Limitations
 
-Updated 31 October 2026 for rule version `2026.11.01-notebook-v18-parity-draft`.
+Updated 3 November 2026 for rule version `2026.11.01`. The public version label identifies the source rules; it does not establish independent clinical validation.
 
 - The original user-supplied v18 notebook is executed directly in the differential test suite. Its SHA256 is pinned; see [parity evidence](neonatal-notebook-v18-parity.md). Numerical parity does not establish independent clinical, regulatory, or institutional validation.
 - Missing renal measurements remain `data-unavailable` in the calculation contract. To reproduce notebook v18, routine calculations use its normal-for-age assumption, explicitly labeled as an **assumption** in the UI, Excel, and PDF. A high-risk missing-data warning is red, otherwise yellow. This assumption is not a measured normal result. Clinical approval of this workflow is still outstanding.
@@ -13,4 +13,4 @@ Updated 31 October 2026 for rule version `2026.11.01-notebook-v18-parity-draft`.
 - Commercial licensed monograph calculations, formulation/concentration/infusion preparation, automated pharmacokinetics, and clinical persistence remain outside scope.
 - Source guidelines and institutional protocols require independent review before real-world use. Do not interpret statistical significance as clinical suitability.
 - The patient label is a non-identifying case label; users must not enter direct identifiers.
-- This remains draft work on the stacked calculator branches. The release criteria in [priority 4 acceptance](neonatal-priority4-acceptance.md) remain applicable; parity testing does not grant release approval.
+- The release criteria in [priority 4 acceptance](neonatal-priority4-acceptance.md) remain applicable; parity testing does not grant clinical release approval.

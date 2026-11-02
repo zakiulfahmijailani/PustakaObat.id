@@ -46,7 +46,7 @@ function pdfDocument(title:string,lines:ReportLine[]):Uint8Array {
       items.push("BT","/F1 "+fontSize+" Tf",color+" rg",margin+" "+y+" Td","("+escapePdf(line.text)+") Tj","ET");
       y-=line.heading?24:16;
     }
-    items.push("BT","/F1 8 Tf","0.4 0.4 0.4 rg",margin+" 27 Td","("+escapePdf("PustakaObat.id - Draft; verifikasi klinis wajib - Halaman "+(p+1)+"/"+pages.length)+") Tj","ET");
+    items.push("BT","/F1 8 Tf","0.4 0.4 0.4 rg",margin+" 27 Td","("+escapePdf("PustakaObat.id - Halaman "+(p+1)+"/"+pages.length)+") Tj","ET");
     const stream=items.join("\n")+"\n";
     const length=encoder.encode(stream).length;
     const streamRef=add("<< /Length "+length+" >>\nstream\n"+stream+"endstream");

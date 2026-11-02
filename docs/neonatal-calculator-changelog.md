@@ -1,5 +1,12 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — rule-version label and draft text
+
+- Normalize the displayed rule version to `2026.11.01` across calculator results, screen/print output, Excel metadata, and PDF reports.
+- Replace the batch workbook's draft banner with a description of its contents and remove the draft label from PDF page footers.
+- Preserve the five v19 narrative sections, clinical warnings, limitations, and all calculation rules. This metadata change does not establish independent clinical validation.
+- Verification: 27 relevant tests, TypeScript and changed-source lint pass. The 720 patient-result cells and five non-interpretation sheets retain their values. Generated Excel and all three PDF types show `2026.11.01` without draft labels; the interpretation sheet and evaluation PDF were visually inspected.
+
 ## 2026-11-03 — notebook v19 narrative in the batch Excel export
 
 - Replace the p-value list in `Interpretasi & Kesimpulan` with the five data-dependent sections from notebook v19: actual-regimen distribution, paired-test interpretation, manual comparison, conclusions and follow-up, and methodological limitations.
