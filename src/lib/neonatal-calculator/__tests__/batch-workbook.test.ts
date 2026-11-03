@@ -151,6 +151,10 @@ describe("workbook batch", () => {
       expect(row.getCell(11).value).toBe("Tidak diuji");
       expect(row.getCell(13).value).toBeNull();
       expect(row.getCell(15).value).toBe("Tidak diuji (n<3)");
+      if (count > 0) {
+        const pdf = new TextDecoder().decode(buildBatchSummaryPdf(batch));
+        expect(pdf).toContain(`Tidak diuji, n=${count} \\(n<3\\)`);
+      }
     }
   });
 
@@ -166,6 +170,7 @@ describe("workbook batch", () => {
     expect(row.getCell(8).value).toBeNull();
     expect(row.getCell(15).value).toBe("Semua di dalam rentang; uji tidak diperlukan");
     expect(new TextDecoder().decode(buildBatchSummaryPdf(batch))).toContain("Tidak diuji");
+    expect(new TextDecoder().decode(buildBatchSummaryPdf(batch))).toContain("Tidak diuji, n=3 \\(semua di dalam rentang\\)");
   });
 
   it("memisahkan McNemar tanpa pasangan valid dari pasangan valid tanpa diskordan", async () => {
@@ -178,11 +183,12 @@ describe("workbook batch", () => {
       const sheet = workbook.getWorksheet("Analisis Statistik")!;
       const header = sheet.getRows(1, sheet.rowCount)!.find(row => row.getCell(1).value === "McNemar: Kelompok")!;
       const row = sheet.getRows(header.number + 1, sheet.rowCount - header.number)!.find(row => row.getCell(1).value === "Keseluruhan" && row.getCell(2).value === "Frekuensi aktual")!;
-      expect(row.getCell(8).value).toBe(test.method);
+      expect(row.getCell(8).value).toBe(count === 0 ? "Tidak diuji" : "Tidak diuji: tidak ada pasangan diskordan");
       expect(row.getCell(10).value).toBeNull();
+      expect(String(row.getCell(11).value)).toContain(count === 0 ? "tidak ada pasangan valid" : "tidak ada pasien yang hasilnya berbeda");
       const pdf = new TextDecoder().decode(buildBatchSummaryPdf(batch));
       if (count === 0) expect(pdf).not.toContain("p=");
-      else expect(pdf).toContain("Tidak ada pasangan diskordan");
+      else expect(pdf).toContain("Tidak diuji: tidak ada pasangan diskordan");
     }
   });
 });

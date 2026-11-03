@@ -76,8 +76,11 @@ describe("v20 batch acceptance (remaining migration work must stay visible)", ()
           const row = sheet.getRows(2, sheet.rowCount - 1)!.find(row => row.getCell(column("Kelompok")).value === drug
             && row.getCell(column("Metrik")).value === metric && row.getCell(column("Rujukan")).value === reference);
           expect(row, drug + metric + reference).toBeDefined();
+          expect(row!.getCell(column("n")).value).toBe(expected.n);
           expect(row!.getCell(column("Di atas rentang (n)")).value).toBe(expected.n_atas);
           expect(row!.getCell(column("Di bawah rentang (n)")).value).toBe(expected.n_bawah);
+          expect(row!.getCell(column("Di luar rentang (n)")).value).toBe(expected.n_luar);
+          expect(row!.getCell(column("Satuan")).value).toBe(family === "dosis" ? "mg/kg" : "dosis/hari");
           const median = row!.getCell(column("Median penyimpangan (pasien di luar rentang)")).value;
           if (expected.n_luar === 0) expect(median).toBeNull();
           else expect(median).toBeCloseTo(expected.median_selisih, 3);

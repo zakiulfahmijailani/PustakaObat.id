@@ -1,6 +1,7 @@
 import { notebookBatchRecord } from "./notebook-results";
 import { summarizeBatch } from "./batch-statistics";
 import { buildBatchInterpretation } from "./batch-interpretation";
+import { pythonRound } from "./python-rounding";
 import type { ClinicalWarning } from "./types";
 import {
   BATCH_COLUMNS,
@@ -260,7 +261,8 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     const available = p.n >= 3 && p.pValue !== null && Number.isFinite(p.pValue);
     const conclusion = !available ? (p.n < 3 ? "Tidak diuji (n<3)" : p.aboveCount+p.belowCount===0 ? "Semua di dalam rentang; uji tidak diperlukan" : "Tidak dapat diuji")
       : p.pValue! < 0.05 ? "Berbeda signifikan (p<0,05)" : "Tidak berbeda signifikan (p≥0,05)";
-    const median = p.aboveCount + p.belowCount === 0 ? null : fmt(p.medianDifference);
+    const roundedMedian = p.medianDifference === null ? null : pythonRound(p.medianDifference, 3);
+    const median = p.aboveCount + p.belowCount === 0 || roundedMedian === null ? null : Math.abs(roundedMedian) < 0.0005 ? 0 : fmt(roundedMedian);
     const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,p.aboveCount,p.belowCount,p.aboveCount+p.belowCount,median,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,p.metric.startsWith("Dosis") ? "mg/kg" : "dosis/hari",conclusion,p.note]);
     for (const column of [9, 10, 13]) row.getCell(column).numFmt = "0.0000";
     for (const column of [8, 12]) row.getCell(column).numFmt = "0.000";
@@ -274,10 +276,11 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   styleHeader(tests.getRow(start));
   for(const p of statistics.mcnemar) {
     const available = p.n > 0 && p.pValue !== null && Number.isFinite(p.pValue);
-    const conclusion = !available ? "Tidak dapat diuji"
+    const conclusion = !available ? (p.n === 0 ? "Tidak diuji: tidak ada pasangan valid" : "Tidak diuji: tidak ada pasien yang hasilnya berbeda antara kedua rujukan")
       : p.pValue! < 0.05 ? "Proporsi kesesuaian BERBEDA signifikan antara RS & Literatur (p<0,05)"
         : "Proporsi kesesuaian TIDAK berbeda signifikan (p≥0,05)";
-    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,conclusion]);
+    const method = p.method === "Tidak ada pasangan diskordan" ? "Tidak diuji: tidak ada pasangan diskordan" : p.method;
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.n,p.both,p.rsOnly,p.literatureOnly,p.neither,method,fmt(p.statistic),available ? fmt(p.pValue) : null,conclusion]);
     row.getCell(9).numFmt = "0.000";
     row.getCell(10).numFmt = "0.0000";
     row.getCell(11).alignment = { wrapText: true, vertical: "middle" };
@@ -290,11 +293,13 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     ["Ringkasan Analisis Batch","Ringkasan kesesuaian, analisis statistik, dan interpretasi hasil batch."],
     ["Kandidat",result.candidateRows],["Berhasil",result.successCount],["Gagal",result.errorCount],
     ["Baris contoh diabaikan",result.ignoredRows],["Versi aturan",CALCULATOR_RULE_VERSION],
+    ["Arti sorotan", "Poin berlatar kuning: hasil uji yang bermakna secara statistik, pemberian berkategori Berlebih, atau catatan yang memengaruhi cara membaca hasil."],
   ]);
   interpretation.getColumn(1).width = 32;
   interpretation.getColumn(2).width = 92;
   interpretation.getColumn(2).alignment = { wrapText: true, vertical: "top" };
   interpretation.getRow(1).height = 36;
+  interpretation.getRow(7).height = 48;
   interpretation.views = [{ showGridLines: false }];
   for (const section of buildBatchInterpretation(result, statistics)) {
     interpretation.addRow([]);
