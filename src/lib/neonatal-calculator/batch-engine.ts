@@ -127,6 +127,7 @@ function parseManualEvaluation(
   actualDoseMg: number | null,
   actualIntervalHours: number | null,
   errors: string[],
+  incompleteErrors: string[],
 ): RegimenEvaluationInput | null {
   const manualColumns = [
     "dosis_manual_min_mg",
@@ -137,16 +138,21 @@ function parseManualEvaluation(
   const anyManual = manualColumns.some((column) => !isBlank(record[column]));
   if (!anyManual) return null;
   if (manualColumns.some((column) => isBlank(record[column]))) {
-    errors.push(
-      "Jika pembanding manual digunakan, dosis dan frekuensi manual minimum serta maksimum harus diisi lengkap.",
+    incompleteErrors.push(
+      "Hitung manual harus diisi lengkap (dosis batas bawah dan atas, frekuensi paling sering dan paling jarang) atau dikosongkan semua.",
     );
     return null;
   }
 
   const manualDoseMinMg = parseNumber(record.dosis_manual_min_mg, "dosis_manual_min_mg", errors, true);
   const manualDoseMaxMg = parseNumber(record.dosis_manual_max_mg, "dosis_manual_max_mg", errors, true);
-  const manualIntervalMinHours = parseNumber(record.frekuensi_manual_min_jam, "frekuensi_manual_min_jam", errors, true);
-  const manualIntervalMaxHours = parseNumber(record.frekuensi_manual_max_jam, "frekuensi_manual_max_jam", errors, true);
+  const manualIntervalMinHours = parseNumber(record.frekuensi_manual_min_jam, "frekuensi_manual_min_jam", incompleteErrors, true);
+  const manualIntervalMaxHours = parseNumber(record.frekuensi_manual_max_jam, "frekuensi_manual_max_jam", incompleteErrors, true);
+  if (manualIntervalMinHours !== null && manualIntervalMaxHours !== null &&
+      (!Number.isInteger(manualIntervalMinHours) || !Number.isInteger(manualIntervalMaxHours) ||
+       manualIntervalMinHours < 1 || manualIntervalMaxHours > 96 || manualIntervalMinHours > manualIntervalMaxHours)) {
+    incompleteErrors.push("Frekuensi hitung manual harus bilangan bulat 1–96 jam, dan paling sering tidak boleh lebih besar dari paling jarang.");
+  }
   if (
     manualDoseMinMg === null ||
     manualDoseMaxMg === null ||
@@ -236,12 +242,16 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     if (urineOutputMlKgHour !== null && serumCreatinineMgDl === null) {
       errors.push("kreatinin_serum_mg_dl wajib diisi jika produksi urin dicantumkan.");
     }
-    const actualDoseMg = parseNumber(record.dosis_aktual_mg, "dosis_aktual_mg", errors, true);
+    const doseBlank = isBlank(record.dosis_aktual_mg);
+    const frequencyBlank = isBlank(record.frekuensi_aktual_jam);
+    const partiallyFilled = doseBlank !== frequencyBlank;
+    if (partiallyFilled) errors.push("Dosis aktual dan frekuensi aktual harus diisi bersama.");
+    const actualDoseMg = parseNumber(record.dosis_aktual_mg, "dosis_aktual_mg", errors, !partiallyFilled);
     const actualIntervalHours = parseNumber(
       record.frekuensi_aktual_jam,
       "frekuensi_aktual_jam",
       errors,
-      true,
+      !partiallyFilled,
     );
 
     const patient: PatientInput | null =
@@ -283,6 +293,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
       actualDoseMg,
       actualIntervalHours,
       manualWarnings,
+      errors,
     );
 
     let validatedPatient: PatientInput | null = null;
@@ -294,9 +305,9 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     if (actualDoseMg !== null && actualDoseMg <= 0) errors.push("dosis_aktual_mg harus lebih dari 0.");
     if (
       actualIntervalHours !== null &&
-      (!Number.isInteger(actualIntervalHours) || actualIntervalHours <= 0)
+      (!Number.isInteger(actualIntervalHours) || actualIntervalHours < 1 || actualIntervalHours > 96)
     ) {
-      errors.push("frekuensi_aktual_jam harus bilangan bulat positif.");
+      errors.push("Frekuensi aktual harus bilangan bulat 1–96 jam (setiap ... jam).");
     }
     if (manualInput) {
       const validation = validateRegimenEvaluationInput(manualInput, true);
