@@ -16,7 +16,7 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
   usia_gestasi_lahir_minggu: "Usia gestasi saat lahir dalam minggu lengkap. Wajib.",
   usia_gestasi_lahir_hari: "Tambahan hari 0–6. Opsional; kosong = 0.",
   usia_pascalahir_hari: "Usia pascalahir dalam hari. Wajib.",
-  berat_badan_kg: "Berat badan saat ini dalam kg. Wajib.",
+  berat_badan_kg: "Berat badan saat ini dalam kg, bukan gram (mis. 1720 g = 1,72 kg). Wajib.",
   kreatinin_serum_mg_dl: "Kreatinin serum dalam mg/dL. Opsional.",
   produksi_urin_ml_kg_jam: "Produksi urin dalam mL/kg/jam. Opsional; SCr wajib bila diisi.",
   hipotermia_terapeutik: "Ya/Tidak. Kosong dianggap Tidak.",

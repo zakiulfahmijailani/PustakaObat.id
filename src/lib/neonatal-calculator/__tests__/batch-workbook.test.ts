@@ -30,6 +30,9 @@ describe("workbook batch", () => {
       undefined,
       ...BATCH_COLUMNS,
     ]);
+    expect(workbook.getWorksheet("Petunjuk")?.getRow(11).getCell(2).value).toBe(
+      "Berat badan saat ini dalam kg, bukan gram (mis. 1720 g = 1,72 kg). Wajib.",
+    );
   });
 
   it("membuat hasil evaluasi yang dapat dibuka", async () => {
@@ -66,6 +69,16 @@ describe("workbook batch", () => {
       "Keterangan Singkatan",
     ]);
     expect(workbook.getWorksheet("Hasil per Pasien")?.rowCount).toBe(2);
+  });
+
+  it("menyampaikan konversi gram ke kilogram pada sheet peringatan", async () => {
+    const row = ["P-GRAM", "Gentamisin", 38, 0, 1, 1720, "", "", "Tidak", "Tidak", "Tidak", 20, 30, 24, 48, 20, 24];
+    const processed = processBatchTable([[...BATCH_COLUMNS], row]);
+    const workbook = await loadWorkbook(await buildBatchResultWorkbook(processed));
+
+    expect(workbook.getWorksheet("Peringatan")?.getRow(2).getCell(4).value).toBe(
+      "Baris dilewati: Berat badan harus 0,3–10 kg. Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).",
+    );
   });
 
   it("menampilkan pesan ginjal T11 dan T19 sekali per pasien tanpa menghilangkan peringatan lain", async () => {

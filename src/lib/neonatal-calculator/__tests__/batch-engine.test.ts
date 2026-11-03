@@ -100,4 +100,18 @@ describe("processBatchTable", () => {
       "Kolom wajib 'usia_gestasi_lahir_minggu' tidak ditemukan.",
     );
   });
+
+  it("menjelaskan konversi gram ke kilogram pada baris berat yang dilewati", () => {
+    const row = [...completeRow];
+    row[5] = 1720;
+    const result = processBatchTable([[...BATCH_COLUMNS], row]);
+
+    expect(result.errorCount).toBe(1);
+    expect(result.rows[0]).toMatchObject({
+      status: "gagal",
+      errors: [
+        "Berat badan harus 0,3–10 kg. Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).",
+      ],
+    });
+  });
 });

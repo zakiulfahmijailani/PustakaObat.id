@@ -44,6 +44,17 @@ describe("input validation", () => {
     const result = validatePatientInput(patient({ patientLabel: "  <Kasus>\u0000   B  " }));
     expect(result.success && result.data.patientLabel).toBe("Kasus B");
   });
+
+  it("explains when an out-of-range weight appears to be entered in grams", () => {
+    const result = validatePatientInput(patient({ currentWeightKg: 1720 }));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues).toContainEqual({
+        field: "currentWeightKg",
+        message: "Berat badan harus 0,3–10 kg. Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).",
+      });
+    }
+  });
 });
 
 // Rule IDs: VALID-REGIMEN-001, EVAL-MANUAL-001.

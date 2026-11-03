@@ -27,6 +27,14 @@ function finite(value: number): boolean {
   return Number.isFinite(value);
 }
 
+function weightValidationMessage(value: number): string {
+  const limitMessage = "Berat badan harus 0,3–10 kg.";
+  if (finite(value) && value > INPUT_LIMITS.currentWeightKg.max) {
+    return `${limitMessage} Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).`;
+  }
+  return limitMessage;
+}
+
 export function validatePatientInput(input: PatientInput): ValidationResult<PatientInput> {
   const issues: ValidationIssue[] = [];
   if (!ANTIBIOTICS.includes(input.antibiotic)) {
@@ -62,7 +70,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     input.currentWeightKg < INPUT_LIMITS.currentWeightKg.min ||
     input.currentWeightKg > INPUT_LIMITS.currentWeightKg.max
   ) {
-    issues.push({ field: "currentWeightKg", message: "Berat badan harus 0,3–10 kg." });
+    issues.push({ field: "currentWeightKg", message: weightValidationMessage(input.currentWeightKg) });
   } else if (Math.abs(input.currentWeightKg * 1000 - Math.round(input.currentWeightKg * 1000)) > 1e-9) {
     issues.push({ field: "currentWeightKg", message: "Berat badan maksimal tiga angka desimal." });
   }
