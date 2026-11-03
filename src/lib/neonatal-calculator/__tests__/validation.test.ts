@@ -55,6 +55,17 @@ describe("input validation", () => {
       });
     }
   });
+
+  it("directs users to an appropriate guide when postnatal age is above neonatal scope", () => {
+    const result = validatePatientInput(patient({ postnatalAgeDays: 29 }));
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues).toContainEqual({
+        field: "postnatalAgeDays",
+        message: "Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari.",
+      });
+    }
+  });
 });
 
 // Rule IDs: VALID-REGIMEN-001, EVAL-MANUAL-001.

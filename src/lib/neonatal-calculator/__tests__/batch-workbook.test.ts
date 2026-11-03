@@ -33,6 +33,9 @@ describe("workbook batch", () => {
     expect(workbook.getWorksheet("Petunjuk")?.getRow(11).getCell(2).value).toBe(
       "Berat badan saat ini dalam kg, bukan gram (mis. 1720 g = 1,72 kg). Wajib.",
     );
+    expect(workbook.getWorksheet("Petunjuk")?.getRow(10).getCell(2).value).toBe(
+      "Usia pascalahir neonatal 0–28 hari. Di atas 28 hari gunakan pedoman dosis bayi yang sesuai. Wajib.",
+    );
   });
 
   it("membuat hasil evaluasi yang dapat dibuka", async () => {
@@ -78,6 +81,16 @@ describe("workbook batch", () => {
 
     expect(workbook.getWorksheet("Peringatan")?.getRow(2).getCell(4).value).toBe(
       "Baris dilewati: Berat badan harus 0,3–10 kg. Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).",
+    );
+  });
+
+  it("menyampaikan batas usia pascalahir pada sheet peringatan", async () => {
+    const row = ["P-PNA", "Gentamisin", 38, 0, 29, 1.5, "", "", "Tidak", "Tidak", "Tidak", 20, 30, 24, 48, 20, 24];
+    const processed = processBatchTable([[...BATCH_COLUMNS], row]);
+    const workbook = await loadWorkbook(await buildBatchResultWorkbook(processed));
+
+    expect(workbook.getWorksheet("Peringatan")?.getRow(2).getCell(4).value).toBe(
+      "Baris dilewati: Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari.",
     );
   });
 

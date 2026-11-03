@@ -35,6 +35,13 @@ function weightValidationMessage(value: number): string {
   return limitMessage;
 }
 
+function postnatalAgeValidationMessage(value: number): string {
+  if (finite(value) && Number.isInteger(value) && value > INPUT_LIMITS.postnatalAgeDays.max) {
+    return "Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari.";
+  }
+  return "Usia pascalahir harus bilangan bulat 0–28 hari.";
+}
+
 export function validatePatientInput(input: PatientInput): ValidationResult<PatientInput> {
   const issues: ValidationIssue[] = [];
   if (!ANTIBIOTICS.includes(input.antibiotic)) {
@@ -63,7 +70,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     input.postnatalAgeDays < INPUT_LIMITS.postnatalAgeDays.min ||
     input.postnatalAgeDays > INPUT_LIMITS.postnatalAgeDays.max
   ) {
-    issues.push({ field: "postnatalAgeDays", message: "Usia pascalahir harus bilangan bulat 0–28 hari." });
+    issues.push({ field: "postnatalAgeDays", message: postnatalAgeValidationMessage(input.postnatalAgeDays) });
   }
   if (
     !finite(input.currentWeightKg) ||

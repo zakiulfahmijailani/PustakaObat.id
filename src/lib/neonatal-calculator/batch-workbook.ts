@@ -15,7 +15,7 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
   antibiotik: "Gentamisin, Amikasin, atau Vankomisin. Wajib.",
   usia_gestasi_lahir_minggu: "Usia gestasi saat lahir dalam minggu lengkap. Wajib.",
   usia_gestasi_lahir_hari: "Tambahan hari 0–6. Opsional; kosong = 0.",
-  usia_pascalahir_hari: "Usia pascalahir dalam hari. Wajib.",
+  usia_pascalahir_hari: "Usia pascalahir neonatal 0–28 hari. Di atas 28 hari gunakan pedoman dosis bayi yang sesuai. Wajib.",
   berat_badan_kg: "Berat badan saat ini dalam kg, bukan gram (mis. 1720 g = 1,72 kg). Wajib.",
   kreatinin_serum_mg_dl: "Kreatinin serum dalam mg/dL. Opsional.",
   produksi_urin_ml_kg_jam: "Produksi urin dalam mL/kg/jam. Opsional; SCr wajib bila diisi.",

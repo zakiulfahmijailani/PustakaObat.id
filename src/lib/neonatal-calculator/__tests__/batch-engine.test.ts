@@ -114,4 +114,15 @@ describe("processBatchTable", () => {
       ],
     });
   });
+
+  it("menjelaskan batas cakupan neonatal untuk usia pascalahir di atas 28 hari", () => {
+    const row = [...completeRow];
+    row[4] = 29;
+    const result = processBatchTable([[...BATCH_COLUMNS], row]);
+
+    expect(result.rows[0]).toMatchObject({
+      status: "gagal",
+      errors: ["Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari."],
+    });
+  });
 });
