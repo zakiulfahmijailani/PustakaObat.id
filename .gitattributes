@@ -1,3 +1,7 @@
 # Preserve the original notebook bytes for its pinned SHA256 on every platform.
 tests/fixtures/neonatal/notebook-v18.ipynb -text
 tests/fixtures/neonatal/notebook-v19-interpretation.py -text
+tests/fixtures/neonatal/v20/*.ipynb -text
+tests/fixtures/neonatal/v20/*.xlsx -text
+tests/fixtures/neonatal/v20/*.docx -text
+tests/fixtures/neonatal/v20/manifest.json text eol=lf

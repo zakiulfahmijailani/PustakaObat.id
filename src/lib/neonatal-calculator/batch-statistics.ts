@@ -6,8 +6,9 @@ export type ComparisonMetric = "Dosis aktual" | "Dosis manual" | "Frekuensi aktu
 export type ReferenceName = "Pedoman Rumah Sakit" | "Literatur Terkini";
 export type PairedStatistic = {
   group: string; metric: ComparisonMetric; reference: ReferenceName; n: number;
+  aboveCount: number; belowCount: number; meanDifference: number;
   shapiroW: number | null; shapiroP: number | null;
-  method: "paired t-test" | "Wilcoxon signed-rank" | "Semua selisih nol" | "Tidak diuji";
+  method: "Uji t satu sampel" | "Wilcoxon signed-rank" | "Tidak diuji";
   statistic: number | null; pValue: number | null; medianDifference: number | null; note: string;
 };
 export type McNemarStatistic = {
@@ -107,18 +108,17 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
   const n=diffs.length;
   if(n<3)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:null,shapiroP:null,note:"n < 3"};
   const sh=shapiroWilk(diffs);
-  if (diffs.every(v => Math.abs(v) <= 1e-8)) return {method:"Semua selisih nol",statistic:null,p:1,shapiroW:null,shapiroP:null,note:"Seluruh selisih nol"};
-  if (!sh) return {method:"paired t-test",statistic:null,p:0,shapiroW:null,shapiroP:1,note:"Selisih konstan bukan nol; statistik tak hingga"};
-  if(sh.p>0.05){
+  if (diffs.every(v => Math.abs(v) <= 1e-9)) return {method:"Tidak diuji",statistic:null,p:null,shapiroW:null,shapiroP:null,note:"Semua di dalam rentang"};
+  if(sh && sh.p>0.05){
     const mean=diffs.reduce((a,b)=>a+b,0)/n;
     const sd=Math.sqrt(diffs.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
     if(sd<=1e-12)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Tidak ada variansi selisih"};
     const t=mean/(sd/Math.sqrt(n));
     const p=betaI((n-1)/((n-1)+t*t),(n-1)/2,0.5);
-    return {method:"paired t-test",statistic:t,p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi, alfa 0,05"};
+    return {method:"Uji t satu sampel",statistic:t,p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi, alfa 0,05"};
   }
   const nonzero=diffs.filter(v=>v!==0);
-  if(nonzero.length===0)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh.w,shapiroP:sh.p,note:"Seluruh selisih nol"};
+  if(nonzero.length===0)return {method:"Tidak diuji",statistic:null,p:null,shapiroW:sh?.w??null,shapiroP:sh?.p??null,note:"Semua di dalam rentang"};
   const ranked=nonzero.map(v=>({v,abs:Math.abs(v),rank:0})).sort((a,b)=>a.abs-b.abs);
   let ties=0;for(let i=0;i<ranked.length;){let j=i+1;while(j<ranked.length && ranked[j].abs===ranked[i].abs)j++;const rank=(i+1+j)/2;for(let k=i;k<j;k++)ranked[k].rank=rank;ties+=(j-i)**3-(j-i);i=j;}
   const wp=ranked.reduce((a,r)=>a+(r.v>0?r.rank:0),0),wn=ranked.reduce((a,r)=>a+(r.v<0?r.rank:0),0);
@@ -137,7 +137,7 @@ function pairedTest(diffs:number[]):{method:PairedStatistic["method"];statistic:
     const variance=m*(m+1)*(2*m+1)/24-ties/48;
     p=variance<=0?1:clamp(2*(1-normalCdf((Math.abs(wp-mu))/Math.sqrt(variance))));
   }
-  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh.w,shapiroP:sh.p,note:"Uji dua sisi; selisih 0 dikeluarkan"};
+  return {method:"Wilcoxon signed-rank",statistic:Math.min(wp,wn),p,shapiroW:sh?.w??null,shapiroP:sh?.p??null,note:"Uji dua sisi; selisih 0 dikeluarkan"};
 }
 function status(record:ReturnType<typeof notebookBatchRecord>,reference:ReferenceName,metric:ComparisonMetric):string|null {
   const key = (metric.startsWith("Dosis") ? metric.endsWith("aktual") ? "_ka_" : "_kma_" : metric.endsWith("aktual") ? "_kfa_" : "_kmf_") + (reference === "Pedoman Rumah Sakit" ? "rs" : "lit");
@@ -159,19 +159,18 @@ export function summarizeBatch(result:BatchProcessingResult):{counts:StatusCount
           const count=statuses.filter(s=>s===category).length;
           counts.push({group:group.name,metric,reference,category,count,total:statuses.length,percent:statuses.length?100*count/statuses.length:0});
         }
+        const deviationKey = `_dev_${metric === "Dosis aktual" ? "dosis_aktual" : metric === "Dosis manual" ? "dosis_manual" : metric === "Frekuensi aktual" ? "frek_aktual" : "frek_manual"}_${reference === "Pedoman Rumah Sakit" ? "RS" : "Literatur"}`;
         const diffs=group.rows.map(r=>{
           const record=records.get(r)!;
-          const actualKey=metric==="Dosis aktual"?"_da_perkg":metric==="Dosis manual"?"_dm_mid_perkg":metric==="Frekuensi aktual"?"_fa_perhari":"_fm_mid_perhari";
-          const refKey=metric.startsWith("Dosis")?(reference==="Pedoman Rumah Sakit"?"_rs_mid_perkg":"_lit_mid_perkg"):(reference==="Pedoman Rumah Sakit"?"_rs_freq_mid":"_lit_freq_mid");
-          const actual=record[actualKey], compare=record[refKey];
-          return typeof actual==="number" && typeof compare==="number" ? actual-compare : null;
+          const deviation=record[deviationKey];
+          return typeof deviation === "number" ? deviation : null;
         }).filter((v):v is number=>v!==null&&Number.isFinite(v));
         const test=pairedTest(diffs);
-        const sortedDiffs = [...diffs].sort((a,b)=>a-b);
+        const sortedDiffs = diffs.filter(value => Math.abs(value) > 1e-9).sort((a,b)=>a-b);
         const middle = Math.floor(sortedDiffs.length / 2);
-        const medianDifference = sortedDiffs.length === 0 ? null : sortedDiffs.length % 2
+        const medianDifference = sortedDiffs.length === 0 ? 0 : sortedDiffs.length % 2
           ? sortedDiffs[middle] : (sortedDiffs[middle-1] + sortedDiffs[middle]) / 2;
-        paired.push({group:group.name,metric,reference,n:diffs.length,shapiroW:test.shapiroW,shapiroP:test.shapiroP,method:test.method,statistic:test.statistic,pValue:test.p,note:test.note,medianDifference});
+        paired.push({group:group.name,metric,reference,n:diffs.length,aboveCount:diffs.filter(value=>value>1e-9).length,belowCount:diffs.filter(value=>value<-1e-9).length,meanDifference:diffs.length?diffs.reduce((a,b)=>a+b,0)/diffs.length:0,shapiroW:test.shapiroW,shapiroP:test.shapiroP,method:test.method,statistic:test.statistic,pValue:test.p,note:test.note,medianDifference});
       }
       const pairs=group.rows.map(r=>[status(records.get(r)!,refs[0],metric),status(records.get(r)!,refs[1],metric)]).filter(v=>v.every(s=>s!==null && s!=="tidak-dapat-dievaluasi"));
       const both=pairs.filter(([a,b])=>a==="sesuai"&&b==="sesuai").length;
@@ -179,7 +178,7 @@ export function summarizeBatch(result:BatchProcessingResult):{counts:StatusCount
       const literatureOnly=pairs.filter(([a,b])=>a!=="sesuai"&&b==="sesuai").length;
       const neither=pairs.filter(([a,b])=>a!=="sesuai"&&b!=="sesuai").length;
       const discordant=rsOnly+literatureOnly;
-      let method:McNemarStatistic["method"]=pairs.length?"Tidak ada pasangan diskordan":"Tidak diuji", statistic:number|null=null,pValue:number|null=pairs.length?1:null,note=pairs.length?"Tidak ada pasangan diskordan":"Tidak ada pasangan valid";
+      let method:McNemarStatistic["method"]=pairs.length?"Tidak ada pasangan diskordan":"Tidak diuji", statistic:number|null=null,pValue:number|null=null,note=pairs.length?"Tidak ada pasangan diskordan":"Tidak ada pasangan valid";
       if(discordant>0 && discordant<25){
         method="McNemar exact";statistic=Math.min(rsOnly,literatureOnly);
         let c=1,sum=1;for(let k=1;k<=Math.min(rsOnly,literatureOnly);k++){c=c*(discordant-k+1)/k;sum+=c;}

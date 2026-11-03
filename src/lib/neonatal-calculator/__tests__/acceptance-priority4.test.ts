@@ -77,7 +77,7 @@ describe("acceptance: export structure and data integrity",()=>{
     const data=book.getWorksheet("Hasil per Pasien");
     expect(data?.rowCount).toBe(3);
     const headers=(data?.getRow(1).values as string[]).filter(Boolean);
-    expect(headers).toContain("Dosis Literatur (mg)");
+    expect(headers).toContain("Dosis Literatur Terkini (mg)");
     expect(headers.some(name=>/pembanding_usia|GA\/PNA/.test(name))).toBe(false);
     expect(book.getWorksheet("Peringatan")?.rowCount).toBeGreaterThan(1);
     expect(book.getWorksheet("Analisis Statistik")?.rowCount).toBeGreaterThan(2);

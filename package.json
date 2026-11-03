@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:neonatal:v20:reference": "vitest run src/lib/neonatal-calculator/__tests__/notebook-v20-reference.test.ts",
+    "test:neonatal:v20": "vitest run --config vitest.neonatal-v20.config.ts",
     "who:validate": "node scripts/import-who-data.mjs --dry-run",
     "who:import": "node scripts/import-who-data.mjs --apply",
     "who:upload": "node scripts/import-who-data.mjs --apply",

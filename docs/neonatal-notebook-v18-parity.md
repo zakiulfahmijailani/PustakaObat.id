@@ -1,5 +1,7 @@
 # Notebook v18 parity verification
 
+Historical evidence for v18 and the v19 narrative. The current acceptance source for new changes is [the frozen v20 reference](neonatal-notebook-v20-reference.md). Passing these historical checks does not establish v20 acceptance.
+
 Repository: PustakaObat.id. This work concerns the neonatal antibiotic calculator, independently of SIGARA.
 
 ## Reference and scope

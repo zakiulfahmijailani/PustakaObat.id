@@ -242,7 +242,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   };
   const values = workbook.addWorksheet("Hasil per Pasien");
   const successful = result.rows.filter((row): row is BatchSuccessRow => row.status === "berhasil");
-  const publicHeaders = ["Kode Pasien","Antibiotik","Usia Gestasi (mgg)","Usia Pascalahir (hari)","PMA (mgg)","Berat (kg)","Fungsi Ginjal","Dosis RS (mg)","Frek RS","Dosis Literatur (mg)","Frek Literatur","Dosis Manual (mg)","Frek Manual","Dosis Aktual (mg)","Dosis Aktual (mg/kg/dosis)","Frek Aktual","Aktual vs RS (dosis)","Aktual vs RS (frek)","Aktual vs Literatur (dosis)","Aktual vs Literatur (frek)","Manual vs RS (dosis)","Manual vs RS (frek)","Manual vs Literatur (dosis)","Manual vs Literatur (frek)"];
+  const publicHeaders = ["Kode Pasien","Antibiotik","Usia Gestasi saat Lahir","Usia Pascalahir (hari)","Usia Pascamenstruasi (PMA)","Berat Badan (kg)","Fungsi Ginjal","Dosis Pedoman RS (mg)","Frekuensi Pedoman RS","Dosis Literatur Terkini (mg)","Frekuensi Literatur Terkini","Dosis Hitung Manual (mg)","Frekuensi Hitung Manual","Dosis Aktual (mg)","Dosis Aktual (mg/kg per pemberian)","Frekuensi Aktual","Dosis Aktual terhadap Pedoman RS","Frekuensi Aktual terhadap Pedoman RS","Dosis Aktual terhadap Literatur Terkini","Frekuensi Aktual terhadap Literatur Terkini","Dosis Manual terhadap Pedoman RS","Frekuensi Manual terhadap Pedoman RS","Dosis Manual terhadap Literatur Terkini","Frekuensi Manual terhadap Literatur Terkini"];
   addHeader(values, publicHeaders);
   for (const row of successful) {
     const record = notebookBatchRecord(row);
@@ -255,15 +255,16 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     summary.addRow([capitalizeLabel(c.group),c.metric,c.reference,capitalizeLabel(c.category),c.count,c.total,c.percent / 100]);
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
   const tests = workbook.addWorksheet("Analisis Statistik");
-  addHeader(tests, ["Kelompok","Metrik","Referensi","n","Shapiro-Wilk W","Shapiro p","Uji Berpasangan","Statistik","p dua sisi","Median selisih","Satuan","Kesimpulan","Catatan"]);
+  addHeader(tests, ["Kelompok","Metrik","Rujukan","n","Di atas rentang (n)","Di bawah rentang (n)","Di luar rentang (n)","Median penyimpangan (pasien di luar rentang)","Shapiro-Wilk W","Shapiro p","Uji","Statistik","p dua sisi","Satuan","Kesimpulan","Catatan"]);
   for(const p of statistics.paired.filter(test => test.group !== "Keseluruhan")) {
     const available = p.n >= 3 && p.pValue !== null && Number.isFinite(p.pValue);
-    const conclusion = !available ? (p.n < 3 ? "Tidak diuji (n<3)" : "Tidak dapat diuji")
+    const conclusion = !available ? (p.n < 3 ? "Tidak diuji (n<3)" : p.aboveCount+p.belowCount===0 ? "Semua di dalam rentang; uji tidak diperlukan" : "Tidak dapat diuji")
       : p.pValue! < 0.05 ? "Berbeda signifikan (p<0,05)" : "Tidak berbeda signifikan (p≥0,05)";
-    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,available ? fmt(p.medianDifference) : null,p.metric.startsWith("Dosis") ? "mg/kg" : "dosis/hari",conclusion,p.note]);
-    for (const column of [5, 6, 9]) row.getCell(column).numFmt = "0.0000";
-    for (const column of [8, 10]) row.getCell(column).numFmt = "0.000";
-    row.getCell(12).alignment = { wrapText: true, vertical: "middle" };
+    const median = p.aboveCount + p.belowCount === 0 ? null : fmt(p.medianDifference);
+    const row = tests.addRow([capitalizeLabel(p.group),p.metric,p.reference,p.n,p.aboveCount,p.belowCount,p.aboveCount+p.belowCount,median,fmt(p.shapiroW),fmt(p.shapiroP),p.method,fmt(p.statistic),available ? fmt(p.pValue) : null,p.metric.startsWith("Dosis") ? "mg/kg" : "dosis/hari",conclusion,p.note]);
+    for (const column of [9, 10, 13]) row.getCell(column).numFmt = "0.0000";
+    for (const column of [8, 12]) row.getCell(column).numFmt = "0.000";
+    row.getCell(15).alignment = { wrapText: true, vertical: "middle" };
     row.eachCell(cell => { cell.alignment = { ...cell.alignment, vertical: "middle" }; });
     row.height = 32;
   }

@@ -148,24 +148,24 @@ describe("workbook batch", () => {
       const workbook = await loadWorkbook(await buildBatchResultWorkbook(batch));
       const sheet = workbook.getWorksheet("Analisis Statistik")!;
       const row = sheet.getRows(2, sheet.rowCount - 1)!.find(row => row.getCell(1).value === "Vankomisin" && row.getCell(2).value === "Frekuensi manual" && row.getCell(3).value === "Pedoman Rumah Sakit")!;
-      expect(row.getCell(7).value).toBe("Tidak diuji");
-      expect(row.getCell(9).value).toBeNull();
-      expect(row.getCell(12).value).toBe("Tidak diuji (n<3)");
+      expect(row.getCell(11).value).toBe("Tidak diuji");
+      expect(row.getCell(13).value).toBeNull();
+      expect(row.getCell(15).value).toBe("Tidak diuji (n<3)");
     }
   });
 
-  it("memberi label semua selisih nol dengan p=1 hanya ketika pasangan mencukupi", async () => {
+  it("tidak menguji semua pasien di dalam rentang sesuai v20", async () => {
     const batch = vancomycinBatch(3);
     const test = summarizeBatch(batch).paired.find(test => test.group === "vankomisin" && test.metric === "Frekuensi manual" && test.reference === "Pedoman Rumah Sakit")!;
-    expect(test).toMatchObject({ n: 3, method: "Semua selisih nol", pValue: 1, medianDifference: 0, statistic: null });
+    expect(test).toMatchObject({ n: 3, method: "Tidak diuji", pValue: null, medianDifference: 0, statistic: null });
     const workbook = await loadWorkbook(await buildBatchResultWorkbook(batch));
     const sheet = workbook.getWorksheet("Analisis Statistik")!;
     const row = sheet.getRows(2, sheet.rowCount - 1)!.find(row => row.getCell(1).value === "Vankomisin" && row.getCell(2).value === "Frekuensi manual" && row.getCell(3).value === "Pedoman Rumah Sakit")!;
-    expect(row.getCell(7).value).toBe("Semua selisih nol");
-    expect(row.getCell(9).value).toBe(1);
-    expect(row.getCell(10).value).toBe(0);
-    expect(row.getCell(12).value).toBe("Tidak berbeda signifikan (p≥0,05)");
-    expect(new TextDecoder().decode(buildBatchSummaryPdf(batch))).toContain("Semua selisih nol");
+    expect(row.getCell(11).value).toBe("Tidak diuji");
+    expect(row.getCell(13).value).toBeNull();
+    expect(row.getCell(8).value).toBeNull();
+    expect(row.getCell(15).value).toBe("Semua di dalam rentang; uji tidak diperlukan");
+    expect(new TextDecoder().decode(buildBatchSummaryPdf(batch))).toContain("Tidak diuji");
   });
 
   it("memisahkan McNemar tanpa pasangan valid dari pasangan valid tanpa diskordan", async () => {
@@ -173,13 +173,13 @@ describe("workbook batch", () => {
       const batch = vancomycinBatch(count);
       const test = summarizeBatch(batch).mcnemar.find(test => test.group === "Keseluruhan" && test.metric === "Frekuensi aktual")!;
       expect(test.method).toBe(count === 0 ? "Tidak diuji" : "Tidak ada pasangan diskordan");
-      expect(test.pValue).toBe(count === 0 ? null : 1);
+      expect(test.pValue).toBeNull();
       const workbook = await loadWorkbook(await buildBatchResultWorkbook(batch));
       const sheet = workbook.getWorksheet("Analisis Statistik")!;
       const header = sheet.getRows(1, sheet.rowCount)!.find(row => row.getCell(1).value === "McNemar: Kelompok")!;
       const row = sheet.getRows(header.number + 1, sheet.rowCount - header.number)!.find(row => row.getCell(1).value === "Keseluruhan" && row.getCell(2).value === "Frekuensi aktual")!;
       expect(row.getCell(8).value).toBe(test.method);
-      expect(row.getCell(10).value).toBe(count === 0 ? null : 1);
+      expect(row.getCell(10).value).toBeNull();
       const pdf = new TextDecoder().decode(buildBatchSummaryPdf(batch));
       if (count === 0) expect(pdf).not.toContain("p=");
       else expect(pdf).toContain("Tidak ada pasangan diskordan");

@@ -1,5 +1,22 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-03 — migrate batch outputs, statistics, and narrative to v20
+
+- Match all 24 public patient fields and 660 supplied comparator checks, preserving the existing dose and interval engine.
+- Use zero deviation inside the reference range and the nearest violated bound outside it, checking excess first. Export above/below counts and the median among out-of-range patients. Do not assign a p-value when all observations are within range; use a one-sample t-test or Wilcoxon following the v20 selection rules. McNemar without discordant pairs has no p-value.
+- Generate all six v20 narrative sections from current patient records and statistics. Add independent Python v20 comparisons for 14 branch cohorts and include the six batch acceptance checks in the ordinary test command.
+- Retain old dose/interval, category, warning, and unchanged internal-variable regressions. Replace obsolete v18/v19 statistical/narrative expectations with v20, rather than requiring the new application to reproduce superseded output.
+- Verification: all 302 ordinary tests pass, including the six batch acceptance checks and 15 additional v20 statistical/narrative tests. Production build, type checks, changed-source lint, and Git whitespace checks pass.
+- Rule-version metadata remains 2026.11.01 pending complete input/browser/PDF/print v20 acceptance. Changes remain local and unpublished; batch acceptance alone does not certify those remaining surfaces.
+
+## 2026-11-03 — freeze v20 acceptance sources
+
+- Preserve byte-identical copies of the supplied v20 notebook, both v20 XLSX workbooks, and supporting review DOCX, with original names, byte sizes, SHA256 identities, and Git byte-preservation rules. The oracle verifies the frozen sources and reads XLSX inputs/expectations directly, without relying on Downloads or TypeScript-transcribed expected results.
+- Add executable v20 reference checks and a separate explicit batch acceptance command. Preserve historical v18/v19 checks and label their scope. See [the v20 reference guide](neonatal-notebook-v20-reference.md).
+- Verification: all 287 ordinary regression tests pass, including five new reference tests; all 113 original v20 notebook checks pass; all 720 reference workbook values match Python; application dose/interval values match 30 original cases and 1,242 boundary/renal profiles. Type checks, changed-source lint, and Git whitespace checks pass. All four frozen files match the original bytes, and one-byte corruption of each temporary copy is rejected.
+- The explicit v20 acceptance run reports five reference tests passed and six batch tests failed, exposing outstanding patient-column, comparator-cell, statistical, count-export, McNemar, and narrative changes. These are visible failures, not skipped or accepted failures. Browser/PDF/print acceptance remains outside this source-freezing change.
+- Application calculations, validation, display, and rule-version metadata are unchanged. Work remains local and unpublished.
+
 ## 2026-11-03 — actual-regimen summary on screen and in evaluation PDFs
 
 - Add a labeled summary above the individual evaluation results and patient warnings. Show all four actual dose/frequency comparisons against the primary hospital guideline and ANMF, with the notebook's exact numeric differences and percentages. Use red for excess or mixed excess/deficit, yellow for deficit, and green when all four comparisons conform.

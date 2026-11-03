@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "referenceVersion": "v20",
+  "ruleVersion": "2026.11.03",
+  "receivedDate": "2026-11-03",
+  "executedCells": [3, 5, 6, 8, 10, 14, 18],
+  "expected": {
+    "notebookChecks": 113,
+    "inputRows": 34,
+    "validRows": 30,
+    "publicColumns": 24,
+    "comparatorCheckedColumns": 22,
+    "rejectedCodes": ["T31", "T32", "T33", "T34"]
+  },
+  "files": [
+    {
+      "role": "notebook",
+      "path": "notebook-v20.ipynb",
+      "originalFilename": "kalkulator_dosis_antibiotik_neonatus_v20.ipynb",
+      "bytes": 567006,
+      "sha256": "d78513e5ab8cd728dc230ad7f662d06378040707e2ab08daffcaf6d237917651"
+    },
+    {
+      "role": "input",
+      "path": "batch-input-v20.xlsx",
+      "originalFilename": "uji_web_1_unggah_ke_batch V20.xlsx",
+      "bytes": 8855,
+      "sha256": "05a52548cad9d20fdaee1ee8b1c7540b6a513785c5250bd570522ebe9864f860"
+    },
+    {
+      "role": "comparator",
+      "path": "batch-comparator-v20.xlsx",
+      "originalFilename": "uji_web_2_pembanding V 20.xlsx",
+      "bytes": 20019,
+      "sha256": "f0dab30f11fbfb16b2e5949456576effed52a8de630296269cf856e1d0243f31"
+    },
+    {
+      "role": "review",
+      "path": "review-v19-to-v20.docx",
+      "originalFilename": "Catatan review Kalkulator Antibiotik Neonatus Versi 19 ke 20.docx",
+      "bytes": 26275,
+      "sha256": "f5c1f3a6e7c83d3e4b7d6be307d1930d4e6ec3dd7a90859be5b347f4fca5c782"
+    }
+  ]
+}
