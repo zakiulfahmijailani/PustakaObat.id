@@ -3,6 +3,8 @@ import { summarizeBatch } from "./batch-statistics";
 import { buildBatchInterpretation } from "./batch-interpretation";
 import { pythonRound } from "./python-rounding";
 import type { ClinicalWarning } from "./types";
+import { deduplicateClinicalWarnings, getV20ClinicalWarnings } from "./warning-catalog-v20";
+import { buildV20Glossary } from "./glossary-v20";
 import {
   BATCH_COLUMNS,
   BATCH_SHEET_NAME,
@@ -18,7 +20,7 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
   usia_gestasi_lahir_hari: "Tambahan hari 0–6. Opsional; kosong = 0.",
   usia_pascalahir_hari: "Usia pascalahir neonatal 0–28 hari. Di atas 28 hari gunakan pedoman dosis bayi yang sesuai. Wajib.",
   berat_badan_kg: "Berat badan saat ini dalam kg, bukan gram (mis. 1720 g = 1,72 kg). Wajib.",
-  kreatinin_serum_mg_dl: "Kreatinin serum dalam mg/dL. Opsional.",
+  kreatinin_serum_mg_dl: "Kreatinin serum dalam mg/dL (0–10). Opsional. Nilai dalam µmol/L dibagi 88,4 sebelum diisi; tidak dikonversi otomatis.",
   produksi_urin_ml_kg_jam: "Produksi urin dalam mL/kg/jam. Opsional; SCr wajib bila diisi.",
   hipotermia_terapeutik: "Ya/Tidak. Kosong dianggap Tidak.",
   terapi_cox_inhibitor: "Ya/Tidak. Kosong dianggap Tidak.",
@@ -27,8 +29,8 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
   dosis_manual_max_mg: "Pembanding manual maksimum dalam mg. Opsional sebagai satu blok lengkap.",
   frekuensi_manual_min_jam: "Interval manual minimum dalam jam. Opsional sebagai satu blok lengkap.",
   frekuensi_manual_max_jam: "Interval manual maksimum dalam jam. Opsional sebagai satu blok lengkap.",
-  dosis_aktual_mg: "Dosis aktual per pemberian dalam mg. Wajib.",
-  frekuensi_aktual_jam: "Interval aktual dalam jam. Wajib.",
+  dosis_aktual_mg: "Untuk evaluasi: dosis aktual per pemberian dalam mg. Isi bersama frekuensi aktual; kosongkan keduanya untuk rekomendasi saja.",
+  frekuensi_aktual_jam: "Untuk evaluasi: frekuensi aktual setiap 1–96 jam (bilangan bulat). Isi bersama dosis aktual; kosongkan keduanya untuk rekomendasi saja.",
 };
 
 const HEADER_FILL = "FF0F766E";
@@ -125,7 +127,8 @@ export async function readBatchWorkbook(file: File): Promise<readonly (readonly 
   if (!worksheet) throw new Error(`Sheet '${BATCH_SHEET_NAME}' tidak ditemukan.`);
 
   const columnCount = Math.max(worksheet.actualColumnCount, BATCH_COLUMNS.length);
-  return Array.from({ length: worksheet.actualRowCount }, (_, rowIndex) =>
+  // rowCount is the last source row, whereas actualRowCount excludes gaps.
+  return Array.from({ length: worksheet.rowCount }, (_, rowIndex) =>
     Array.from({ length: columnCount }, (_, columnIndex) =>
       cellPrimitive(worksheet.getCell(rowIndex + 1, columnIndex + 1).value),
     ),
@@ -251,7 +254,7 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   }
   setUsefulWidths(values, 40);
   const summary = workbook.addWorksheet("Ringkasan Kesesuaian");
-  addHeader(summary, ["Kelompok", "Metrik", "Referensi", "Kategori", "Jumlah", "N dapat dinilai", "Persentase"]);
+  addHeader(summary, ["Kelompok", "Metrik", "Rujukan", "Kategori", "Jumlah", "N dapat dinilai", "Persentase"]);
   for(const c of statistics.counts.filter(count => count.category !== "opsi-diskrit-tidak-cocok"))
     summary.addRow([capitalizeLabel(c.group),c.metric,c.reference,capitalizeLabel(c.category),c.count,c.total,c.percent / 100]);
   summary.getColumn(7).numFmt = "0.0%"; setUsefulWidths(summary,38);
@@ -323,28 +326,30 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
   for (const row of result.rows) {
     if(row.status==="gagal") addWarningRow(warnings, row.sourceRow, row.patientCode, "critical", "Baris dilewati: " + row.errors.join(" | "));
     else {
-      for(const warning of row.warnings) addWarningRow(warnings, row.sourceRow, row.patientCode, "warning", "Peringatan data: " + warning);
-      const seenWarnings = new Set<string>();
-      for(const warning of [...row.calculator.globalWarnings,...row.calculator.recommendations.institutionalPrimary.warnings,...row.calculator.recommendations.anmf2024.warnings]) {
-        const key = JSON.stringify([warning.severity, warning.message]);
-        if (seenWarnings.has(key)) continue;
-        seenWarnings.add(key);
-        addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, warning.message);
+      const patientWarnings: ClinicalWarning[] = [
+        ...getV20ClinicalWarnings(row.calculator),
+        ...row.warnings.map(message => ({ code: "BATCH_DATA", severity: "warning" as const, message: "Peringatan data: " + message })),
+      ];
+      for(const warning of deduplicateClinicalWarnings(patientWarnings).sort((a,b) => ({critical:0,warning:1,info:2}[a.severity] - {critical:0,warning:1,info:2}[b.severity]))) {
+        addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, warning.title ? warning.title + ". " + warning.message : warning.message);
       }
     }
   }
+  if (warnings.rowCount === 1) warnings.addRow(["", "", "", "Tidak ada peringatan."]);
   setUsefulWidths(warnings,75);
+  const reportText: string[] = [];
+  for (const sheet of workbook.worksheets) sheet.eachRow(row => row.eachCell(cell => {
+    if (typeof cell.value === "string") reportText.push(cell.value);
+  }));
   const abbreviations = workbook.addWorksheet("Keterangan Singkatan");
-  addHeader(abbreviations,["Singkatan","Kepanjangan"]);
-  abbreviations.addRows([
-    ["RS","Rumah Sakit"],["RSUP","Rumah Sakit Umum Pusat"],["SPO","Standar Prosedur Operasional"],
-    ["PNPK","Pedoman Nasional Pelayanan Kedokteran"],["ANMF","Australasian Neonatal Medicines Formulary"],
-    ["UNC","University of North Carolina Medical Center"],["PMA","Usia pascamenstruasi"],
-    ["SCr","Kreatinin serum"],["UOP","Produksi urin"],["DPJP","Dokter penanggung jawab pasien"],
-    ["HIE","Ensefalopati hipoksik-iskemik"],["COX","Siklooksigenase"],["MRSA","Staphylococcus aureus resisten metisilin"],
-    ["TDM","Therapeutic Drug Monitoring"]
-  ]);
-  setUsefulWidths(abbreviations,65);
+  addHeader(abbreviations,["Singkatan / istilah","Kepanjangan / arti"]);
+  for (const [term,meaning] of buildV20Glossary(reportText.join(" "))) {
+    const row = abbreviations.addRow([term,meaning]);
+    row.height = Math.max(28, Math.ceil(meaning.length / 100) * 17 + 10);
+    row.eachCell(cell => { cell.alignment = { vertical: "top", wrapText: true }; });
+  }
+  abbreviations.getColumn(1).width = 30;
+  abbreviations.getColumn(2).width = 110;
   const buffer = await workbook.xlsx.writeBuffer();
   return workbookBytes(buffer);
 }

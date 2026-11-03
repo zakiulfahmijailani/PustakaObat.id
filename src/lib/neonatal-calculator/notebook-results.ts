@@ -74,7 +74,9 @@ function v20ManualText(min: number|null, max: number|null, lower: number|null, u
 }
 function v20ManualFrequencyText(min: number|null, max: number|null, lower: number|null, upper: number|null): string {
   if (min === null || max === null || lower === null || upper === null) return "-";
-  if (min === max || lower === upper) return categoryText(frequencyResult(min, max, lower, upper));
+  // v20 renders both frequency bounds whenever the reference is a range,
+  // including when the manual input itself is a single interval.
+  if (lower === upper) return categoryText(frequencyResult(min, max, lower, upper));
   const category = frequencyResult(min, max, lower, upper).category;
   const bound = (value: number, reference: number, actualHours: number, referenceHours: number) => {
     if (Math.abs(value - reference) <= NOTEBOOK_EPSILON) return "sama";
@@ -112,8 +114,9 @@ export function manualText(min: number|null, max: number|null, lower: number|nul
 export function notebookBatchRecord(row: BatchSuccessRow): Record<string, string|number|null> {
   const p=row.calculator.input, rs=row.calculator.recommendations.institutionalPrimary, lit=row.calculator.recommendations.anmf2024;
   const [ri,rj]=intervalBounds(rs.interval), [li,lj]=intervalBounds(lit.interval);
-  const da=row.actualEvaluation.actualDoseMg, ia=row.actualEvaluation.actualIntervalHours;
-  const m=row.manualEvaluation?.input, dmin=m?.manualDoseMinMg??null, dmax=m?.manualDoseMaxMg??null, imin=m?.manualIntervalMinHours??null, imax=m?.manualIntervalMaxHours??null;
+  const da=row.actualEvaluation?.actualDoseMg??null, ia=row.actualEvaluation?.actualIntervalHours??null;
+  const daKg=da===null?null:da/p.currentWeightKg;
+  const m=row.manualInput??row.manualEvaluation?.input, dmin=m?.manualDoseMinMg??null, dmax=m?.manualDoseMaxMg??null, imin=m?.manualIntervalMinHours??null, imax=m?.manualIntervalMaxHours??null;
   const ra=categorizeRange(da,da,rs.dose.minTotalMg,rs.dose.maxTotalMg), la=categorizeRange(da,da,lit.dose.minTotalMg,lit.dose.maxTotalMg);
   const rf=frequencyResult(ia,ia,ri,rj), lf=frequencyResult(ia,ia,li,lj);
   return {
@@ -121,13 +124,13 @@ export function notebookBatchRecord(row: BatchSuccessRow): Record<string, string
     "Usia Gestasi saat Lahir":v20WeeksDays(p.gestationalAgeWeeks+(p.gestationalAgeDays??0)/7),"Usia Pascalahir (hari)":p.postnatalAgeDays,"Usia Pascamenstruasi (PMA)":v20WeeksDays(row.calculator.pmaWeeks),"Berat Badan (kg)":p.currentWeightKg,
     "Fungsi Ginjal":v20RenalText(row),
     "Dosis Pedoman RS (mg)":v20RangeText(rs.dose.minTotalMg,rs.dose.maxTotalMg),"Frekuensi Pedoman RS":v20IntervalText(ri,rj),"Dosis Literatur Terkini (mg)":v20RangeText(lit.dose.minTotalMg,lit.dose.maxTotalMg),"Frekuensi Literatur Terkini":v20IntervalText(li,lj),
-    "Dosis Hitung Manual (mg)":v20RangeText(dmin,dmax),"Frekuensi Hitung Manual":imin===null?"-":v20IntervalText(imin,imax),"Dosis Aktual (mg)":v20NumberText(da)+" mg","Dosis Aktual (mg/kg per pemberian)":v20NumberText(da/p.currentWeightKg)+" mg/kg","Frekuensi Aktual":ia===null?"-":`tiap ${ia} jam`,
+    "Dosis Hitung Manual (mg)":v20RangeText(dmin,dmax),"Frekuensi Hitung Manual":imin===null?"-":v20IntervalText(imin,imax),"Dosis Aktual (mg)":da===null?"-":v20NumberText(da)+" mg","Dosis Aktual (mg/kg per pemberian)":daKg===null?"-":v20NumberText(daKg)+" mg/kg","Frekuensi Aktual":ia===null?"-":`tiap ${ia} jam`,
     "Dosis Aktual terhadap Pedoman RS":categoryText(ra),"Frekuensi Aktual terhadap Pedoman RS":categoryText(rf),"Dosis Aktual terhadap Literatur Terkini":categoryText(la),"Frekuensi Aktual terhadap Literatur Terkini":categoryText(lf),
     "Dosis Manual terhadap Pedoman RS":v20ManualText(dmin,dmax,rs.dose.minTotalMg,rs.dose.maxTotalMg),"Frekuensi Manual terhadap Pedoman RS":v20ManualFrequencyText(imin,imax,ri,rj),"Dosis Manual terhadap Literatur Terkini":v20ManualText(dmin,dmax,lit.dose.minTotalMg,lit.dose.maxTotalMg),"Frekuensi Manual terhadap Literatur Terkini":v20ManualFrequencyText(imin,imax,li,lj),
-    _da_perkg:da/p.currentWeightKg,_rs_mid_perkg:(rs.dose.minMgPerKg!+rs.dose.maxMgPerKg!)/2,_lit_mid_perkg:(lit.dose.minMgPerKg!+lit.dose.maxMgPerKg!)/2,
+    _da_perkg:daKg,_rs_mid_perkg:(rs.dose.minMgPerKg!+rs.dose.maxMgPerKg!)/2,_lit_mid_perkg:(lit.dose.minMgPerKg!+lit.dose.maxMgPerKg!)/2,
     _fa_perhari:ia?24/ia:null,_rs_freq_mid:ri&&rj?(24/ri+24/rj)/2:null,_lit_freq_mid:li&&lj?(24/li+24/lj)/2:null,
     _dm_mid_perkg:dmin!==null&&dmax!==null?(dmin+dmax)/2/p.currentWeightKg:null,_fm_mid_perhari:imin&&imax?(24/imin+24/imax)/2:null,
-    _dev_dosis_aktual_RS:rangeDeviation(da/p.currentWeightKg,da/p.currentWeightKg,rs.dose.minMgPerKg??null,rs.dose.maxMgPerKg??null),_dev_dosis_aktual_Literatur:rangeDeviation(da/p.currentWeightKg,da/p.currentWeightKg,lit.dose.minMgPerKg??null,lit.dose.maxMgPerKg??null),
+    _dev_dosis_aktual_RS:rangeDeviation(daKg,daKg,rs.dose.minMgPerKg??null,rs.dose.maxMgPerKg??null),_dev_dosis_aktual_Literatur:rangeDeviation(daKg,daKg,lit.dose.minMgPerKg??null,lit.dose.maxMgPerKg??null),
     _dev_frek_aktual_RS:rangeDeviation(ia?24/ia:null,ia?24/ia:null,rj?24/rj:null,ri?24/ri:null),_dev_frek_aktual_Literatur:rangeDeviation(ia?24/ia:null,ia?24/ia:null,lj?24/lj:null,li?24/li:null),
     _dev_dosis_manual_RS:rangeDeviation(dmin===null?null:dmin/p.currentWeightKg,dmax===null?null:dmax/p.currentWeightKg,rs.dose.minMgPerKg??null,rs.dose.maxMgPerKg??null),_dev_dosis_manual_Literatur:rangeDeviation(dmin===null?null:dmin/p.currentWeightKg,dmax===null?null:dmax/p.currentWeightKg,lit.dose.minMgPerKg??null,lit.dose.maxMgPerKg??null),
     _dev_frek_manual_RS:rangeDeviation(imax?24/imax:null,imin?24/imin:null,rj?24/rj:null,ri?24/ri:null),_dev_frek_manual_Literatur:rangeDeviation(imax?24/imax:null,imin?24/imin:null,lj?24/lj:null,li?24/li:null),

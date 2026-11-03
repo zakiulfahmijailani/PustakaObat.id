@@ -13,7 +13,8 @@ export type V20PairedTest = {
 };
 export type V20Profile = {
   input: PatientInput;
-  expected: { rsDose: number[]; litDose: number[]; rsInterval: (number | null)[]; litInterval: (number | null)[] };
+  expected: { rsDose: number[]; litDose: number[]; rsInterval: (number | null)[]; litInterval: (number | null)[];
+    warningDetails: { severity: "critical" | "warning" | "info"; title: string; message: string }[] };
 };
 export type V20McNemarTest = {
   n: number; b_RS_only: number; c_Lit_only: number; n_keduanya: number;
@@ -29,13 +30,18 @@ export type V20Oracle = {
   header: string[]; inputRows: unknown[][]; publicHeaders: string[];
   batchRecords: Record<string, unknown>[]; batchWarnings: string[];
   recommendations: V20Profile[]; batchRecommendations: V20Profile[];
+  renalExport: { rows: unknown[][]; records: Record<string, unknown>[] };
+  manualExport: { rows: unknown[][]; records: Record<string, unknown>[] };
+  singleDoseExport: { rows: unknown[][]; records: Record<string, unknown>[] };
+  glossary: { headers: string[]; originalRows: [string,string][]; abbreviations: [string,string,string][];
+    terms: [string,string][]; cases: {name: string; text: string; rows: [string,string][]}[] };
   statistics: Record<"dosis" | "frekuensi", {
     per_antibiotik: Record<string, Record<string, V20PairedTest>>;
     mcnemar_aktual: V20McNemarTest; mcnemar_manual: V20McNemarTest;
     mcnemar_per_antibiotik: Record<string, { aktual: V20McNemarTest; manual: V20McNemarTest }>;
   }>;
   interpretation: { judul: string; isi: ["normal" | "poin" | "penting", string][] }[];
-  cases: { name: string; rows: unknown[][]; statistics: V20Oracle["statistics"]; interpretation: V20Oracle["interpretation"] }[];
+  cases: { name: string; rows: unknown[][]; statistics: V20Oracle["statistics"]; interpretation: V20Oracle["interpretation"]; records: Record<string,unknown>[] }[];
   comparator: {
     headers: string[]; rows: unknown[][]; checkedHeaders: string[]; rejectedCodes: string[];
     pastedWebRows: number; comparedCells: number; differences: unknown[];

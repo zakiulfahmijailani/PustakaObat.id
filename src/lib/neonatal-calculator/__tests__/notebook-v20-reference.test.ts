@@ -4,8 +4,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadV20Reference, referenceRoot } from "../../../../tests/helpers/neonatal-v20-reference";
 import { processBatchTable } from "../batch-engine";
+import { buildBatchResultWorkbook } from "../batch-workbook";
+import { summarizeBatch } from "../batch-statistics";
 import { intervalBounds, notebookBatchRecord, rangeDeviation } from "../notebook-results";
 import { calculateRecommendations } from "../recommendation-engine";
+import { getV20ClinicalWarnings } from "../warning-catalog-v20";
+import { buildV20Glossary } from "../glossary-v20";
 
 const oracle = loadV20Reference();
 
@@ -85,6 +89,79 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     expect(failures.length, JSON.stringify(failures.slice(0, 5))).toBe(0);
   });
 
+  it("matches the full v20 warning catalogue on 30 supplied and 1,242 boundary/renal profiles", () => {
+    for (const profile of [...oracle.batchRecommendations,...oracle.recommendations]) {
+      const result = calculateRecommendations(profile.input);
+      const actual = getV20ClinicalWarnings(result).map(({severity,title,message}) => ({severity,title,message}));
+      expect(actual, JSON.stringify(profile.input)).toEqual(profile.expected.warningDetails);
+    }
+  });
+
+  it("exports each v20 clinical warning once with source row, category, and existing colors", async () => {
+    const batch = processBatchTable([oracle.header,...oracle.inputRows]);
+    const ExcelJS = await import("exceljs");
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
+    const sheet = book.getWorksheet("Peringatan")!;
+    const expected = oracle.batchRecords.flatMap(record => (record._peringatan as [string,string][]).map(([category,text]) => [record._baris,record["Kode Pasien"],category,text]));
+    const validCodes = new Set(oracle.batchRecords.map(record => record["Kode Pasien"]));
+    const actual: unknown[][] = [];
+    sheet.eachRow((row,index) => {
+      if (index === 1) return;
+      const label = String(row.getCell(3).value);
+      const palette = {PERINGATAN:["FFB4493F","FFF8EDEC"],PERHATIAN:["FFA76F24","FFFFF3CD"],INFORMASI:["FF3F6F8F","FFECF1F4"]}[label]!;
+      expect(row.getCell(3).font.color?.argb).toBe(palette[0]);
+      expect(row.getCell(3).fill).toMatchObject({type:"pattern",fgColor:{argb:palette[1]}});
+      expect(row.getCell(4).alignment.wrapText).toBe(true);
+      if (validCodes.has(row.getCell(2).value)) {
+        actual.push([1,2,3,4].map(column => row.getCell(column).value));
+      } else {
+        const source = Number(row.getCell(1).value);
+        expect(oracle.inputRows[source-2][0]).toBe(row.getCell(2).value);
+        expect(label).toBe("PERINGATAN");
+        const text = String(row.getCell(4).value);
+        expect(text).toMatch(/^Baris dilewati: .+/);
+        expect(text.match(/dilewati/gi)).toHaveLength(1);
+      }
+    });
+    expect(actual).toEqual(expected);
+    expect(new Set(actual.map(row => JSON.stringify(row))).size).toBe(actual.length);
+    expect(sheet.rowCount).toBe(expected.length+4+1);
+  });
+
+  it.each(oracle.glossary.cases)("matches the notebook glossary selection and wording: $name", ({text,rows}) => {
+    expect(buildV20Glossary(text)).toEqual(rows);
+  });
+
+  it("exports only used abbreviations and all five v20 terms in the actual XLSX", async () => {
+    const ExcelJS = await import("exceljs");
+    for (const table of [[oracle.header,...oracle.inputRows],[oracle.header]]) {
+      const batch = processBatchTable(table);
+      const book = new ExcelJS.Workbook();
+      await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
+      const sheet = book.getWorksheet("Keterangan Singkatan")!;
+      expect([sheet.getRow(1).getCell(1).value,sheet.getRow(1).getCell(2).value]).toEqual(oracle.glossary.headers);
+      const text: string[] = [];
+      for (const other of book.worksheets.filter(other => other !== sheet)) other.eachRow(row => row.eachCell(cell => {
+        if (typeof cell.value === "string") text.push(cell.value);
+      }));
+      const content = text.join(" ");
+      const rows: unknown[][] = [];
+      sheet.eachRow((row,index) => {
+        if (index === 1) return;
+        rows.push([row.getCell(1).value,row.getCell(2).value]);
+        expect(row.getCell(2).alignment.wrapText).toBe(true);
+      });
+      expect(rows.slice(-5)).toEqual(oracle.glossary.terms);
+      const expected = oracle.glossary.abbreviations.filter(([short]) => new RegExp(`(?<![A-Za-z0-9])${short}(?![A-Za-z0-9])`).test(content))
+        .map(([short,meaning,note]) => [short,meaning+(note ? ` (${note})` : "")]);
+      expect(rows.slice(0,-5)).toEqual(expected);
+      expect(rows.some(row => row[0] === "MRSA")).toBe(false);
+      expect(rows.some(row => row[0] === "HIE")).toBe(false);
+      if (batch.successCount === 30) expect(rows).toEqual(oracle.glossary.originalRows);
+    }
+  });
+
   it("matches all eight v20 deviation fields for each supplied patient", () => {
     const result = processBatchTable([oracle.header, ...oracle.inputRows]);
     for (const row of result.rows) {
@@ -103,6 +180,118 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     }
   });
 
+  it("preserves absent renal data, measured zeros, and UNC conclusions in the exported XLSX", async () => {
+    const profiles = oracle.renalExport;
+    expect(profiles.rows).toHaveLength(63);
+    const batch = processBatchTable([oracle.header, ...profiles.rows]);
+    expect(batch.errorCount).toBe(0);
+    expect(batch.successCount).toBe(63);
+    const ExcelJS = await import("exceljs");
+    const workbook = new ExcelJS.Workbook();
+    const buffer = await buildBatchResultWorkbook(batch);
+    await workbook.xlsx.load(new Uint8Array(buffer) as unknown as import("exceljs").Buffer);
+    const sheet = workbook.getWorksheet("Hasil per Pasien")!;
+    const renalColumn = Array.from({ length: sheet.columnCount }, (_, index) => sheet.getRow(1).getCell(index + 1).value).indexOf("Fungsi Ginjal") + 1;
+    expect(renalColumn).toBeGreaterThan(0);
+    const exported = new Map<string, unknown>();
+    for (const row of batch.rows) {
+      if (row.status !== "berhasil") throw new Error("Expected valid renal profile");
+      const expected = profiles.records.find(record => record["Kode Pasien"] === row.patientCode)!;
+      const text = notebookBatchRecord(row)["Fungsi Ginjal"];
+      expect(text, row.patientCode).toBe(expected["Fungsi Ginjal"]);
+      const excelRow = sheet.getRows(2, batch.successCount)!.find(value => value.getCell(1).value === row.patientCode)!;
+      expect(excelRow.getCell(renalColumn).value, row.patientCode).toBe(expected["Fungsi Ginjal"]);
+      exported.set(row.patientCode, text);
+    }
+    expect(exported.get("renal-0")).toBe("Tidak diisi (diasumsikan normal sesuai usia)");
+    expect(exported.get("renal-1")).toBe("SCr 0 mg/dL; produksi urin tidak diisi: tidak memenuhi kriteria gangguan ginjal UNC");
+    expect(exported.get("renal-2")).toBe("SCr 0 mg/dL; produksi urin 0 mL/kg/jam: tidak memenuhi kriteria gangguan ginjal UNC");
+    expect(exported.get("renal-7")).toBe("SCr 0,5 mg/dL; produksi urin 0 mL/kg/jam: memenuhi kriteria gangguan ginjal UNC");
+    expect(exported.get("renal-9")).toBe("SCr 0,5 mg/dL; produksi urin 1 mL/kg/jam: tidak memenuhi kriteria gangguan ginjal UNC");
+    expect(exported.get("renal-14")).toBe("SCr 1 mg/dL; produksi urin 1 mL/kg/jam: memenuhi kriteria gangguan ginjal UNC");
+    expect(exported.get("renal-16")).toBe("SCr 1,01 mg/dL; produksi urin tidak diisi: memenuhi kriteria gangguan ginjal UNC");
+  });
+
+  it("matches manual point/range categories and full text against Python and exported XLSX", async () => {
+    const profiles = oracle.manualExport;
+    expect(profiles.rows).toHaveLength(540);
+    const batch = processBatchTable([oracle.header, ...profiles.rows]);
+    expect(batch.errorCount).toBe(0);
+    expect(batch.successCount).toBe(540);
+    const ExcelJS = await import("exceljs");
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
+    const sheet = book.getWorksheet("Hasil per Pasien")!;
+    const headers = Array.from({ length: sheet.columnCount }, (_, index) => String(sheet.getRow(1).getCell(index+1).value));
+    const exportedRows = new Map(Array.from({ length: batch.successCount }, (_, index) => [sheet.getRow(index+2).getCell(1).value, sheet.getRow(index+2)]));
+    const fields = ["Dosis Hitung Manual (mg)", "Frekuensi Hitung Manual", "Dosis Manual terhadap Pedoman RS", "Frekuensi Manual terhadap Pedoman RS", "Dosis Manual terhadap Literatur Terkini", "Frekuensi Manual terhadap Literatur Terkini"];
+    const categories = ["_kma_rs", "_kma_lit", "_kmf_rs", "_kmf_lit"];
+    const expectedRows = new Map(profiles.records.map(record => [record["Kode Pasien"],record]));
+    const failures: unknown[] = [];
+    for (const row of batch.rows) {
+      if (row.status !== "berhasil") throw new Error("Expected valid manual profile");
+      const actual = notebookBatchRecord(row), expected = expectedRows.get(row.patientCode)!;
+      for (const key of [...fields,...categories]) {
+        if (actual[key] !== expected[key]) failures.push({id:row.patientCode,field:key,actual:actual[key],expected:expected[key]});
+      }
+      const excelRow = exportedRows.get(row.patientCode)!;
+      for (const key of fields) {
+        const value = excelRow.getCell(headers.indexOf(key)+1).value;
+        if (value !== expected[key]) failures.push({id:row.patientCode,field:key,excel:value,expected:expected[key]});
+      }
+    }
+    expect(failures.length, JSON.stringify(failures.slice(0,8),null,2)).toBe(0);
+    // A manual point still compares both bounds when the reference is a range.
+    const singleRange = profiles.records.find(record => String(record["Kode Pasien"]).endsWith("-rs-single-inside") && String(record["Frekuensi Manual terhadap Pedoman RS"]).includes("paling jarang"))!;
+    expect(singleRange).toBeDefined();
+    expect(singleRange["Frekuensi Manual terhadap Pedoman RS"]).toContain("paling sering");
+    expect(singleRange["Frekuensi Manual terhadap Pedoman RS"]).toContain("interval");
+    expect(profiles.records.some(record => String(record["Dosis Manual terhadap Pedoman RS"]).startsWith("Berlebih: batas bawah lebih kecil"))).toBe(true);
+    expect(profiles.records.some(record => String(record["Dosis Manual terhadap Literatur Terkini"]).includes("0,00%"))).toBe(true);
+  });
+
+  it("exports single-dose wording without creating a routine frequency or evaluable RS interval", async () => {
+    const profiles = oracle.singleDoseExport;
+    expect(profiles.rows.map(row => row[0])).toEqual([
+      "single-T22-actual", "single-T22-no-actual",
+      "single-T28-actual", "single-T28-no-actual",
+      "single-T29-actual", "single-T29-no-actual",
+    ]);
+    const batch = processBatchTable([oracle.header,...profiles.rows]);
+    expect(batch.successCount).toBe(6);
+    expect(batch.errorCount).toBe(0);
+    const ExcelJS = await import("exceljs");
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
+    const sheet = book.getWorksheet("Hasil per Pasien")!;
+    const headers = Array.from({ length: sheet.columnCount }, (_, index) => String(sheet.getRow(1).getCell(index+1).value));
+    for (const [index,row] of batch.rows.entries()) {
+      if (row.status !== "berhasil") throw new Error("Expected valid single-dose profile");
+      const expected = profiles.records.find(record => record["Kode Pasien"] === row.patientCode)!;
+      const actual = notebookBatchRecord(row);
+      for (const key of oracle.publicHeaders) {
+        expect(actual[key], `${row.patientCode}: ${key}`).toBe(expected[key]);
+        expect(sheet.getRow(index+2).getCell(headers.indexOf(key)+1).value, `${row.patientCode}: XLSX ${key}`).toBe(expected[key]);
+      }
+      const rs = row.calculator.recommendations.institutionalPrimary;
+      expect(rs.interval.kind).toBe("single-dose-only");
+      expect(rs.eligibleForRegimenEvaluation).toBe(false);
+      expect(intervalBounds(rs.interval)).toEqual([null,null]);
+      expect(actual["Frekuensi Pedoman RS"]).toBe("Dosis tunggal (bukan rutin)");
+      expect(actual["Frekuensi Aktual terhadap Pedoman RS"]).toBe("-");
+      expect(actual["Frekuensi Manual terhadap Pedoman RS"]).toBe("-");
+      for (const key of ["_rs_freq_mid", "_dev_frek_aktual_RS", "_dev_frek_manual_RS"]) expect(actual[key], key).toBeNull();
+      for (const key of ["_kfa_rs", "_kmf_rs"]) expect(actual[key], key).toBe("");
+      expect(actual["Frekuensi Literatur Terkini"]).toMatch(/^tiap \d+ jam$/);
+    }
+    const rsFrequencyTests = summarizeBatch(batch).paired.filter(test => test.metric.startsWith("Frekuensi") && test.reference === "Pedoman Rumah Sakit");
+    expect(rsFrequencyTests.length).toBeGreaterThan(0);
+    for (const test of rsFrequencyTests) {
+      expect(test.n).toBe(0);
+      expect(test.pValue).toBeNull();
+    }
+  });
+
   it("respects v20 tolerance, missing values, and excess-first priority", () => {
     expect(rangeDeviation(null, 2, 1, 2)).toBeNull();
     expect(rangeDeviation(1, 2, 1, 2)).toBe(0);
@@ -110,5 +299,23 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     expect(rangeDeviation(1 - 2e-6, 1, 1, 2)).toBeCloseTo(-2e-6, 12);
     expect(rangeDeviation(2, 2 + 2e-6, 1, 2)).toBeCloseTo(2e-6, 12);
     expect(rangeDeviation(0.5, 2.25, 1, 2)).toBeCloseTo(0.25, 12);
+  });
+
+  it.each([
+    [22, 0, 0, "22 minggu", "22 minggu"],
+    [29, 6, 0, "29 minggu 6 hari", "29 minggu 6 hari"],
+    [29, 6, 1, "29 minggu 6 hari", "30 minggu"],
+    [33, 0, 8, "33 minggu", "34 minggu 1 hari"],
+    [29, 6, 28, "29 minggu 6 hari", "33 minggu 6 hari"],
+  ] as const)("formats GA %s weeks + %s days and PNA %s without decimal PMA rounding", (weeks, days, pna, gaText, pmaText) => {
+    const row = [...oracle.inputRows[0]];
+    for (const [field,value] of [["usia_gestasi_lahir_minggu",weeks],["usia_gestasi_lahir_hari",days],["usia_pascalahir_hari",pna]] as const) row[oracle.header.indexOf(field)] = value;
+    const batch = processBatchTable([oracle.header,row]);
+    expect(batch.errorCount).toBe(0);
+    const result = batch.rows[0];
+    if (result.status !== "berhasil") throw new Error("Expected valid age profile");
+    const record = notebookBatchRecord(result);
+    expect(record["Usia Gestasi saat Lahir"]).toBe(gaText);
+    expect(record["Usia Pascamenstruasi (PMA)"]).toBe(pmaText);
   });
 });

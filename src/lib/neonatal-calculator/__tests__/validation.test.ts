@@ -32,6 +32,26 @@ describe("input validation", () => {
     expect(validatePatientInput(patient({ serumCreatinineMgDl: undefined })).success).toBe(false);
   });
 
+  it("explains a likely µmol/L value without converting it", () => {
+    const input = patient({ serumCreatinineMgDl: 70 });
+    const result = validatePatientInput(input);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.issues).toContainEqual({field:"serumCreatinineMgDl",message:"Kreatinin serum di luar rentang 0–10 mg/dL. Tampaknya kreatinin diisi dalam µmol/L; bagi dengan 88,4 untuk mendapatkan mg/dL."});
+    expect(input.serumCreatinineMgDl).toBe(70);
+  });
+
+  it.each([0, 10])("preserves valid creatinine boundary %s mg/dL", (value) => {
+    const result = validatePatientInput(patient({ serumCreatinineMgDl: value }));
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.serumCreatinineMgDl).toBe(value);
+  });
+
+  it("does not suggest a unit conversion for negative creatinine", () => {
+    const result = validatePatientInput(patient({ serumCreatinineMgDl: -1 }));
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.issues.find(i=>i.field==="serumCreatinineMgDl")!.message).not.toContain("88,4");
+  });
+
   it("does not accept hidden renal values when data are unavailable", () => {
     expect(
       validatePatientInput(

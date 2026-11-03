@@ -27,7 +27,7 @@ export function buildBatchInterpretation(result:BatchProcessingResult, stats=sum
   add("Untuk setiap pasien dihitung penyimpangan dari batas rentang rujukan terdekat: dosis dalam mg/kg dan frekuensi dalam dosis/hari (24 ÷ interval); nilai di dalam rentang = 0. Uji menilai apakah penyimpangan cenderung ke satu arah (di atas atau di bawah rentang). Uji dipilih otomatis: uji t satu sampel bila penyimpangan berdistribusi normal (Shapiro-Wilk p>0,05), selain itu Wilcoxon signed-rank (nilai 0 dikeluarkan).","normal");
   for(const [kind,unit] of [["Dosis","mg/kg"],["Frekuensi","dosis/hari"]] as const)for(const drug of drugs){
     if(!records.some(r=>r.Antibiotik===drug))continue;
-    for(const [ref,label] of [["Pedoman Rumah Sakit","Pedoman RS"],["Literatur Terkini","Literatur Terkini"]] as const){const t=test(drug,`${kind} aktual`,ref);if(!t)continue;
+    for(const [ref,label] of [["Pedoman Rumah Sakit","Pedoman RS"],["Literatur Terkini","Literatur Terkini"]] as const){const t=test(drug,`${kind} aktual`,ref);if(!t||t.n===0)continue;
       const subject=`${kind} aktual ${drug} terhadap ${label}: `,spread=`${t.aboveCount} di atas dan ${t.belowCount} di bawah rentang dari ${t.n} pasien`;
       if(t.n<3)add(subject+`n=${t.n}, uji tidak dilakukan (minimal 3 pasien).`);
       else if(t.pValue===null)add(subject+`semua ${t.n} pasien di dalam rentang; uji tidak diperlukan.`);

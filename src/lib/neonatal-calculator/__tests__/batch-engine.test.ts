@@ -40,7 +40,7 @@ describe("processBatchTable", () => {
     expect(row.status).toBe("berhasil");
     if (row.status === "berhasil") {
       expect(row.calculator.input.patientLabel).toBe("P-001");
-      expect(row.actualEvaluation.targets).toHaveLength(3);
+      expect(row.actualEvaluation?.targets).toHaveLength(3);
       expect(row.manualEvaluation?.targets).toHaveLength(3);
     }
   });
@@ -151,7 +151,7 @@ describe("processBatchTable", () => {
       .filter((row) => row.status === "gagal")
       .flatMap((row) => row.errors);
     expect(messages).toContain("kode_pasien duplikat di dalam file.");
-    expect(messages).toContain("kreatinin_serum_mg_dl wajib diisi jika produksi urin dicantumkan.");
+    expect(messages).toContain("Kreatinin serum wajib diisi jika produksi urin dicantumkan.");
   });
 
   it("tetap memproses evaluasi aktual ketika pembanding manual tidak valid", () => {
@@ -198,5 +198,19 @@ describe("processBatchTable", () => {
       status: "gagal",
       errors: ["Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari."],
     });
+  });
+
+  it("menolak kreatinin 70 mg/dL dan mengekspor petunjuk µmol/L tanpa konversi diam-diam", async () => {
+    const source = [...completeRow]; source[6] = 70;
+    const result = processBatchTable([[...BATCH_COLUMNS], source]);
+    expect(result).toMatchObject({successCount:0,errorCount:1});
+    expect(source[6]).toBe(70);
+    const ExcelJS = await import("exceljs"); const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(result)) as unknown as import("exceljs").Buffer);
+    expect(workbook.getWorksheet("Hasil per Pasien")!.rowCount).toBe(1);
+    const warning = workbook.getWorksheet("Peringatan")!.getRow(2);
+    expect(warning.getCell(1).value).toBe(2); expect(warning.getCell(2).value).toBe("P-001");
+    expect(String(warning.getCell(4).value)).toContain("Kreatinin serum di luar rentang 0–10 mg/dL");
+    expect(String(warning.getCell(4).value)).toContain("µmol/L; bagi dengan 88,4");
   });
 });

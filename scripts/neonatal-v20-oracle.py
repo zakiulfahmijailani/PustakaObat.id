@@ -99,6 +99,25 @@ def read_workbooks(files):
         comparator.close()
 
 
+def v20_recommendation(namespace, patient):
+    expected = recommendation(namespace, patient)
+    drug = {"gentamisin": "Gentamisin", "amikasin": "Amikasin", "vankomisin": "Vankomisin"}[patient["antibiotic"]]
+    result = namespace["bangun_rekomendasi"](
+        drug, patient["gestationalAgeWeeks"] + patient.get("gestationalAgeDays", 0) / 7,
+        patient["postnatalAgeDays"], patient["currentWeightKg"],
+        scr=patient.get("serumCreatinineMgDl"), uop=patient.get("urineOutputMlKgHour"),
+        hipotermia=patient.get("therapeuticHypothermia", False),
+        cox_inhibitor=patient.get("coxInhibitorTherapy", False),
+        sepsis_berat=patient.get("severeSepsisOrHighRiskInfection", False))
+    severity = {"bahaya": "critical", "perhatian": "warning", "info": "info"}
+    expected["warningDetails"] = [
+        {"severity": severity[level], "title": namespace["_teks_polos"](title),
+         "message": namespace["_teks_polos"](message)}
+        for level, title, message in namespace["_peringatan_rekomendasi"](result)
+    ]
+    return expected
+
+
 def boundary_profiles(namespace):
     profiles = []
     for drug in ["gentamisin", "amikasin", "vankomisin"]:
@@ -111,7 +130,7 @@ def boundary_profiles(namespace):
                                "currentWeightKg": 1.38, "renalDataAvailable": False,
                                "therapeuticHypothermia": modifier in ["hypothermia", "both"],
                                "coxInhibitorTherapy": modifier in ["cox", "both"]}
-                    profiles.append({"input": patient, "expected": recommendation(namespace, patient)})
+                    profiles.append({"input": patient, "expected": v20_recommendation(namespace, patient)})
         for scr in [0, 0.49, 0.5, 0.99, 1, 1.01]:
             for uop in [None, 0, 0.99, 1, 1.01]:
                 patient = {"antibiotic": drug, "gestationalAgeWeeks": 30,
@@ -120,7 +139,7 @@ def boundary_profiles(namespace):
                            "serumCreatinineMgDl": scr}
                 if uop is not None:
                     patient["urineOutputMlKgHour"] = uop
-                profiles.append({"input": patient, "expected": recommendation(namespace, patient)})
+                profiles.append({"input": patient, "expected": v20_recommendation(namespace, patient)})
     return profiles
 
 
@@ -143,7 +162,7 @@ def input_profiles(namespace, table, records):
                            ("urineOutputMlKgHour", "produksi_urin_ml_kg_jam")]:
             if row[field] is not None:
                 patient[key] = row[field]
-        profiles.append({"input": patient, "expected": recommendation(namespace, patient)})
+        profiles.append({"input": patient, "expected": v20_recommendation(namespace, patient)})
     return profiles
 
 
@@ -196,7 +215,9 @@ def main():
     cases = []
     scenarios = [("empty", []), ("small", [5]), ("zero", [6.25]*6),
                  ("constant", [9]*6), ("normal", [7.5+i*0.07 for i in range(25)]),
-                 ("manual-equal", [6.25]*6), ("manual-different", [9]*6)]
+                 ("manual-equal", [6.25]*6), ("manual-different", [9]*6),
+                 ("recommendation-only", [5]*3), ("manual-no-actual", [5]*3),
+                 ("mixed-actual", [5]*3)]
     scenarios += [(f"ties-{n}", [7.5+(0 if i<n-3 else i%2+1) for i in range(n)])
                   for n in [3,13,14,20,50,51]]
     scenarios += [("no-ties", [7.5+i**3/100000 for i in range(51)])]
@@ -212,12 +233,105 @@ def main():
                 row.update(dosis_manual_min_mg=5 if name=="manual-equal" else 9,
                            dosis_manual_max_mg=7.5 if name=="manual-equal" else 9,
                            frekuensi_manual_min_jam=24, frekuensi_manual_max_jam=48)
+            if name in ["recommendation-only", "manual-no-actual"] or (name == "mixed-actual" and i < 2):
+                row.update(dosis_aktual_mg=None, frekuensi_aktual_jam=None)
             rows.append([row.get(key) for key in table[0]])
         recs, _ = namespace["proses_dataframe"](pandas.DataFrame(rows,columns=table[0]),
             namespace["bangun_rekomendasi"], namespace["_kategori_dosis"], namespace["_fmt_num"])
         stat = namespace["hitung_statistik"](recs)
-        cases.append({"name":name,"rows":rows,"statistics":stat,
+        cases.append({"name":name,"rows":rows,"statistics":stat,"records":recs,
                       "interpretation":namespace["buat_interpretasi"](recs,stat)})
+    # Exercise renal export text through the original batch path, including
+    # measured zero values, absent urine output, and both sides of UNC cutoffs.
+    renal_rows = []
+    for drug in ["Gentamisin", "Amikasin", "Vankomisin"]:
+        for scr, uop in [(None, None)] + [
+            (scr, uop) for scr in [0, 0.5, 1, 1.01]
+            for uop in [None, 0, 0.99, 1, 1.01]
+        ]:
+            row = dict(zip(table[0], table[1]))
+            row.update(kode_pasien=f"renal-{len(renal_rows)}", antibiotik=drug,
+                       usia_gestasi_lahir_minggu=30, usia_gestasi_lahir_hari=0,
+                       usia_pascalahir_hari=10, kreatinin_serum_mg_dl=scr,
+                       produksi_urin_ml_kg_jam=uop)
+            renal_rows.append([row.get(key) for key in table[0]])
+    renal_records, renal_warnings = namespace["proses_dataframe"](
+        pandas.DataFrame(renal_rows, columns=table[0]), namespace["bangun_rekomendasi"],
+        namespace["_kategori_dosis"], namespace["_fmt_num"])
+    if len(renal_records) != len(renal_rows) or renal_warnings:
+        raise ValueError(f"Renal export profiles were rejected: {renal_warnings}")
+    # Compare manual point/range text using original patient profiles and
+    # independently calculated Python recommendation bounds for each source.
+    manual_rows = []
+    for profile in batch_profiles:
+        patient_code = profile["input"]["patientLabel"]
+        original = next(values for values in table[1:] if values[0] == patient_code)
+        for reference in ["rs", "lit"]:
+            lo, hi = profile["expected"][reference + "Dose"]
+            imin, imax = profile["expected"][reference + "Interval"]
+            imin, imax = (imin, imax) if imin is not None else (24, 48)
+            middle_interval = int((imin + imax) // 2)
+            scenarios = [
+                ("absent", None, None, None, None),
+                ("matching", lo, hi, imin, imax),
+                ("single-inside", (lo+hi)/2, (lo+hi)/2, middle_interval, middle_interval),
+                ("single-low", lo*0.8, lo*0.8, 96, 96),
+                ("single-high", hi*1.2, hi*1.2, 1, 1),
+                ("straddling", lo*0.8, hi*1.2, 1, 96),
+                ("within-epsilon", lo-0.5e-6, hi+0.5e-6, 24, 48),
+                ("outside-epsilon", lo-2e-6, hi+2e-6, 12, 36),
+                ("tiny-percent", hi+1e-5, hi+1e-5, 23, 25),
+            ]
+            for name, dm_min, dm_max, fm_min, fm_max in scenarios:
+                row = dict(zip(table[0], original))
+                row.update(kode_pasien=f"manual-{patient_code}-{reference}-{name}",
+                           dosis_manual_min_mg=dm_min, dosis_manual_max_mg=dm_max,
+                           frekuensi_manual_min_jam=fm_min, frekuensi_manual_max_jam=fm_max)
+                manual_rows.append([row.get(key) for key in table[0]])
+    manual_records, manual_warnings = namespace["proses_dataframe"](
+        pandas.DataFrame(manual_rows, columns=table[0]), namespace["bangun_rekomendasi"],
+        namespace["_kategori_dosis"], namespace["_fmt_num"])
+    if len(manual_records) != len(manual_rows) or manual_warnings:
+        raise ValueError(f"Manual export profiles were rejected: {manual_warnings}")
+    single_dose_rows = []
+    for record in records:
+        if record["Frekuensi Pedoman RS"] != "Dosis tunggal (bukan rutin)":
+            continue
+        original = next(values for values in table[1:] if values[0] == record["Kode Pasien"])
+        for actual_available in [True, False]:
+            row = dict(zip(table[0], original))
+            row["kode_pasien"] = f"single-{record['Kode Pasien']}-{'actual' if actual_available else 'no-actual'}"
+            if not actual_available:
+                row.update(dosis_aktual_mg=None, frekuensi_aktual_jam=None)
+            single_dose_rows.append([row.get(key) for key in table[0]])
+    single_dose_records, single_dose_warnings = namespace["proses_dataframe"](
+        pandas.DataFrame(single_dose_rows, columns=table[0]), namespace["bangun_rekomendasi"],
+        namespace["_kategori_dosis"], namespace["_fmt_num"])
+    if len(single_dose_records) != len(single_dose_rows) or single_dose_warnings:
+        raise ValueError(f"Single-dose profiles were rejected: {single_dose_warnings}")
+    # Obtain glossary wording from an actual workbook written by frozen Python,
+    # rather than transcribing expected term definitions into the tests.
+    with tempfile.TemporaryDirectory(prefix="neonatal-v20-glossary-") as temporary:
+        glossary_path = Path(temporary) / "reference.xlsx"
+        namespace["buat_output_excel"](records, statistics, namespace["ringkasan_kesesuaian"](records), warnings, str(glossary_path))
+        workbook = openpyxl.load_workbook(glossary_path, data_only=True)
+        try:
+            glossary_table = [list(row) for row in workbook["Keterangan Singkatan"].iter_rows(values_only=True)]
+        finally:
+            workbook.close()
+    glossary_terms = glossary_table[-5:]
+    glossary_cases = []
+    for name, text in [
+        ("empty", ""),
+        ("all", " ".join(entry[0] for entry in namespace["SINGKATAN"])),
+        ("embedded", "XRS RSX xANMF ANMFx RS1 2RS WHOLE coNS anmf"),
+        ("punctuation", "(RS), ANMF/UNC; SCr<UOP DPJP. JAID/JSC _COX_"),
+        ("ascii-boundaries", "RSUP _RS_ éRS RSé ANMF2024 PMA/PNA GA-UG-UPL-BB"),
+    ]:
+        rows = [[short, meaning + (f" ({note})" if note else "")]
+                for short, meaning, note in namespace["SINGKATAN"]
+                if namespace["_pola_singkatan"](short).search(text)]
+        glossary_cases.append({"name": name, "text": text, "rows": rows + glossary_terms})
     result = {
         "source": {"ruleVersion": manifest["ruleVersion"], "manifestSha256": manifest_sha,
                    "files": files, "executedCells": manifest["executedCells"],
@@ -227,7 +341,11 @@ def main():
         "publicHeaders": public_headers, "batchRecords": records, "batchWarnings": warnings,
         "statistics": statistics, "summary": namespace["ringkasan_kesesuaian"](records),
         "interpretation": interpretation, "recommendations": profiles, "batchRecommendations": batch_profiles,
-        "cases": cases,
+        "cases": cases, "renalExport": {"rows": renal_rows, "records": renal_records},
+        "manualExport": {"rows": manual_rows, "records": manual_records},
+        "singleDoseExport": {"rows": single_dose_rows, "records": single_dose_records},
+        "glossary": {"headers": glossary_table[0], "originalRows": glossary_table[1:],
+                     "abbreviations": namespace["SINGKATAN"], "terms": glossary_terms, "cases": glossary_cases},
         "comparator": {"headers": expected[0], "rows": expected[1:], "checkedHeaders": checked,
                        "rejectedCodes": rejected, "pastedWebRows": pasted_rows,
                        "comparedCells": comparisons, "differences": differences},

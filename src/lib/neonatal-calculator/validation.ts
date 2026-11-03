@@ -89,7 +89,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
       issues.push({ field: "renalDataAvailable", message: "Data ginjal harus dikosongkan ketika dinyatakan tidak tersedia." });
     }
   } else if (input.serumCreatinineMgDl === undefined) {
-    issues.push({ field: "serumCreatinineMgDl", message: "SCr wajib diisi ketika data fungsi ginjal tersedia." });
+    issues.push({ field: "serumCreatinineMgDl", message: "Kreatinin serum wajib diisi ketika data fungsi ginjal tersedia." });
   }
   if (
     input.serumCreatinineMgDl !== undefined &&
@@ -97,7 +97,10 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
       input.serumCreatinineMgDl < INPUT_LIMITS.serumCreatinineMgDl.min ||
       input.serumCreatinineMgDl > INPUT_LIMITS.serumCreatinineMgDl.max)
   ) {
-    issues.push({ field: "serumCreatinineMgDl", message: "SCr harus 0–10 mg/dL." });
+    const unitHint = finite(input.serumCreatinineMgDl) && input.serumCreatinineMgDl > 10
+      ? " Tampaknya kreatinin diisi dalam µmol/L; bagi dengan 88,4 untuk mendapatkan mg/dL."
+      : " Periksa kembali isian.";
+    issues.push({ field: "serumCreatinineMgDl", message: "Kreatinin serum di luar rentang 0–10 mg/dL." + unitHint });
   }
   if (
     input.urineOutputMlKgHour !== undefined &&

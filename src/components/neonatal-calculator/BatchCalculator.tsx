@@ -15,6 +15,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { intervalBounds, intervalText, rangeText } from "@/lib/neonatal-calculator/notebook-results";
 import { buildBatchSummaryPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import {
   ANTIBIOTIC_LABELS,
@@ -30,11 +31,11 @@ import {
 } from "@/lib/neonatal-calculator/batch-workbook";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
-type ResultFilter = "action" | "all" | "warning" | "error" | "appropriate";
+type ResultFilter = "action" | "all" | "warning" | "error" | "appropriate" | "recommendation";
 
 function primaryStatus(row: Extract<BatchProcessingResult["rows"][number], { status: "berhasil" }>) {
   const recommendation = row.calculator.recommendations.institutionalPrimary;
-  return row.actualEvaluation.targets.find(
+  return row.actualEvaluation?.targets.find(
     (target) => target.recommendationId === recommendation.id,
   );
 }
@@ -51,6 +52,7 @@ function StatusBadge({ value }: { value: string }) {
 
 function needsAction(row: BatchProcessingResult["rows"][number]) {
   if (row.status === "gagal" || row.warnings.length > 0) return true;
+  if (!row.actualEvaluation) return false;
   const status = primaryStatus(row);
   return status?.actualDose.status !== "sesuai" || status?.actualInterval.status !== "sesuai";
 }
@@ -94,7 +96,7 @@ export function BatchCalculator() {
       }
       setProcessingStage("Menyiapkan ringkasan");
       setResult(processed);
-      setResultFilter("action");
+      setResultFilter(processed.rows.some(row=>row.status==="berhasil"&&row.actualEvaluation===null)?"all":"action");
       setAntibioticFilter("all");
       setSearchQuery("");
       setExpandedRow(null);
@@ -158,6 +160,7 @@ export function BatchCalculator() {
       || (resultFilter === "action" && needsAction(row))
       || (resultFilter === "warning" && row.status === "berhasil" && row.warnings.length > 0)
       || (resultFilter === "error" && row.status === "gagal")
+      || (resultFilter === "recommendation" && row.status === "berhasil" && row.actualEvaluation === null)
       || (resultFilter === "appropriate" && row.status === "berhasil" && row.warnings.length === 0 && status?.actualDose.status === "sesuai" && status?.actualInterval.status === "sesuai");
     return queryMatches && antibioticMatches && statusMatches;
   }) ?? [];
@@ -291,6 +294,7 @@ export function BatchCalculator() {
                       <option value="warning">Peringatan</option>
                       <option value="error">Gagal diproses</option>
                       <option value="appropriate">Dosis & interval sesuai</option>
+                      <option value="recommendation">Rekomendasi saja</option>
                       <option value="all">Semua hasil</option>
                     </select>
                   </label>
@@ -329,15 +333,15 @@ export function BatchCalculator() {
                               <td className="px-4 py-3 text-text-muted">{row.sourceRow}</td>
                               <td className="px-4 py-3 font-medium text-text">{row.patientCode}</td>
                               <td className="px-4 py-3 text-text-muted">{ANTIBIOTIC_LABELS[row.calculator.input.antibiotic]}</td>
-                              <td className="px-4 py-3"><StatusBadge value={status?.actualDose.status ?? "tidak-dapat-dievaluasi"} /></td>
-                              <td className="px-4 py-3"><StatusBadge value={status?.actualInterval.status ?? "tidak-dapat-dievaluasi"} /></td>
+                              <td className="px-4 py-3"><StatusBadge value={row.actualEvaluation ? status?.actualDose.status ?? "tidak-dapat-dievaluasi" : "tidak-dapat-dievaluasi (data aktual kosong)"} /></td>
+                              <td className="px-4 py-3"><StatusBadge value={row.actualEvaluation ? status?.actualInterval.status ?? "tidak-dapat-dievaluasi" : "tidak-dapat-dievaluasi (data aktual kosong)"} /></td>
                               <td className="px-4 py-2"><button type="button" onClick={() => setExpandedRow(open ? null : row.sourceRow)} aria-expanded={open} className={`inline-flex min-h-11 items-center gap-1 rounded-lg px-2 font-semibold ${row.warnings.length > 0 ? "text-warning hover:bg-warning/10" : "text-primary hover:bg-primary/10"}`}>{row.warnings.length > 0 ? <AlertCircle size={15} /> : <CheckCircle2 size={15} />}{row.warnings.length > 0 ? "Peringatan" : "Lihat detail"}<ChevronDown size={15} className={`transition-transform ${open ? "rotate-180" : ""}`} /></button></td>
                             </tr>
                             {open && (
                               <tr className="bg-primary/[0.025]"><td colSpan={6} className="px-4 py-4">
                                 <div className="grid gap-4 rounded-xl border border-border bg-surface p-4 lg:grid-cols-3">
                                   <div><p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Data pasien</p><dl className="mt-2 space-y-1 text-sm"><div className="flex justify-between gap-3"><dt>GA / PNA</dt><dd className="font-medium text-text">{row.calculator.input.gestationalAgeWeeks} minggu / {row.calculator.input.postnatalAgeDays} hari</dd></div><div className="flex justify-between gap-3"><dt>Berat</dt><dd className="font-medium text-text">{row.calculator.input.currentWeightKg} kg</dd></div></dl></div>
-                                  <div><p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Penilaian regimen aktual</p><p className="mt-2 text-sm text-text"><strong>Dosis:</strong> {status?.actualDose.message ?? "Tidak dapat dievaluasi."}</p><p className="mt-1 text-sm text-text"><strong>Interval:</strong> {status?.actualInterval.message ?? "Tidak dapat dievaluasi."}</p></div>
+                                  <div><p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{row.actualEvaluation ? "Penilaian regimen aktual" : "Rekomendasi saja"}</p>{row.actualEvaluation ? <><p className="mt-2 text-sm text-text"><strong>Dosis:</strong> {status?.actualDose.message ?? "Tidak dapat dievaluasi."}</p><p className="mt-1 text-sm text-text"><strong>Interval:</strong> {status?.actualInterval.message ?? "Tidak dapat dievaluasi."}</p></> : <><p className="mt-2 text-sm text-text-muted">Dosis dan frekuensi aktual tidak diisi; kesesuaian pemberian belum dinilai.</p>{[row.calculator.recommendations.institutionalPrimary,row.calculator.recommendations.anmf2024].map(rec=><p key={rec.id} className="mt-2 text-sm text-text"><strong>{rec.label}:</strong> {rangeText(rec.dose.minTotalMg,rec.dose.maxTotalMg)}, {intervalText(...intervalBounds(rec.interval))}.</p>)}</>}</div>
                                   <div><p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Catatan tindak lanjut</p>{row.warnings.length > 0 ? <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-warning">{row.warnings.map((item) => <li key={item}>{item}</li>)}</ul> : <p className="mt-2 text-sm text-success">Tidak ada peringatan tambahan pada baris ini.</p>}</div>
                                 </div>
                               </td></tr>

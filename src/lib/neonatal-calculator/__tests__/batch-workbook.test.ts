@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as warningCatalog from "../warning-catalog-v20";
 import { BATCH_COLUMNS, processBatchTable } from "../batch-engine";
-import { buildBatchResultWorkbook, buildBatchTemplateWorkbook } from "../batch-workbook";
+import { buildBatchResultWorkbook, buildBatchTemplateWorkbook, readBatchWorkbook } from "../batch-workbook";
 import { summarizeBatch } from "../batch-statistics";
 import { buildBatchSummaryPdf } from "../pdf-reports";
 
@@ -22,6 +23,35 @@ function vancomycinBatch(count: number) {
 }
 
 describe("workbook batch", () => {
+  it("mempertahankan nomor sumber setelah baris kosong dan contoh hingga baris terakhir", async () => {
+    const ExcelJS = await import("exceljs"); const input = new ExcelJS.Workbook();
+    const sheet = input.addWorksheet("Data Pasien");
+    sheet.addRow([...BATCH_COLUMNS]);
+    const valid = ["VALID", "Gentamisin", 35, 0, 8, 1, "", "", "Tidak", "Tidak", "Tidak", "", "", "", "", 5, 24];
+    sheet.getRow(3).values = ["CONTOH-1", ...valid.slice(1)];
+    sheet.getRow(6).values = ["SALAH-1", ...valid.slice(1)];
+    sheet.getRow(6).getCell(16).value = null;
+    sheet.getRow(9).values = ["SALAH-2", ...valid.slice(1)];
+    sheet.getRow(9).getCell(17).value = 97;
+    sheet.getRow(11).values = valid;
+    const bytes = await input.xlsx.writeBuffer();
+    const file = new File([new Uint8Array(bytes as ArrayBuffer)], "baris-berjarak.xlsx");
+    const table = await readBatchWorkbook(file);
+    expect(table).toHaveLength(11);
+    const batch = processBatchTable(table);
+    expect(batch).toMatchObject({candidateRows:3,successCount:1,errorCount:2,ignoredRows:1});
+    expect(batch.rows.map(row=>[row.patientCode,row.sourceRow,row.status])).toEqual([["SALAH-1",6,"gagal"],["SALAH-2",9,"gagal"],["VALID",11,"berhasil"]]);
+    const output = await loadWorkbook(await buildBatchResultWorkbook(batch));
+    const warnings = output.getWorksheet("Peringatan")!;
+    for(const [source,code,reason] of [[6,"SALAH-1","Dosis aktual dan frekuensi aktual harus diisi bersama"],[9,"SALAH-2","Frekuensi aktual harus bilangan bulat 1–96 jam"]] as const){
+      const row=warnings.getRows(2,warnings.rowCount-1)!.find(row=>row.getCell(2).value===code)!;
+      expect(row.getCell(1).value).toBe(source);
+      const text=String(row.getCell(4).value);
+      expect(text).toContain(reason);expect(text.match(/dilewati/gi)).toHaveLength(1);
+    }
+    expect(output.getWorksheet("Hasil per Pasien")!.getRow(2).getCell(1).value).toBe("VALID");
+  });
+
   it("membuat template yang dapat dibuka dan memiliki sheet input", async () => {
     const workbook = await loadWorkbook(await buildBatchTemplateWorkbook());
 
@@ -108,11 +138,10 @@ describe("workbook batch", () => {
       if (index > 1) notes.push({ code: String(row.getCell(2).value), message: String(row.getCell(4).value) });
     });
     for (const code of ["T11", "T19"]) {
-      expect(notes.filter(note => note.code === code && note.message.startsWith("Terdapat sinyal perlunya evaluasi fungsi ginjal."))).toHaveLength(1);
-      expect(notes.filter(note => note.code === code && note.message.startsWith("Kriteria gangguan fungsi ginjal terpenuhi."))).toHaveLength(1);
+      expect(notes.filter(note => note.code === code && note.message.startsWith("Kemungkinan gangguan fungsi ginjal. Kriteria gangguan ginjal UNC (2023) terpenuhi:"))).toHaveLength(1);
     }
-    expect(notes.filter(note => note.code === "T19" && note.message.startsWith("Interval kedua rujukan berbeda"))).toHaveLength(1);
-    expect(notes).toHaveLength(5);
+    expect(notes.filter(note => note.code === "T19" && note.message.startsWith("Interval Pedoman RS lebih pendek dari literatur."))).toHaveLength(1);
+    expect(notes).toHaveLength(3);
   });
 
   it("mempertahankan pesan atau tingkat peringatan berbeda meskipun kodenya sama", async () => {
@@ -122,21 +151,40 @@ describe("workbook batch", () => {
     ]);
     const patient = processed.rows[0];
     if (patient.status !== "berhasil") throw new Error("Fixture pasien tidak valid");
-    const original = patient.calculator.globalWarnings.find(warning => warning.code === "RENAL_REVIEW")!;
-    patient.calculator.globalWarnings.push(
-      { ...original },
-      { ...original, severity: "warning" },
+    const catalogue = warningCatalog.getV20ClinicalWarnings(patient.calculator);
+    const original = catalogue[0];
+    const mock = vi.spyOn(warningCatalog, "getV20ClinicalWarnings").mockReturnValue([
+      ...catalogue, { ...original }, { ...original, severity: "warning" },
+      { ...original, severity: "info" },
       { ...original, message: "Periksa kembali data ginjal yang baru diperbarui." },
-    );
+    ]);
+    try {
+      const workbook = await loadWorkbook(await buildBatchResultWorkbook(processed));
+      const matching: string[] = [];
+      let differentMessage = 0;
+      workbook.getWorksheet("Peringatan")!.eachRow(row => {
+        if (row.getCell(4).value === original.title + ". " + original.message) matching.push(String(row.getCell(3).value));
+        if (row.getCell(4).value === original.title + ". Periksa kembali data ginjal yang baru diperbarui.") differentMessage++;
+        if (row.getCell(3).value === "INFORMASI") {
+          expect(row.getCell(3).font.color?.argb).toBe("FF3F6F8F");
+          expect(row.getCell(3).fill).toMatchObject({type:"pattern",fgColor:{argb:"FFECF1F4"}});
+        }
+      });
+      expect(matching).toEqual(["PERINGATAN", "PERHATIAN", "INFORMASI"]);
+      expect(differentMessage).toBe(1);
+    } finally { mock.mockRestore(); }
+  });
+
+  it("menuliskan tidak ada peringatan tanpa memberi kategori bahaya", async () => {
+    const processed = processBatchTable([[...BATCH_COLUMNS],
+      ["NORMAL", "Gentamisin", 38, 0, 8, 3, 0.4, 2, "Tidak", "Tidak", "Tidak", "", "", "", "", 15, 24],
+    ]);
+    expect(processed.errorCount).toBe(0);
     const workbook = await loadWorkbook(await buildBatchResultWorkbook(processed));
-    const matching: string[] = [];
-    let differentMessage = 0;
-    workbook.getWorksheet("Peringatan")!.eachRow(row => {
-      if (row.getCell(4).value === original.message) matching.push(String(row.getCell(3).value));
-      if (row.getCell(4).value === "Periksa kembali data ginjal yang baru diperbarui.") differentMessage++;
-    });
-    expect(matching).toEqual(["PERINGATAN", "PERHATIAN"]);
-    expect(differentMessage).toBe(1);
+    const sheet = workbook.getWorksheet("Peringatan")!;
+    expect(sheet.rowCount).toBe(2);
+    expect(sheet.getRow(2).getCell(3).value).toBe("");
+    expect(sheet.getRow(2).getCell(4).value).toBe("Tidak ada peringatan.");
   });
 
   it("mengosongkan p pada uji beda dengan kurang dari tiga pasangan, termasuk semua selisih nol", async () => {

@@ -34,13 +34,15 @@ export const BATCH_COLUMNS = [
 ] as const;
 
 export type BatchColumn = (typeof BATCH_COLUMNS)[number];
+export type BatchManualInput = Omit<RegimenEvaluationInput, "actualDoseMg" | "actualIntervalHours">;
 
 export type BatchSuccessRow = {
   status: "berhasil";
   sourceRow: number;
   patientCode: string;
   calculator: CalculatorResult;
-  actualEvaluation: ActualRegimenEvaluationResult;
+  actualEvaluation: ActualRegimenEvaluationResult | null;
+  manualInput?: BatchManualInput | null;
   manualEvaluation: RegimenEvaluationResult | null;
   warnings: string[];
 };
@@ -124,11 +126,9 @@ function getRecord(
 
 function parseManualEvaluation(
   record: Record<BatchColumn, unknown>,
-  actualDoseMg: number | null,
-  actualIntervalHours: number | null,
   errors: string[],
   incompleteErrors: string[],
-): RegimenEvaluationInput | null {
+): BatchManualInput | null {
   const manualColumns = [
     "dosis_manual_min_mg",
     "dosis_manual_max_mg",
@@ -157,9 +157,7 @@ function parseManualEvaluation(
     manualDoseMinMg === null ||
     manualDoseMaxMg === null ||
     manualIntervalMinHours === null ||
-    manualIntervalMaxHours === null ||
-    actualDoseMg === null ||
-    actualIntervalHours === null
+    manualIntervalMaxHours === null
   ) {
     return null;
   }
@@ -169,8 +167,6 @@ function parseManualEvaluation(
     manualDoseMaxMg,
     manualIntervalMinHours,
     manualIntervalMaxHours,
-    actualDoseMg,
-    actualIntervalHours,
   };
 }
 
@@ -229,7 +225,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     const currentWeightKg = parseNumber(record.berat_badan_kg, "berat_badan_kg", errors, true);
     const serumCreatinineMgDl = parseNumber(
       record.kreatinin_serum_mg_dl,
-      "kreatinin_serum_mg_dl",
+      "Kreatinin serum (mg/dL)",
       errors,
       false,
     );
@@ -240,18 +236,18 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
       false,
     );
     if (urineOutputMlKgHour !== null && serumCreatinineMgDl === null) {
-      errors.push("kreatinin_serum_mg_dl wajib diisi jika produksi urin dicantumkan.");
+      errors.push("Kreatinin serum wajib diisi jika produksi urin dicantumkan.");
     }
     const doseBlank = isBlank(record.dosis_aktual_mg);
     const frequencyBlank = isBlank(record.frekuensi_aktual_jam);
     const partiallyFilled = doseBlank !== frequencyBlank;
     if (partiallyFilled) errors.push("Dosis aktual dan frekuensi aktual harus diisi bersama.");
-    const actualDoseMg = parseNumber(record.dosis_aktual_mg, "dosis_aktual_mg", errors, !partiallyFilled);
+    const actualDoseMg = parseNumber(record.dosis_aktual_mg, "dosis_aktual_mg", errors, false);
     const actualIntervalHours = parseNumber(
       record.frekuensi_aktual_jam,
       "frekuensi_aktual_jam",
       errors,
-      !partiallyFilled,
+      false,
     );
 
     const patient: PatientInput | null =
@@ -290,8 +286,6 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     const manualWarnings: string[] = [];
     let manualInput = parseManualEvaluation(
       record,
-      actualDoseMg,
-      actualIntervalHours,
       manualWarnings,
       errors,
     );
@@ -310,14 +304,18 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
       errors.push("Frekuensi aktual harus bilangan bulat 1–96 jam (setiap ... jam).");
     }
     if (manualInput) {
-      const validation = validateRegimenEvaluationInput(manualInput, true);
-      if (!validation.success) {
-        manualWarnings.push(...validation.issues.map((issue) => issue.message));
-        manualInput = null;
+      if (actualDoseMg !== null && actualIntervalHours !== null) {
+        const validation = validateRegimenEvaluationInput({...manualInput, actualDoseMg, actualIntervalHours}, true);
+        if (!validation.success) {
+          manualWarnings.push(...validation.issues.map((issue) => issue.message));
+          manualInput = null;
+        }
+      } else if (manualInput.manualDoseMinMg <= 0 || manualInput.manualDoseMaxMg <= 0 || manualInput.manualDoseMinMg > manualInput.manualDoseMaxMg) {
+        errors.push("Dosis hitung manual harus lebih dari 0 mg dan batas bawah tidak boleh lebih besar dari batas atas.");
       }
     }
 
-    if (errors.length > 0 || !validatedPatient || actualDoseMg === null || actualIntervalHours === null) {
+    if (errors.length > 0 || !validatedPatient) {
       results.push({
         status: "gagal",
         sourceRow,
@@ -334,8 +332,9 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
         sourceRow,
         patientCode,
         calculator,
-        actualEvaluation: evaluateActualRegimen(calculator, actualDoseMg, actualIntervalHours),
-        manualEvaluation: manualInput ? evaluateRegimen(calculator, manualInput) : null,
+        actualEvaluation: actualDoseMg !== null && actualIntervalHours !== null ? evaluateActualRegimen(calculator, actualDoseMg, actualIntervalHours) : null,
+        manualInput,
+        manualEvaluation: manualInput && actualDoseMg !== null && actualIntervalHours !== null ? evaluateRegimen(calculator, {...manualInput, actualDoseMg, actualIntervalHours}) : null,
         warnings: [...new Set(manualWarnings)],
       });
     } catch (error) {
