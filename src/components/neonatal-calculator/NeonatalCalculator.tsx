@@ -573,6 +573,10 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <ActualEvaluationSummary calculated={evaluationResult} evaluation={evaluation} />
               <Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button>
               <SortedWarnings warnings={[...evaluationResult.globalWarnings, ...evaluationResult.recommendations.institutionalPrimary.warnings, ...evaluationResult.recommendations.anmf2024.warnings]} />
+              <section aria-labelledby="evaluation-recommendation-heading" className="space-y-3">
+                <h3 id="evaluation-recommendation-heading" className="text-lg font-semibold text-text">Rekomendasi dosis</h3>
+                <RecommendationTable calculated={evaluationResult} />
+              </section>
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
                 <EvaluationCard key={target.recommendationId} target={target} showManual={manualEnabled} />
               )}
