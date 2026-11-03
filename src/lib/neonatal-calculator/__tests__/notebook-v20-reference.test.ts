@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadV20Reference, referenceRoot } from "../../../../tests/helpers/neonatal-v20-reference";
 import { processBatchTable } from "../batch-engine";
-import { intervalBounds } from "../notebook-results";
+import { intervalBounds, notebookBatchRecord, rangeDeviation } from "../notebook-results";
 import { calculateRecommendations } from "../recommendation-engine";
 
 const oracle = loadV20Reference();
@@ -83,5 +83,32 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
       }
     }
     expect(failures.length, JSON.stringify(failures.slice(0, 5))).toBe(0);
+  });
+
+  it("matches all eight v20 deviation fields for each supplied patient", () => {
+    const result = processBatchTable([oracle.header, ...oracle.inputRows]);
+    for (const row of result.rows) {
+      if (row.status !== "berhasil") continue;
+      const actual = notebookBatchRecord(row);
+      const expected = oracle.batchRecords.find(record => record["Kode Pasien"] === row.patientCode)!;
+      const keys = Object.keys(expected).filter(key => key.startsWith("_dev_"));
+      expect(keys).toHaveLength(8);
+      for (const key of keys) {
+        const a = actual[key], b = expected[key];
+        if (typeof b === "number") {
+          expect(typeof a, `${row.patientCode} ${key}`).toBe("number");
+          expect(a as number, `${row.patientCode} ${key}`).toBeCloseTo(b, 10);
+        } else expect(a, `${row.patientCode} ${key}`).toBeNull();
+      }
+    }
+  });
+
+  it("respects v20 tolerance, missing values, and excess-first priority", () => {
+    expect(rangeDeviation(null, 2, 1, 2)).toBeNull();
+    expect(rangeDeviation(1, 2, 1, 2)).toBe(0);
+    expect(rangeDeviation(1 - 0.5e-6, 2 + 0.5e-6, 1, 2)).toBe(0);
+    expect(rangeDeviation(1 - 2e-6, 1, 1, 2)).toBeCloseTo(-2e-6, 12);
+    expect(rangeDeviation(2, 2 + 2e-6, 1, 2)).toBeCloseTo(2e-6, 12);
+    expect(rangeDeviation(0.5, 2.25, 1, 2)).toBeCloseTo(0.25, 12);
   });
 });
