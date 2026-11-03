@@ -129,6 +129,9 @@ function Field({
 }
 
 function Warning({ warning }: { warning: ClinicalWarning }) {
+  const message = warning.title && warning.message.startsWith(`${warning.title}. `)
+    ? warning.message.slice(warning.title.length + 2)
+    : warning.message;
   const tone =
     warning.severity === "critical"
       ? "border-error/30 bg-error/10 text-error"
@@ -138,7 +141,7 @@ function Warning({ warning }: { warning: ClinicalWarning }) {
   return (
     <div className={`flex items-start gap-2 rounded-xl border p-3 text-sm leading-relaxed ${tone}`}>
       <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.title && <strong>{warning.title}. </strong>}{warning.message}</span>
+      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.title && <strong>{warning.title}. </strong>}{message}</span>
     </div>
   );
 }
@@ -250,10 +253,24 @@ function WarningLegend() {
 
 function SortedWarnings({ warnings }: { warnings: ClinicalWarning[] }) {
   const priority = { critical: 0, warning: 1, info: 2 };
-  const unique = [...new Map(warnings.map((warning) => [warning.code, warning])).values()];
+  const unique = [...new Map(warnings.map((warning) => [JSON.stringify([warning.severity, warning.title ?? "", warning.message]), warning])).values()];
   return <div className="space-y-2">{unique.sort((a, b) => priority[a.severity] - priority[b.severity]).map((warning) =>
-    <Warning key={warning.code} warning={warning} />
+    <Warning key={JSON.stringify([warning.code, warning.severity, warning.title ?? "", warning.message])} warning={warning} />
   )}</div>;
+}
+
+function AbbreviationGlossary() {
+  return <details className="rounded-2xl border border-border bg-surface p-4">
+    <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Keterangan singkatan</summary>
+    <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+      <div><dt className="inline font-semibold text-text">RS</dt><dd className="inline text-text-muted"> — Rumah Sakit</dd></div>
+      <div><dt className="inline font-semibold text-text">ANMF</dt><dd className="inline text-text-muted"> — Australasian Neonatal Medicines Formulary</dd></div>
+      <div><dt className="inline font-semibold text-text">PMA</dt><dd className="inline text-text-muted"> — usia pascamenstruasi</dd></div>
+      <div><dt className="inline font-semibold text-text">SCr</dt><dd className="inline text-text-muted"> — kreatinin serum</dd></div>
+      <div><dt className="inline font-semibold text-text">UOP</dt><dd className="inline text-text-muted"> — produksi urin</dd></div>
+      <div><dt className="inline font-semibold text-text">DPJP</dt><dd className="inline text-text-muted"> — dokter penanggung jawab pasien</dd></div>
+    </dl>
+  </details>;
 }
 
 function RecommendationTable({ calculated }: { calculated: CalculatorResult }) {
@@ -513,12 +530,13 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <div className="space-y-5" aria-live="polite">
                 <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
                   <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2><p className="mt-1 text-sm text-text-muted">{formatPatientAgeTitle(result.input)}</p></div><div className="flex flex-wrap gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadRecommendation}>Unduh PDF Rekomendasi Dosis</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} />Cetak</Button></div></div>
-                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">GA lahir / PNA / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">SCr / UOP</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
+                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">Usia gestasi lahir / usia pascalahir / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">Kreatinin serum / produksi urin</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
                 <SortedWarnings warnings={[...result.globalWarnings, ...result.recommendations.institutionalPrimary.warnings, ...result.recommendations.anmf2024.warnings]} />
                 <RecommendationTable calculated={result} />
                 <WarningLegend />
+                <AbbreviationGlossary />
                 <details className="rounded-2xl border border-border bg-surface p-4">
                   <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Catatan Referensi Tambahan</summary>
                   <p className="mb-3 text-sm text-warning">Catatan kualitatif saja; tidak digunakan sebagai nomogram dosis.</p>
@@ -577,6 +595,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 <h3 id="evaluation-recommendation-heading" className="text-lg font-semibold text-text">Rekomendasi dosis</h3>
                 <RecommendationTable calculated={evaluationResult} />
               </section>
+              <AbbreviationGlossary />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
                 <EvaluationCard key={target.recommendationId} target={target} showManual={manualEnabled} />
               )}
