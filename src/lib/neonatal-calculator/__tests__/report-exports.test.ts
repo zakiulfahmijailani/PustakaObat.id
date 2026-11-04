@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { calculateRecommendations } from "../recommendation-engine";
 import { evaluateRegimen } from "../evaluation-engine";
 import { patient } from "./fixtures";
@@ -82,6 +84,28 @@ describe("PDF laporan neonatal", () => {
     for (let page = 1; page <= pages; page++) {
       expect(text).toContain("PustakaObat.id - Halaman " + page + "/" + pages);
     }
+  });
+
+
+  it("menyediakan PDF Rujukan nyata untuk inspeksi semua halaman ketika diminta CI", () => {
+    const directory = process.env.NEONATAL_RUJUKAN_EVIDENCE_DIR;
+    if (!directory) return;
+    mkdirSync(directory, { recursive: true });
+    for (const antibiotic of ["gentamisin", "amikasin", "vankomisin"] as const) {
+      const result = calculateRecommendations(patient({ antibiotic }));
+      const evaluation = evaluateRegimen(result, {
+        actualDoseMg: 8, actualIntervalHours: 24,
+        manualDoseMinMg: 7.5, manualDoseMaxMg: 11.25,
+        manualIntervalMinHours: 24, manualIntervalMaxHours: 48,
+      });
+      writeFileSync(join(directory, antibiotic + "-rekomendasi.pdf"), buildRecommendationPdf(result));
+      writeFileSync(join(directory, antibiotic + "-evaluasi.pdf"), buildEvaluationPdf(result, evaluation, true));
+    }
+    const long = calculateRecommendations(patient({ antibiotic: "amikasin" }));
+    long.recommendations.anmf2024.notes.push(
+      Array.from({ length: 650 }, (_, index) => "PANJANG" + String(index).padStart(3, "0")).join(" "),
+    );
+    writeFileSync(join(directory, "amikasin-rujukan-multipage.pdf"), buildRecommendationPdf(long));
   });
 
   it("menghasilkan berkas PDF rekomendasi nyata", () => {

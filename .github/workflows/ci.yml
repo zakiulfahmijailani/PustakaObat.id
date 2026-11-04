@@ -26,3 +26,26 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run test:neonatal:v20 -- --maxWorkers=2
+      - name: Render v20 Rujukan PDF evidence (every page)
+        env:
+          NEONATAL_RUJUKAN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-evidence
+        run: |
+          mkdir -p "$NEONATAL_RUJUKAN_EVIDENCE_DIR"
+          npx vitest run src/lib/neonatal-calculator/__tests__/report-exports.test.ts --maxWorkers=2
+          if ! command -v pdftoppm >/dev/null || ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+          for pdf in "$NEONATAL_RUJUKAN_EVIDENCE_DIR"/*.pdf; do
+            prefix="${pdf%.pdf}"
+            pdftoppm -png -r 110 "$pdf" "$prefix"
+            pdftotext -layout "$pdf" "$prefix.txt"
+            pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
+          done
+      - name: Store v20 Rujukan PDF pages
+        uses: actions/upload-artifact@v4
+        with:
+          name: neonatal-v20-rujukan-pdf-pages
+          path: ${{ runner.temp }}/neonatal-rujukan-evidence
+          if-no-files-found: error
