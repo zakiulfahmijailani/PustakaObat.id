@@ -34,7 +34,8 @@ describe("representative explicit recommendation fixtures", () => {
         },
         interval: { kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" },
         notes: [
-          "PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir.",
+          "Dosis 5 mg/kg per pemberian sesuai PPK RSUP Dr. M. Djamil (2017, lini I); batas atas 7,5 mg/kg mengikuti PNPK (Kemenkes RI, 2021). Interval 24-48 jam sesuai PPK.",
+          "PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir. Penyesuaian menurut usia ditampilkan pada kolom Literatur Terkini (ANMF 2024).",
         ],
         warnings: [],
         eligibleForRegimenEvaluation: true,

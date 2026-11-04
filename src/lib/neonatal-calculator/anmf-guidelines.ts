@@ -18,13 +18,19 @@ export function anmfGentamicin(
   const notes: string[] = [];
   if (input.therapeuticHypothermia) {
     hours = Math.max(hours, 36);
-    notes.push("Hipotermia terapeutik: periksa kadar trough sebelum setiap dosis.");
+    notes.push(
+      "Hipotermia terapeutik: ANMF memakai interval 36 jam dan pengukuran kadar trough sebelum setiap dosis. "
+      + "Kalkulator memakai interval yang lebih panjang antara nomogram dan 36 jam, agar interval bayi sangat prematur tidak diperpendek (keputusan tim peneliti).",
+    );
+    if (input.coxInhibitorTherapy) {
+      notes.push("Hipotermia terapeutik dan indometasin/ibuprofen dicentang bersamaan: ANMF tidak mengatur kombinasi keduanya; kalkulator hanya menerapkan aturan hipotermia.");
+    }
   } else if (input.coxInhibitorTherapy) {
     hours += 12;
-    notes.push("Terapi indometasin/ibuprofen: interval awal diperpanjang 12 jam.");
+    notes.push("Indometasin/ibuprofen (penghambat siklooksigenase): ANMF memperpanjang interval 12 jam.");
   }
   notes.push(
-    "Interval ini merupakan interval awal; sesuaikan menggunakan kadar gentamisin 22 jam setelah dosis ke-2. Target trough <2 mg/L dan peak 5–12 mg/L.",
+    "ANMF: interval di atas adalah interval awal. Interval berikutnya ditentukan dari kadar gentamisin 22 jam setelah dosis ke-2. Target trough <2 mg/L; peak 5–12 mg/L (tidak diperiksa rutin).",
   );
   return {
     dose: fixedDose(5, input.currentWeightKg),
@@ -51,9 +57,12 @@ export function anmfAmikacin(
   const notes: string[] = [];
   if (input.therapeuticHypothermia || input.coxInhibitorTherapy) {
     hours += 12;
-    notes.push("Hipotermia terapeutik dan/atau terapi COX inhibitor: interval diperpanjang 12 jam.");
+    notes.push(
+      "Hipotermia terapeutik atau indometasin/ibuprofen: ANMF memperpanjang interval 12 jam. "
+      + "Bila keduanya dicentang, kalkulator memperpanjang 12 jam satu kali (ANMF tidak mengatur kombinasi keduanya).",
+    );
   }
-  notes.push("Target peak 20–35 mg/L, hingga 40 mg/L pada infeksi berat; target trough <5 mg/L.");
+  notes.push("ANMF: pemantauan kadar rutin tidak diperlukan bila terapi ≤48 jam, kecuali fungsi ginjal terganggu. Target peak 20–35 mg/L (hingga 40 mg/L pada infeksi berat atau mengancam jiwa); target trough <5 mg/L.");
   return {
     dose: fixedDose(mgPerKg, input.currentWeightKg),
     interval: { kind: "single", hours, label: `q${hours}h` },
@@ -70,12 +79,12 @@ export function anmfVancomycin(
   else if (pmaWeeks < 37) hours = input.postnatalAgeDays <= 14 ? 12 : 8;
   else if (pmaWeeks < 45) hours = input.postnatalAgeDays <= 7 ? 12 : 8;
   else hours = 6;
-  const notes = ["Target trough 10–20 mg/L; peak bila diperiksa 20–40 mg/L."];
+  const notes = ["ANMF: ukur kadar trough sebelum dosis ke-3; sebelum dosis ke-2 pada bayi dengan usia pascamenstruasi <29 minggu, hipotermia terapeutik, atau gangguan ginjal. Target trough 10–20 mg/L; peak (bila diperiksa) 20–40 mg/L."];
   if (input.severeSepsisOrHighRiskInfection) {
-    notes.push("Pertimbangkan loading dose 20 mg/kg; bukti pada neonatus terbatas. Ini bukan penambahan otomatis pada dosis rumatan.");
+    notes.push("ANMF: pada dugaan sepsis berat (termasuk MRSA), infeksi tulang, meningitis, atau endokarditis, pertimbangkan dosis muatan 20 mg/kg; data pada neonatus terbatas. Dosis muatan tidak dimasukkan ke angka di tabel.");
   }
   if (input.therapeuticHypothermia) {
-    notes.push("Periksa trough sebelum dosis ke-2 dan tunggu hasil sebelum dosis berikutnya.");
+    notes.push("ANMF: pada hipotermia terapeutik, ukur kadar trough sebelum dosis ke-2 dan tunggu hasilnya sebelum memberi dosis tersebut.");
   }
   return {
     dose: fixedDose(15, input.currentWeightKg),

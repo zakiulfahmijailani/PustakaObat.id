@@ -4,7 +4,7 @@ import type { CalculatorResult, ClinicalWarning } from "./types";
 // Text and conditions from frozen v20 cells 5 and 6. The catalogue describes
 // existing results; it never adjusts a recommendation dose or interval.
 const RENAL_CRITERIA = "Kriteria gangguan ginjal UNC (2023) terpenuhi: kreatinin serum (SCr) ≥1 mg/dL, atau SCr ≥0,5 mg/dL dengan produksi urin <1 mL/kg/jam. Kriteria UNC (pedoman vankomisin) dipakai sebagai penanda untuk ketiga antibiotik (keputusan tim peneliti).";
-const ANMF_RENAL = {
+export const ANMF_RENAL = {
   gentamisin: "ANMF, gangguan ginjal: ukur kadar trough sebelum setiap dosis. Interval di tabel adalah interval rutin; penyesuaiannya ditentukan dari kadar obat.",
   amikasin: "ANMF, gangguan ginjal sedang-berat: perpanjang interval 12-24 jam, ukur kadar trough 1 jam sebelum setiap dosis, dan tunggu hasilnya sebelum memberi dosis. Interval di tabel adalah interval rutin dan belum diperpanjang.",
   vankomisin: "ANMF, gangguan ginjal: bila memungkinkan pertimbangkan antibiotik yang tidak nefrotoksik. Bila vankomisin tetap dipakai, ukur kadar trough sebelum dosis ke-2 dan sesuaikan interval hingga trough 10-20 mg/L. Interval di tabel adalah interval rutin.",

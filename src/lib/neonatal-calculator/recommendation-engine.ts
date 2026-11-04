@@ -28,6 +28,7 @@ import type {
   Recommendation,
 } from "./types";
 import { validatePatientInput } from "./validation";
+import { ANMF_RENAL } from "./warning-catalog-v20";
 
 const LOCAL_PROVENANCE =
   "Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017); PNPK Tata Laksana Sepsis pada Anak, Kemenkes RI (2021).";
@@ -79,7 +80,10 @@ function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) 
       provenanceDetail: LOCAL_PROVENANCE,
       dose: institutionalGentamicinDose(input.currentWeightKg),
       interval: institutionalGentamicinPrimaryInterval(),
-      notes: ["PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir."],
+      notes: [
+        "Dosis 5 mg/kg per pemberian sesuai PPK RSUP Dr. M. Djamil (2017, lini I); batas atas 7,5 mg/kg mengikuti PNPK (Kemenkes RI, 2021). Interval 24-48 jam sesuai PPK.",
+        "PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir. Penyesuaian menurut usia ditampilkan pada kolom Literatur Terkini (ANMF 2024).",
+      ],
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -101,7 +105,7 @@ function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) 
       provenanceDetail: ANMF_PROVENANCE,
       dose: anmf.dose,
       interval: anmf.interval,
-      notes: anmf.notes,
+      notes: warnings.length ? [...anmf.notes, ANMF_RENAL.gentamisin] : anmf.notes,
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -123,7 +127,10 @@ function createAmikacinRecommendations(input: PatientInput, pmaWeeks: number) {
       provenanceDetail: LOCAL_PROVENANCE,
       dose,
       interval,
-      notes: ["PPK yang dirujuk menetapkan 15 mg/kg q24h tanpa stratifikasi resmi GA/PNA."],
+      notes: [
+        "Dosis tetap 15 mg/kg per pemberian, tiap 24 jam, sesuai PPK RSUP Dr. M. Djamil (2017, lini III). PNPK (2021) menyebut 15-20 mg/kg/hari; kalkulator memakai 15 mg/kg sesuai PPK.",
+        "PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir. Penyesuaian menurut usia ditampilkan pada kolom Literatur Terkini (ANMF 2024).",
+      ],
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -145,7 +152,7 @@ function createAmikacinRecommendations(input: PatientInput, pmaWeeks: number) {
       provenanceDetail: ANMF_PROVENANCE,
       dose: anmf.dose,
       interval: anmf.interval,
-      notes: anmf.notes,
+      notes: warnings.length ? [...anmf.notes, ANMF_RENAL.amikasin] : anmf.notes,
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -165,7 +172,12 @@ function renalVancomycinRecommendation(
     provenanceDetail: UNC_PROVENANCE,
     dose: institutionalVancomycinRenalDose(input.currentWeightKg),
     interval: singleDoseOnlyInterval(),
-    notes,
+    notes: [
+      "Pasien memenuhi kriteria gangguan ginjal UNC (SCr ≥1 mg/dL, atau SCr ≥0,5 mg/dL dengan produksi urin <1 mL/kg/jam).",
+      "UNC (2023): berikan dosis TUNGGAL 10 mg/kg, periksa kadar vankomisin 12-24 jam setelah infus (boleh lebih awal, mis. 8 jam, bila indikasi klinis mendesak).",
+      "UNC (2023): tahan dosis berikutnya sampai hasil kadar tersedia; dosis dan interval lanjutan ditentukan dari kadar tersebut.",
+      ...notes,
+    ],
     warnings: [
       {
         code: "VANCOMYCIN_RENAL_SINGLE_DOSE",
@@ -184,6 +196,9 @@ function createVancomycinRecommendations(
   renalStatus: CalculatorResult["renalStatus"],
 ) {
   const anmf = anmfVancomycin(input, pmaWeeks);
+  const anmfNotes = renalStatus === "renal-impairment-criteria-met"
+    ? [...anmf.notes, ANMF_RENAL.vankomisin]
+    : anmf.notes;
   const anmfWarnings: ClinicalWarning[] =
     renalStatus === "renal-impairment-criteria-met"
       ? [{ code: "ANMF_REQUIRES_RENAL_REVIEW", severity: "critical", message: "Kriteria ginjal terpenuhi; regimen ANMF rutin tidak boleh diterapkan tanpa evaluasi kadar dan klinis." }]
@@ -208,7 +223,7 @@ function createVancomycinRecommendations(
         provenanceDetail: ANMF_PROVENANCE,
         dose: anmf.dose,
         interval: anmf.interval,
-        notes: anmf.notes,
+        notes: anmfNotes,
         warnings: anmfWarnings,
         eligibleForRegimenEvaluation: true,
       },
@@ -223,8 +238,8 @@ function createVancomycinRecommendations(
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),
       interval: institutionalVancomycinRoutineInterval(input.postnatalAgeDays),
       notes: [
-        "Interval rutin Pedoman Rumah Sakit mengikuti usia pascalahir 0–14 hari atau 15–28 hari; verifikasi dengan rujukan UNC dan protokol lokal.",
-        "Target trough 10–20 mg/L; 8–12 mg/L bila indikasi febrile neutropenia.",
+        "Dosis 10-15 mg/kg per pemberian; tiap 12 jam pada usia pascalahir 0-14 hari dan tiap 8 jam pada 15-28 hari. Kriteria ini ditetapkan tim peneliti berdasarkan UNC (2023), karena PPK RSUP Dr. M. Djamil tidak memuat vankomisin.",
+        "UNC (2023): target kadar trough 10-20 mg/L (8-12 mg/L pada neutropenia dengan demam).",
       ],
       warnings: [],
       eligibleForRegimenEvaluation: true,
@@ -236,7 +251,7 @@ function createVancomycinRecommendations(
       provenanceDetail: UNC_PROVENANCE,
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),
       interval: institutionalVancomycinAgeInterval(pmaWeeks, input.postnatalAgeDays),
-      notes: ["Target trough 10–20 mg/L; 8–12 mg/L bila indikasi febrile neutropenia."],
+      notes: ["UNC (2023): target kadar trough 10-20 mg/L (8-12 mg/L pada neutropenia dengan demam)."],
       warnings: [],
       eligibleForRegimenEvaluation: true,
     },
@@ -247,7 +262,7 @@ function createVancomycinRecommendations(
       provenanceDetail: ANMF_PROVENANCE,
       dose: anmf.dose,
       interval: anmf.interval,
-      notes: anmf.notes,
+      notes: anmfNotes,
       warnings: anmfWarnings,
       eligibleForRegimenEvaluation: true,
     },
