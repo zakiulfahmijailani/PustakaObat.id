@@ -64,7 +64,7 @@ describe("vancomycin rules", () => {
   it("adds severe infection consideration and hypothermia TDM note without changing maintenance dose", () => {
     const rec = vanc({ severeSepsisOrHighRiskInfection: true, therapeuticHypothermia: true }).recommendations.anmf2024;
     expect(rec.dose.minMgPerKg).toBe(15);
-    expect(rec.notes.join(" ")).toContain("loading dose 20 mg/kg");
+    expect(rec.notes.join(" ")).toContain("dosis muatan 20 mg/kg");
     expect(rec.notes.join(" ")).toContain("sebelum dosis ke-2");
   });
 
