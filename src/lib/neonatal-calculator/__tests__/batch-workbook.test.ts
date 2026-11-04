@@ -52,6 +52,25 @@ describe("workbook batch", () => {
     expect(output.getWorksheet("Hasil per Pasien")!.getRow(2).getCell(1).value).toBe("VALID");
   });
 
+  it("menampilkan sumber PPK/PNPK dan UNC yang tepat pada interpretasi dan glosarium Excel", async () => {
+    const workbook = await loadWorkbook(await buildBatchResultWorkbook(vancomycinBatch(3)));
+    const interpretation = workbook.getWorksheet("Interpretasi & Kesimpulan")!;
+    const narrative: string[] = [];
+    interpretation.eachRow(row => row.eachCell(cell => narrative.push(String(cell.value ?? ""))));
+    const text = narrative.join(" ");
+    expect(text).toContain("PPK Sepsis Neonatal RSUP Dr. M. Djamil (2017)");
+    expect(text).toContain("PNPK Sepsis pada Anak (Kemenkes RI, 2021)");
+    expect(text).toContain("UNC Medical Center (2023)");
+    expect(text).not.toMatch(/\bSPO\b/);
+    const abbreviationSheet = workbook.getWorksheet("Keterangan Singkatan")!;
+    const abbreviations: string[] = [];
+    abbreviationSheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) abbreviations.push(String(row.getCell(1).value ?? ""));
+    });
+    expect(abbreviations).toContain("PPK");
+    expect(abbreviations).not.toContain("SPO");
+  });
+
   it("membuat template yang dapat dibuka dan memiliki sheet input", async () => {
     const workbook = await loadWorkbook(await buildBatchTemplateWorkbook());
 

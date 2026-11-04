@@ -23,9 +23,9 @@ describe("representative explicit recommendation fixtures", () => {
       institutionalPrimary: {
         id: "GENT-INST-PRIMARY",
         label: "Pedoman Institusi / RS — Utama",
-        provenanceLabel: "SPO RSUP Dr. M. Djamil + PNPK 2021",
+        provenanceLabel: "PPK RSUP Dr. M. Djamil + PNPK 2021",
         provenanceDetail:
-          "SPO Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017) dan PNPK Sepsis pada Anak Kemenkes RI (2021).",
+          "Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017); PNPK Tata Laksana Sepsis pada Anak, Kemenkes RI (2021).",
         dose: {
           minMgPerKg: 5,
           maxMgPerKg: 7.5,
@@ -34,7 +34,7 @@ describe("representative explicit recommendation fixtures", () => {
         },
         interval: { kind: "continuous-range", minHours: 24, maxHours: 48, label: "tiap 24–48 jam" },
         notes: [
-          "SPO yang digunakan tidak mencantumkan stratifikasi resmi berdasarkan usia gestasi atau usia pascalahir.",
+          "PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir.",
         ],
         warnings: [],
         eligibleForRegimenEvaluation: true,

@@ -30,6 +30,18 @@ describe("recommendation and evaluation engine", () => {
     expect(notes.join(" ")).toContain(expected);
   });
 
+  it.each([
+    ["gentamisin", "PPK RSUP Dr. M. Djamil + PNPK 2021", "PNPK Tata Laksana Sepsis pada Anak"],
+    ["amikasin", "PPK RSUP Dr. M. Djamil + PNPK 2021", "PNPK Tata Laksana Sepsis pada Anak"],
+    ["vankomisin", "UNC Medical Center 2023", "UNC Medical Center, Vancomycin Dosing"],
+  ] as const)("menggunakan rujukan PPK/PNPK atau UNC untuk %s", (antibiotic, label, source) => {
+    const recommendations = calculateRecommendations(patient({ antibiotic })).recommendations;
+    expect(recommendations.institutionalPrimary.provenanceLabel).toBe(label);
+    expect(recommendations.institutionalPrimary.provenanceDetail).toContain(source);
+    expect(JSON.stringify(recommendations.institutionalPrimary)).not.toMatch(/\bSPO\b/);
+    expect(JSON.stringify(recommendations.institutionalAgeComparator)).not.toMatch(/\bSPO\b/);
+  });
+
   it("evaluates inclusive dose boundaries and above/below deviations", () => {
     const result = calculateRecommendations(patient({ currentWeightKg: 1 }));
     const base = {

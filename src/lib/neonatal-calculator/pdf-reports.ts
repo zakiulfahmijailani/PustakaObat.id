@@ -244,7 +244,7 @@ const footer:ReportLine[]=[{text:"Versi aturan: "+CALCULATOR_RULE_VERSION},{text
 // Presentation definitions follow the v19 notebook's SINGKATAN list and the workbook glossary.
 const PDF_ABBREVIATIONS = [
   ["RS", "Rumah Sakit"], ["RSUP", "Rumah Sakit Umum Pusat"],
-  ["SPO", "Standar Prosedur Operasional"], ["PNPK", "Pedoman Nasional Pelayanan Kedokteran"],
+  ["PPK", "Panduan Praktik Klinik"], ["PNPK", "Pedoman Nasional Pelayanan Kedokteran"],
   ["ANMF", "Australasian Neonatal Medicines Formulary"], ["UNC", "University of North Carolina Medical Center"],
   ["GA", "usia gestasi"], ["PNA", "usia pascalahir"],
   ["PMA", "usia pascamenstruasi (usia gestasi saat lahir + usia pascalahir)"],

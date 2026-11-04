@@ -30,9 +30,9 @@ import type {
 import { validatePatientInput } from "./validation";
 
 const LOCAL_PROVENANCE =
-  "SPO Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017) dan PNPK Sepsis pada Anak Kemenkes RI (2021).";
+  "Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017); PNPK Tata Laksana Sepsis pada Anak, Kemenkes RI (2021).";
 const UNC_PROVENANCE =
-  "UNC Medical Center Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023); digunakan karena SPO lokal yang dirujuk tidak memuat regimen vankomisin.";
+  "UNC Medical Center, Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023); digunakan karena PPK RSUP Dr. M. Djamil Padang (2017) tidak memuat regimen vankomisin.";
 const ANMF_PROVENANCE = "Australasian Neonatal Medicines Formulary (ANMF), monograf 2024 yang dirujuk notebook.";
 
 function missingRenalWarning(input: PatientInput): ClinicalWarning {
@@ -75,22 +75,22 @@ function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) 
     institutionalPrimary: {
       id: "GENT-INST-PRIMARY",
       label: "Pedoman Institusi / RS — Utama",
-      provenanceLabel: "SPO RSUP Dr. M. Djamil + PNPK 2021",
+      provenanceLabel: "PPK RSUP Dr. M. Djamil + PNPK 2021",
       provenanceDetail: LOCAL_PROVENANCE,
       dose: institutionalGentamicinDose(input.currentWeightKg),
       interval: institutionalGentamicinPrimaryInterval(),
-      notes: ["SPO yang digunakan tidak mencantumkan stratifikasi resmi berdasarkan usia gestasi atau usia pascalahir."],
+      notes: ["PPK dan PNPK tidak membedakan dosis maupun interval menurut usia gestasi atau usia pascalahir."],
       warnings,
       eligibleForRegimenEvaluation: true,
     },
     institutionalAgeComparator: {
       id: "GENT-INST-AGE-COMPARATOR",
-      label: "Pembanding usia GA/PNA — bukan stratifikasi resmi SPO",
+      label: "Pembanding usia GA/PNA — bukan stratifikasi resmi PPK/PNPK",
       provenanceLabel: "Pembanding usia dari logika notebook",
-      provenanceDetail: "Nomogram pembanding usia pada notebook; bukan tabel resmi dalam SPO RS yang dirujuk.",
+      provenanceDetail: "Nomogram pembanding usia pada notebook; bukan tabel resmi dalam PPK/PNPK yang dirujuk.",
       dose: institutionalGentamicinDose(input.currentWeightKg),
       interval: institutionalGentamicinAgeInterval(input),
-      notes: ["Gunakan sebagai pembanding terpisah; jangan menyebutnya stratifikasi resmi SPO RS."],
+      notes: ["Gunakan sebagai pembanding terpisah; jangan menyebutnya stratifikasi resmi PPK/PNPK."],
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -119,17 +119,17 @@ function createAmikacinRecommendations(input: PatientInput, pmaWeeks: number) {
     institutionalPrimary: {
       id: "AMIK-INST-PRIMARY",
       label: "Pedoman Institusi / RS — Utama",
-      provenanceLabel: "SPO RSUP Dr. M. Djamil + PNPK 2021",
+      provenanceLabel: "PPK RSUP Dr. M. Djamil + PNPK 2021",
       provenanceDetail: LOCAL_PROVENANCE,
       dose,
       interval,
-      notes: ["SPO yang dirujuk menetapkan 15 mg/kg q24h tanpa stratifikasi resmi GA/PNA."],
+      notes: ["PPK yang dirujuk menetapkan 15 mg/kg q24h tanpa stratifikasi resmi GA/PNA."],
       warnings,
       eligibleForRegimenEvaluation: true,
     },
     institutionalAgeComparator: {
       id: "AMIK-INST-AGE-COMPARATOR",
-      label: "Pembanding usia GA/PNA — bukan stratifikasi resmi SPO",
+      label: "Pembanding usia GA/PNA — bukan stratifikasi resmi PPK/PNPK",
       provenanceLabel: "Tidak berbeda dari pedoman utama",
       provenanceDetail: LOCAL_PROVENANCE,
       dose,
@@ -197,7 +197,7 @@ function createVancomycinRecommendations(
       ),
       institutionalAgeComparator: renalVancomycinRecommendation(
         "VANC-INST-AGE-RENAL",
-        "Pembanding usia GA/PNA — bukan stratifikasi resmi SPO",
+        "Pembanding usia GA/PNA — pembanding internal UNC",
         input,
         ["Pembanding interval usia ditangguhkan karena kriteria gangguan ginjal terpenuhi."],
       ),
@@ -231,7 +231,7 @@ function createVancomycinRecommendations(
     },
     institutionalAgeComparator: {
       id: "VANC-INST-AGE-COMPARATOR",
-      label: "Pembanding usia GA/PNA — bukan stratifikasi resmi SPO",
+      label: "Pembanding usia GA/PNA — pembanding internal UNC",
       provenanceLabel: "UNC Medical Center 2023 — nomogram PMA/PNA",
       provenanceDetail: UNC_PROVENANCE,
       dose: institutionalVancomycinRoutineDose(input.currentWeightKg),

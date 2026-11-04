@@ -9,13 +9,13 @@ function vanc(overrides = {}) {
 }
 
 describe("vancomycin rules", () => {
-  it("labels UNC provenance because the referenced local SPO has no regimen", () => {
+  it("labels UNC provenance because the referenced local PPK has no regimen", () => {
     const recommendations = vanc().recommendations;
     const rec = recommendations.institutionalPrimary;
     expect(rec.provenanceLabel).toBe("UNC Medical Center 2023");
-    expect(rec.provenanceDetail).toContain("SPO lokal yang dirujuk tidak memuat regimen vankomisin");
+    expect(rec.provenanceDetail).toContain("PPK RSUP Dr. M. Djamil Padang (2017) tidak memuat regimen vankomisin");
     expect(recommendations.institutionalAgeComparator.label).toBe(
-      "Pembanding usia GA/PNA — bukan stratifikasi resmi SPO",
+      "Pembanding usia GA/PNA — pembanding internal UNC",
     );
   });
 

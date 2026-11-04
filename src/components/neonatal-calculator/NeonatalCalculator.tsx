@@ -544,7 +544,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 </details>
                 <details className="rounded-2xl border border-border bg-surface p-4">
                   <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Sumber dan batas aturan produksi</summary>
-                  <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-text-muted"><li>SPO Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017) dan PNPK Kemenkes RI (2021).</li><li>UNC Medical Center Vancomycin Dosing & Monitoring Guide (2023).</li><li>ANMF Gentamicin v4.0, Amikacin v3.0, dan Vancomycin Intermittent v3.0/errata (2024).</li><li>Formulasi berasal dari materi rujukan notebook dan wajib diverifikasi terhadap pedoman institusi terbaru.</li></ul>
+                  <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-text-muted"><li>Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017) dan PNPK Tata Laksana Sepsis pada Anak (Kemenkes RI, 2021) untuk gentamisin dan amikasin.</li><li>UNC Medical Center, Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023) untuk vankomisin.</li><li>ANMF Gentamicin v4.0, Amikacin v3.0, dan Vancomycin Intermittent v3.0/errata (2024).</li><li>Formulasi berasal dari materi rujukan notebook dan wajib diverifikasi terhadap pedoman institusi terbaru.</li></ul>
                 </details>
               </div>
             )}
