@@ -49,6 +49,12 @@ try {
           const actual = panel.locator('section[aria-label="Ringkasan dosis aktual"]');
           await actual.waitFor({ state: "visible", timeout: 30000 });
           check((await actual.innerText()).includes("9 mg (6 mg/kg per pemberian)"), key + ": actual dose not shown in mg and mg/kg");
+          const statuses = await panel.locator("article dd").allInnerTexts();
+          check(statuses.length >= 4, key + ": evaluation category cards missing");
+          const repeats = statuses.filter(value => /^(Sesuai|Berlebih|Kurang)\s*[—-]\s*\1(?:\b|\s|\()/i.test(value.trim()));
+          check(repeats.length === 0, key + ": repeated evaluation classification " + JSON.stringify(repeats));
+          check(statuses.some(value => /^(Sesuai|Berlebih|Kurang)\b/i.test(value.trim())),
+            key + ": no visible evaluation classification");
         }
         await page.screenshot({ path: join(directory, key + "-desktop.png"), fullPage: true });
         await page.emulateMedia({ media: "print" });
