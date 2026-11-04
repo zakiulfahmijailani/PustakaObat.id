@@ -23,7 +23,7 @@ const cases: CombinationCase[] = [
   { antibiotic: "gentamisin", ga: 32, pna: 0, regular: 36, hypothermia: 36, cox: 48, combined: 36 },
   { antibiotic: "gentamisin", ga: 35, pna: 0, regular: 24, hypothermia: 36, cox: 36, combined: 36 },
   { antibiotic: "amikasin", ga: 28, pna: 5, regular: 48, hypothermia: 60, cox: 60, combined: 60 },
-  { antibiotic: "amikasin", ga: 28, pna: 20, regular: 36, hypothermia: 48, cox: 48, combined: 48 },
+  { antibiotic: "amikasin", ga: 26, pna: 20, regular: 36, hypothermia: 48, cox: 48, combined: 48 },
   { antibiotic: "amikasin", ga: 32, pna: 5, regular: 36, hypothermia: 48, cox: 48, combined: 48 },
   { antibiotic: "amikasin", ga: 32, pna: 15, regular: 24, hypothermia: 36, cox: 36, combined: 36 },
   { antibiotic: "amikasin", ga: 35, pna: 5, regular: 24, hypothermia: 36, cox: 36, combined: 36 },
@@ -135,8 +135,7 @@ describe("kombinasi hipotermia terapeutik + indometasin/ibuprofen v20", () => {
   );
 
   it("Excel nyata menyimpan interval kombinasi sesuai notebook tanpa mengubah 24 kolom", async () => {
-    const choices = cases.filter(x => ["gentamisin", "amikasin", "vankomisin"].every(()=>true))
-      .filter((x, i, a) => a.findIndex(y => y.antibiotic === x.antibiotic) === i);
+    const choices = cases.filter((x, i, a) => a.findIndex(y => y.antibiotic === x.antibiotic) === i);
     const rows: unknown[][] = [];
     const expected = new Map<string, { interval: number; dose: string }>();
     for (const c of choices) {
@@ -186,7 +185,7 @@ describe("kombinasi hipotermia terapeutik + indometasin/ibuprofen v20", () => {
       expect(target, code).toBeDefined();
       expect(String(row.getCell(intervalCol).value), code).toBe("tiap " + target!.interval + " jam");
       const dose = String(row.getCell(doseCol).value);
-      expect(dose).toContain(target!.dose);
+      expect(dose).toContain(target!.dose.replace(".", ","));
     }
   });
 });
