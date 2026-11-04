@@ -60,6 +60,7 @@ describe("v20 single-patient results: renal status and actual dose in mg/kg", ()
     { weight: 1.5, dose: 9, expected: "9 mg (6 mg/kg per pemberian)" },
     { weight: 1.2, dose: 7.5, expected: "7,5 mg (6,25 mg/kg per pemberian)" },
     { weight: 0.3, dose: 0.01, expected: "0,01 mg (0,033 mg/kg per pemberian)" },
+    { weight: 1.38, dose: 21, expected: "21 mg (15,217 mg/kg per pemberian)" },
   ])("shows actual dose and mg/kg without changing the evaluation: $dose mg / $weight kg", ({weight,dose,expected}) => {
     const calculated = calculateRecommendations(patient({ antibiotic:"amikasin", currentWeightKg:weight }));
     const evaluation = evaluateRegimen(calculated,{
@@ -72,6 +73,7 @@ describe("v20 single-patient results: renal status and actual dose in mg/kg", ()
     const html = renderToStaticMarkup(React.createElement(ActualAdministeredDoseSummary,{calculated,evaluation}));
     expect(html).toContain('aria-label="Ringkasan dosis aktual"');
     expect(html).toContain(expected);
+    expect(html).toContain("diberikan tiap 24 jam.");
     expect(JSON.stringify(evaluation)).toBe(unchanged);
   });
 });
