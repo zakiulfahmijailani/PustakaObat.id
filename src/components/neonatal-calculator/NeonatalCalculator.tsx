@@ -291,6 +291,7 @@ function RecommendationTable({ calculated }: { calculated: CalculatorResult }) {
       <tbody>
         <tr className="border-t border-border"><th className="p-3">Dosis per pemberian</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}><strong>{doseText(r)}</strong><div className="mt-1 text-xs text-text-muted">{mgKg(r)}</div></td>)}</tr>
         <tr className="border-t border-border"><th className="p-3">Frekuensi</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}>{r.interval.kind === "single-dose-only" ? "Dosis tunggal (bukan rutin)" : r.interval.label.startsWith("tiap") ? r.interval.label : formatInterval(r.interval).replace(/q(\d+)h/g, "tiap $1 jam")}</td>)}</tr>
+        <tr className="border-t border-border"><th className="p-3 align-top">Catatan klinis dan sumber</th>{[rs, anmf].map(r=><td className="p-3 align-top" key={r.id}><ul className="list-disc space-y-2 pl-4 text-xs leading-relaxed text-text-muted">{r.notes.map((note, index)=><li key={`${r.id}-note-${index}`}>{note}</li>)}</ul></td>)}</tr>
       </tbody>
     </table>
     <p className="border-t border-border p-3 text-xs text-text-muted">Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan.</p>
