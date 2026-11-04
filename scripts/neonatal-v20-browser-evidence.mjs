@@ -87,6 +87,55 @@ try {
       }
     }
   }
+
+  // Skenario ginjal nyata dari notebook v20: kreatinin 1,1 mg/dL,
+  // produksi urin 1,8 mL/kg/jam pada usia pascalahir 2 hari.
+  for (const antibiotic of antibiotics) {
+    for (const mode of ["recommendation", "evaluation"]) {
+      const key = "renal-" + antibiotic + "-" + mode;
+      const prefix = mode === "recommendation" ? "rec" : "eval";
+      const page = await browser.newPage({ viewport: { width: 1365, height: 950 }, deviceScaleFactor: 1 });
+      try {
+        await page.goto(origin + "/kalkulator?mode=" + mode, { waitUntil: "domcontentloaded", timeout: 60000 });
+        await page.locator("#" + prefix + "-antibiotic").waitFor({state:"visible",timeout:30000});
+        await page.locator("#" + prefix + "-antibiotic").selectOption(antibiotic);
+        await page.locator("#" + prefix + "-ga").fill("26");
+        await page.locator("#" + prefix + "-pna").fill("2");
+        await page.locator("#" + prefix + "-weight").fill("0.9");
+        await page.getByRole("checkbox", { name: "Data fungsi ginjal tersedia" }).check();
+        await page.locator("#" + prefix + "-scr").fill("1.1");
+        await page.locator("#" + prefix + "-uop").fill("1.8");
+        if (mode === "evaluation") {
+          await page.locator("#eval-actual-dose").fill("8");
+          await page.locator("#eval-actual-hours").fill("24");
+          await page.locator('#evaluation-panel button').filter({hasText:"Evaluasi Pemberian"}).last().click();
+        } else {
+          await page.getByRole("button", { name:"Hitung rekomendasi" }).click();
+        }
+        const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
+        const warnings = panel.locator('[aria-label="Peringatan klinis"]');
+        await warnings.waitFor({state:"visible",timeout:30000});
+        const warningText = await warnings.innerText();
+        check(warningText.includes("Kemungkinan gangguan fungsi ginjal"), key + ": warning title absent");
+        check(warningText.includes("UNC (2023)") && warningText.includes("keputusan tim peneliti"), key + ": UNC/research provenance absent");
+        check(warningText.includes("ANMF, gangguan ginjal"), key + ": canonical ANMF warning absent");
+        check(warningText.includes("Evans dkk., 2023"), key + ": neonatal creatinine caveat absent");
+        const firstColor = await warnings.locator(":scope > div").first().evaluate(el => getComputedStyle(el).backgroundColor);
+        check(firstColor === "rgb(248, 215, 218)", key + ": renal warning is not red: " + firstColor);
+        const notes = await panel.locator("tr").filter({hasText:"Catatan klinis dan sumber"}).innerText();
+        check(notes.includes("ANMF, gangguan ginjal"), key + ": ANMF renal note absent from recommendation table");
+        if (antibiotic === "vankomisin") {
+          check(notes.includes("UNC (2023): tahan dosis berikutnya"), key + ": UNC single-dose instruction absent");
+        }
+        await page.screenshot({path:join(out,key+"-screen.png"),fullPage:true});
+        await page.emulateMedia({media:"print"});
+        await page.pdf({path:join(out,key+"-print.pdf"),format:"A4",printBackground:true,preferCSSPageSize:true});
+        console.log("PASS renal browser + print " + key);
+      } finally {
+        await page.close();
+      }
+    }
+  }
 } finally {
   await browser.close();
 }

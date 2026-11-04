@@ -28,7 +28,7 @@ jobs:
       - run: npm run build
       - run: npm run test:neonatal:v20 -- --maxWorkers=2
       - name: Render v20 Rujukan PDF evidence (every page)
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104'
         env:
           NEONATAL_RUJUKAN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-evidence
         run: |
@@ -45,14 +45,14 @@ jobs:
             pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
           done
       - name: Store v20 Rujukan PDF pages
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-rujukan-pdf-pages
           path: ${{ runner.temp }}/neonatal-rujukan-evidence
           if-no-files-found: error
       - name: Browser and print preview evidence for v20 Rujukan
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104'
         env:
           NEONATAL_BROWSER_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-browser
         run: |
@@ -75,7 +75,7 @@ jobs:
             pdftoppm -png -r 110 "$pdf" "${pdf%.pdf}"
           done
       - name: Store v20 Rujukan browser and print evidence
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-rujukan-browser-print
