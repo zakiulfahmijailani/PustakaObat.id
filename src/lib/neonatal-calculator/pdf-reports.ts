@@ -1,4 +1,5 @@
 import { pythonFixed } from "./python-rounding";
+import { getV20ReferenceEntries } from "./reference-block-v20";
 import { buildActualEvaluationSummary } from "./actual-evaluation-summary";
 import type { BatchProcessingResult } from "./batch-engine";
 import { summarizeBatch } from "./batch-statistics";
@@ -222,6 +223,15 @@ function recommendationTable(calculated: CalculatorResult): ReportTable {
     row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
   ] } };
 }
+function referencePanel(calculated: CalculatorResult): ReportLine {
+  return {
+    panelTitle: "Rujukan",
+    panelTone: "info",
+    text: "",
+    panelParagraphs: getV20ReferenceEntries(calculated.input.antibiotic)
+      .map(entry => entry.label + ": " + entry.text),
+  };
+}
 function patientLines(calculated:CalculatorResult, actualSummary?:ReportLine):ReportLine[]{
   const p=calculated.input;
   const priority = { critical: 0, warning: 1, info: 2 };
@@ -256,7 +266,7 @@ const PDF_ABBREVIATIONS = [
 function withGlossary(lines: ReportItem[], patientReport = true): ReportItem[] {
   const fullText = [...lines, ...footer].map(line => "table" in line
     ? [line.table.title, ...line.table.columns.map(column => column.text), ...line.table.rows.flat().map(cell => cell.text)].join(" ")
-    : line.text + " " + (line.warning?.title ?? "")).join(" ");
+    : line.text + " " + (line.warning?.title ?? "") + " " + (line.panelParagraphs?.join(" ") ?? "")).join(" ");
   const entries = PDF_ABBREVIATIONS.filter(([abbreviation]) => new RegExp(`\\b${abbreviation}\\b`).test(fullText));
   const intervalCodes = [...new Set([...fullText.matchAll(/\bq(\d+)h\b/g)].map(match => match[0] + " = tiap " + match[1] + " jam"))];
   const glossary = [...entries.map(([abbreviation, meaning]) => abbreviation + " = " + meaning), ...intervalCodes].join("; ");
@@ -288,6 +298,7 @@ export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
   return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",withGlossary([
     ...patientLines(calculated),
     recommendationTable(calculated),
+    referencePanel(calculated),
   ]));
 }
 export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean):Uint8Array{
@@ -312,6 +323,7 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
     {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
     recommendationTable(calculated),
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
+    referencePanel(calculated),
   ];
   return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",withGlossary(lines));
 }
