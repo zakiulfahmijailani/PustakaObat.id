@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { DoseEvaluation, IntervalEvaluation } from "@/lib/neonatal-calculator/types";
 
 type EvaluationStatus = DoseEvaluation["status"] | IntervalEvaluation["status"];
