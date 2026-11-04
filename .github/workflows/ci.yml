@@ -49,3 +49,31 @@ jobs:
           name: neonatal-v20-rujukan-pdf-pages
           path: ${{ runner.temp }}/neonatal-rujukan-evidence
           if-no-files-found: error
+      - name: Browser and print preview evidence for v20 Rujukan
+        env:
+          NEONATAL_BROWSER_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-browser
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          export NEONATAL_CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          if [ -z "$NEONATAL_CHROME_PATH" ]; then npx playwright install chromium; fi
+          npm run start -- --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/neonatal-next-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/kalkulator > /dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" != "1" ]; then cat "$RUNNER_TEMP/neonatal-next-server.log"; exit 1; fi
+          node scripts/neonatal-v20-browser-evidence.mjs
+          for pdf in "$NEONATAL_BROWSER_EVIDENCE_DIR"/*-print.pdf; do
+            pdftotext "$pdf" "${pdf%.pdf}.txt"
+            grep -q 'Rujukan' "${pdf%.pdf}.txt"
+            pdftoppm -png -r 110 "$pdf" "${pdf%.pdf}"
+          done
+      - name: Store v20 Rujukan browser and print evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: neonatal-v20-rujukan-browser-print
+          path: ${{ runner.temp }}/neonatal-rujukan-browser
+          if-no-files-found: error
