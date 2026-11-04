@@ -45,7 +45,7 @@ describe("PDF laporan neonatal", () => {
       for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)]) {
         const raw = decode(bytes);
         const text = plainText(bytes);
-        expect((raw.match(/\\/Type \\/Page\\b/g) ?? []).length).toBeGreaterThanOrEqual(1);
+        expect((raw.match(/\/Type \/Page\b/g) ?? []).length).toBeGreaterThanOrEqual(1);
         expect(raw).toContain("(Rujukan) Tj");
         expect(text).toContain("Pedoman Rumah Sakit:");
         expect(text).toContain("Literatur Terkini:");
@@ -61,7 +61,7 @@ describe("PDF laporan neonatal", () => {
           expect(text).toContain("Panduan Praktik Klinik (PPK)");
           expect(text).toContain("PNPK Tata Laksana");
         }
-        expect(text).not.toMatch(/\\bSPO\\b/);
+        expect(text).not.toMatch(/\bSPO\b/);
       }
     },
   );
@@ -72,7 +72,7 @@ describe("PDF laporan neonatal", () => {
       Array.from({length: 650}, (_, index) => "PANJANG" + String(index).padStart(3, "0")).join(" "),
     );
     const bytes = buildRecommendationPdf(result), raw = decode(bytes), text = plainText(bytes);
-    const pages = (raw.match(/\\/Type \\/Page\\b/g) ?? []).length;
+    const pages = (raw.match(/\/Type \/Page\b/g) ?? []).length;
     expect(pages).toBeGreaterThan(1);
     expect(text).toContain("PANJANG000");
     expect(text).toContain("PANJANG649");
