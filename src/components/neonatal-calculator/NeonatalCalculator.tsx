@@ -214,6 +214,17 @@ function PatientCaseFields({
                   ["coxInhibitorTherapy", "Terapi indometasin atau ibuprofen (COX inhibitor)"],
                   ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
                 ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && form.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={form[key]} onChange={(event) => onChange(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
+                {form.therapeuticHypothermia && form.coxInhibitorTherapy && form.antibiotic && (
+                  <p role="status" aria-live="polite" className="rounded-lg border border-info/30 bg-info/10 px-3 py-2 text-xs leading-relaxed text-text">
+                    <strong>Dua kondisi dicentang bersamaan.</strong>{" "}
+                    {form.antibiotic === "gentamisin"
+                      ? "ANMF tidak mengatur kombinasi keduanya; kalkulator v20 hanya menerapkan aturan hipotermia, tanpa tambahan 12 jam dari indometasin/ibuprofen."
+                      : form.antibiotic === "amikasin"
+                        ? "ANMF tidak mengatur kombinasi keduanya; kalkulator v20 memperpanjang interval 12 jam satu kali, bukan dua kali."
+                        : "Dalam kalkulator v20, indometasin/ibuprofen tidak mengubah interval ANMF vankomisin; hipotermia menambahkan catatan pemantauan kadar sebelum dosis ke-2."}
+                    {" "}Periksa catatan Literatur Terkini setelah perhitungan.
+                  </p>
+                )}
               </fieldset>
 
     </>
