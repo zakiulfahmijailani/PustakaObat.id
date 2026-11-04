@@ -48,6 +48,15 @@ try {
         const section = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
         const reference = section.locator('section[aria-label="Rujukan"]');
         await reference.waitFor({ state: "visible", timeout: 30000 });
+        const warningBox = section.locator('[aria-label="Peringatan klinis"]');
+        await warningBox.waitFor({ state: "visible", timeout: 30000 });
+        const warningCards = warningBox.locator(":scope > div");
+        check(await warningCards.count() >= 1, fileBase + ": clinical warning missing");
+        const warningText = await warningBox.innerText();
+        check(warningText.includes("Hasil dihitung dengan ASUMSI fungsi ginjal normal sesuai usia"), fileBase + ": notebook v20 renal message absent");
+        check(!warningText.includes("Data produksi urin tidak tersedia. Kriteria kombinasi SCr/UOP"), fileBase + ": legacy warning visible");
+        const palette = await warningCards.first().evaluate(el => getComputedStyle(el).backgroundColor);
+        check(palette === (antibiotic === "vankomisin" ? "rgb(248, 215, 218)" : "rgb(255, 243, 205)"), fileBase + ": wrong warning background " + palette);
         const content = await reference.innerText();
         for (const label of labels) check(content.includes(label), fileBase + ": missing " + label);
         check(content.includes("Evans RE") && content.includes("Papile LA"), fileBase + ": additional sources absent");

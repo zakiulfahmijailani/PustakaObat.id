@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { buildRecommendationPdf, buildEvaluationPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import { BatchCalculator } from "./BatchCalculator";
+import { getDisplayV20Warnings, V20_WARNING_STYLE } from "@/lib/neonatal-calculator/warning-catalog-v20";
 import { ReferenceBlock } from "./ReferenceBlock";
 import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
 import {
@@ -131,18 +132,13 @@ function Field({
 
 function Warning({ warning }: { warning: ClinicalWarning }) {
   const message = warning.title && warning.message.startsWith(`${warning.title}. `)
-    ? warning.message.slice(warning.title.length + 2)
-    : warning.message;
-  const tone =
-    warning.severity === "critical"
-      ? "border-error/30 bg-error/10 text-error"
-      : warning.severity === "warning"
-        ? "border-warning/30 bg-warning/10 text-warning"
-        : "border-info/30 bg-info/10 text-info";
+    ? warning.message.slice(warning.title.length + 2) : warning.message;
+  const palette = V20_WARNING_STYLE[warning.severity];
   return (
-    <div className={`flex items-start gap-2 rounded-xl border p-3 text-sm leading-relaxed ${tone}`}>
-      <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-      <span><strong>{warning.severity === "critical" ? "PERINGATAN:" : warning.severity === "warning" ? "PERHATIAN:" : "INFORMASI:"}</strong> {warning.title && <strong>{warning.title}. </strong>}{message}</span>
+    <div className="flex items-start gap-2 rounded-xl border border-l-4 p-3 text-sm leading-relaxed"
+      style={{ borderColor: palette.color, backgroundColor: palette.background, color: "#222222" }}>
+      <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" style={{ color: palette.color }} />
+      <span><strong style={{ color: palette.color }}>{palette.label}:</strong> {warning.title && <strong>{warning.title}. </strong>}{message}</span>
     </div>
   );
 }
@@ -252,11 +248,9 @@ function WarningLegend() {
   </div>;
 }
 
-function SortedWarnings({ warnings }: { warnings: ClinicalWarning[] }) {
-  const priority = { critical: 0, warning: 1, info: 2 };
-  const unique = [...new Map(warnings.map((warning) => [JSON.stringify([warning.severity, warning.title ?? "", warning.message]), warning])).values()];
-  return <div className="space-y-2">{unique.sort((a, b) => priority[a.severity] - priority[b.severity]).map((warning) =>
-    <Warning key={JSON.stringify([warning.code, warning.severity, warning.title ?? "", warning.message])} warning={warning} />
+function SortedWarnings({ calculated }: { calculated: CalculatorResult }) {
+  return <div className="space-y-2" aria-label="Peringatan klinis">{getDisplayV20Warnings(calculated).map(warning =>
+    <Warning key={JSON.stringify([warning.severity, warning.title ?? "", warning.message])} warning={warning} />
   )}</div>;
 }
 
@@ -535,7 +529,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">Usia gestasi lahir / usia pascalahir / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">Kreatinin serum / produksi urin</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
-                <SortedWarnings warnings={[...result.globalWarnings, ...result.recommendations.institutionalPrimary.warnings, ...result.recommendations.anmf2024.warnings]} />
+                <SortedWarnings calculated={result} />
                 <RecommendationTable calculated={result} />
                 <ReferenceBlock antibiotic={result.input.antibiotic} />
                 <WarningLegend />
@@ -593,7 +587,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               </div>
               <ActualEvaluationSummary calculated={evaluationResult} evaluation={evaluation} />
               <Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button>
-              <SortedWarnings warnings={[...evaluationResult.globalWarnings, ...evaluationResult.recommendations.institutionalPrimary.warnings, ...evaluationResult.recommendations.anmf2024.warnings]} />
+              <SortedWarnings calculated={evaluationResult} />
               <section aria-labelledby="evaluation-recommendation-heading" className="space-y-3">
                 <h3 id="evaluation-recommendation-heading" className="text-lg font-semibold text-text">Rekomendasi dosis</h3>
                 <RecommendationTable calculated={evaluationResult} />

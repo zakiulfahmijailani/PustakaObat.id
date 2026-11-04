@@ -8,7 +8,7 @@ import { buildBatchResultWorkbook } from "../batch-workbook";
 import { summarizeBatch } from "../batch-statistics";
 import { intervalBounds, notebookBatchRecord, rangeDeviation } from "../notebook-results";
 import { calculateRecommendations } from "../recommendation-engine";
-import { getV20ClinicalWarnings } from "../warning-catalog-v20";
+import { getV20ClinicalWarnings, getDisplayV20Warnings, sortV20Warnings } from "../warning-catalog-v20";
 import { buildV20Glossary } from "../glossary-v20";
 
 const oracle = loadV20Reference();
@@ -90,11 +90,22 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
   });
 
   it("matches the full v20 warning catalogue on 30 supplied and 1,242 boundary/renal profiles", () => {
-    for (const profile of [...oracle.batchRecommendations,...oracle.recommendations]) {
+    const profiles = [...oracle.batchRecommendations,...oracle.recommendations];
+    expect(profiles).toHaveLength(1272);
+    for (const profile of profiles) {
       const result = calculateRecommendations(profile.input);
       const actual = getV20ClinicalWarnings(result).map(({severity,title,message}) => ({severity,title,message}));
+      const displayed = getDisplayV20Warnings(result).map(({severity,title,message}) => ({severity,title,message}));
       expect(actual, JSON.stringify(profile.input)).toEqual(profile.expected.warningDetails);
+      expect(displayed, JSON.stringify(profile.input)).toEqual(profile.expected.warningDetails);
     }
+  });
+
+  it("preserves distinct warning messages and severity even with the same code", () => {
+    const w = {code:"X",severity:"critical" as const,title:"Periksa",message:"Satu"};
+    const items = sortV20Warnings([{...w,severity:"info"},{...w},{...w},{...w,message:"Dua"},{...w,severity:"warning"}]);
+    expect(items.map(x=>x.severity)).toEqual(["critical","critical","warning","info"]);
+    expect(items.map(x=>x.message)).toEqual(["Satu","Dua","Satu","Satu"]);
   });
 
   it("exports each v20 clinical warning once with source row, category, and existing colors", async () => {
@@ -109,7 +120,7 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     sheet.eachRow((row,index) => {
       if (index === 1) return;
       const label = String(row.getCell(3).value);
-      const palette = {PERINGATAN:["FFB4493F","FFF8EDEC"],PERHATIAN:["FFA76F24","FFFFF3CD"],INFORMASI:["FF3F6F8F","FFECF1F4"]}[label]!;
+      const palette = {PERINGATAN:["FFB02A37","FFF8D7DA"],PERHATIAN:["FF9A6700","FFFFF3CD"],INFORMASI:["FF0B5ED7","FFE7F1FF"]}[label]!;
       expect(row.getCell(3).font.color?.argb).toBe(palette[0]);
       expect(row.getCell(3).fill).toMatchObject({type:"pattern",fgColor:{argb:palette[1]}});
       expect(row.getCell(4).alignment.wrapText).toBe(true);

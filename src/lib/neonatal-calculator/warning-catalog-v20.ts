@@ -11,7 +11,42 @@ export const ANMF_RENAL = {
 } as const;
 const RENAL_ASSUMPTION = "Hasil dihitung dengan ASUMSI fungsi ginjal normal sesuai usia (keputusan tim peneliti, agar kalkulator tetap dapat dipakai dengan data rutin), sehingga kriteria gangguan ginjal tidak dapat dinilai. Evaluasi ulang hasil ini setelah kreatinin serum tersedia.";
 const RENAL_HIGH_RISK = "Pasien termasuk kelompok risiko gangguan ginjal tinggi menurut kriteria kehati-hatian tim peneliti (usia gestasi <29 minggu, berat <1,5 kg, hipotermia terapeutik, indometasin/ibuprofen, atau vankomisin; dasar kriteria tercantum pada kotak Rujukan). Asumsi fungsi ginjal normal pada pasien ini lebih mungkin keliru.";
+// Frozen notebook v20 palette (cell 6 _TINGKAT_PERINGATAN), shared by all report formats.
+export const V20_WARNING_STYLE = {
+  critical: { label: "PERINGATAN", color: "#b02a37", background: "#f8d7da" },
+  warning: { label: "PERHATIAN", color: "#9a6700", background: "#fff3cd" },
+  info: { label: "INFORMASI", color: "#0b5ed7", background: "#e7f1ff" },
+} as const;
 const ORDER = { critical: 0, warning: 1, info: 2 } as const;
+export function sortV20Warnings(warnings: readonly ClinicalWarning[]): ClinicalWarning[] {
+  return deduplicateClinicalWarnings(warnings).sort((a,b) => ORDER[a.severity] - ORDER[b.severity]);
+}
+export function v20WarningText(w: ClinicalWarning): string {
+  const title = w.title?.trim();
+  const detail = title && w.message.startsWith(title + ". ") ? w.message.slice(title.length + 2) : w.message;
+  return title ? title + ". " + detail : detail;
+}
+// Replace historical warning prose from recommendation-engine with the
+// notebook v20 catalogue at presentation time; leave dosing and raw results untouched.
+const SUPERSEDED_CODES = new Set([
+  "RENAL_REVIEW", "RENAL_DATA_UNAVAILABLE", "RENAL_URINE_OUTPUT_UNAVAILABLE",
+  "PMA_OUTSIDE_TYPICAL_NEONATAL_RANGE", "MATERNAL_CREATININE",
+  "HYPOTHERMIA_GESTATION", "INTERVAL_REFERENCE_DIFFERENCE",
+  "VANCOMYCIN_RENAL_SINGLE_DOSE", "ANMF_REQUIRES_RENAL_REVIEW",
+  "AMINOGLYCOSIDE_RENAL_REVIEW_GENTAMISIN",
+  "AMINOGLYCOSIDE_RENAL_REVIEW_AMIKASIN",
+]);
+export function getSupplementalV20Warnings(result: CalculatorResult): ClinicalWarning[] {
+  return sortV20Warnings([
+    ...result.globalWarnings,
+    ...result.recommendations.institutionalPrimary.warnings,
+    ...result.recommendations.anmf2024.warnings,
+  ].filter(w => !SUPERSEDED_CODES.has(w.code)));
+}
+export function getDisplayV20Warnings(result: CalculatorResult): ClinicalWarning[] {
+  return sortV20Warnings([...getV20ClinicalWarnings(result), ...getSupplementalV20Warnings(result)]);
+}
+
 
 /** Preserve first occurrence, distinguishing severity and full displayed text. */
 export function deduplicateClinicalWarnings(warnings: readonly ClinicalWarning[]): ClinicalWarning[] {
@@ -61,5 +96,5 @@ export function getV20ClinicalWarnings(result: CalculatorResult): ClinicalWarnin
       add("INTERVAL_REFERENCE_DIFFERENCE", "warning", "Interval Pedoman RS lebih panjang dari literatur", `Batas bawah interval Pedoman RS (tiap ${rsMin} jam) lebih panjang dibanding ANMF (tiap ${litMin} jam). Pastikan kadar obat tidak di bawah kadar terapi.`);
     }
   }
-  return deduplicateClinicalWarnings(warnings).sort((a,b) => ORDER[a.severity] - ORDER[b.severity]);
+  return sortV20Warnings(warnings);
 }

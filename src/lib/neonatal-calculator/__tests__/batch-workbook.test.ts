@@ -185,8 +185,8 @@ describe("workbook batch", () => {
         if (row.getCell(4).value === original.title + ". " + original.message) matching.push(String(row.getCell(3).value));
         if (row.getCell(4).value === original.title + ". Periksa kembali data ginjal yang baru diperbarui.") differentMessage++;
         if (row.getCell(3).value === "INFORMASI") {
-          expect(row.getCell(3).font.color?.argb).toBe("FF3F6F8F");
-          expect(row.getCell(3).fill).toMatchObject({type:"pattern",fgColor:{argb:"FFECF1F4"}});
+          expect(row.getCell(3).font.color?.argb).toBe("FF0B5ED7");
+          expect(row.getCell(3).fill).toMatchObject({type:"pattern",fgColor:{argb:"FFE7F1FF"}});
         }
       });
       expect(matching).toEqual(["PERINGATAN", "PERHATIAN", "INFORMASI"]);
