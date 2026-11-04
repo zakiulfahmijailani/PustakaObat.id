@@ -53,7 +53,7 @@ try {
         check(content.includes("Evans RE") && content.includes("Papile LA"), fileBase + ": additional sources absent");
         check(content.includes("ANMF") || content.includes("Australasian Neonatal"), fileBase + ": ANMF absent");
         check(content.includes("kriteria kesesuaian"), fileBase + ": research attribution absent");
-        check(!/\\bSPO\\b/.test(content), fileBase + ": outdated SPO present");
+        check(!/\bSPO\b/.test(content), fileBase + ": outdated SPO present");
         if (antibiotic === "vankomisin") {
           check(content.includes("UNC Medical Center"), fileBase + ": UNC source missing");
           check(!content.includes("PNPK Tata Laksana"), fileBase + ": PNPK misattributed to vancomycin");
