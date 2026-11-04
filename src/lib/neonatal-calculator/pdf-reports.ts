@@ -1,4 +1,5 @@
 import { pythonFixed } from "./python-rounding";
+import { getDisplayV20Warnings, V20_WARNING_STYLE } from "./warning-catalog-v20";
 import { getV20ReferenceEntries } from "./reference-block-v20";
 import { buildActualEvaluationSummary } from "./actual-evaluation-summary";
 import type { BatchProcessingResult } from "./batch-engine";
@@ -17,10 +18,13 @@ type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; w
 // Standard Helvetica advance widths for printable ASCII, in 1/1000 em (Adobe font metrics).
 const HELVETICA_WIDTHS = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
 const HELVETICA_BOLD_WIDTHS = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+const pdfRgb = (hex: string): string =>
+  [1, 3, 5].map(index => Number.parseInt(hex.slice(index, index + 2), 16) / 255)
+    .map(value => Number(value.toFixed(4)).toString()).join(" ");
 const WARNING_STYLES = {
-  critical: { label: "PERINGATAN", text: "0.7059 0.2863 0.2471", fill: "0.9725 0.9294 0.9255" },
-  warning: { label: "PERHATIAN", text: "0.6549 0.4353 0.1412", fill: "1 0.9529 0.8039" },
-  info: { label: "INFORMASI", text: "0.2471 0.4353 0.5608", fill: "0.9255 0.9451 0.9569" },
+  critical: { label: V20_WARNING_STYLE.critical.label, text: pdfRgb(V20_WARNING_STYLE.critical.color), fill: pdfRgb(V20_WARNING_STYLE.critical.background) },
+  warning: { label: V20_WARNING_STYLE.warning.label, text: pdfRgb(V20_WARNING_STYLE.warning.color), fill: pdfRgb(V20_WARNING_STYLE.warning.background) },
+  info: { label: V20_WARNING_STYLE.info.label, text: pdfRgb(V20_WARNING_STYLE.info.color), fill: pdfRgb(V20_WARNING_STYLE.info.background) },
   success: { label: "SESUAI", text: "0.05 0.43 0.39", fill: "0.91 0.96 0.94" },
 } as const;
 const clean = (value: unknown): string => String(value ?? "")
@@ -234,13 +238,7 @@ function referencePanel(calculated: CalculatorResult): ReportLine {
 }
 function patientLines(calculated:CalculatorResult, actualSummary?:ReportLine):ReportLine[]{
   const p=calculated.input;
-  const priority = { critical: 0, warning: 1, info: 2 };
-  const warnings = [...new Map([
-    ...calculated.globalWarnings,
-    ...calculated.recommendations.institutionalPrimary.warnings,
-    ...calculated.recommendations.anmf2024.warnings,
-  ].map(warning => [JSON.stringify([warning.severity, warning.title ?? "", warning.message]), warning])).values()]
-    .sort((a, b) => priority[a.severity] - priority[b.severity]);
+  const warnings = getDisplayV20Warnings(calculated);
   return [
     {text:"Kode pasien: "+(p.patientLabel??"Tanpa kode")},
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
