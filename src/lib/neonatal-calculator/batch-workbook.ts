@@ -3,7 +3,7 @@ import { summarizeBatch } from "./batch-statistics";
 import { buildBatchInterpretation } from "./batch-interpretation";
 import { pythonRound } from "./python-rounding";
 import type { ClinicalWarning } from "./types";
-import { deduplicateClinicalWarnings, getV20ClinicalWarnings } from "./warning-catalog-v20";
+import { getV20ClinicalWarnings, getSupplementalV20Warnings, sortV20Warnings, v20WarningText, V20_WARNING_STYLE } from "./warning-catalog-v20";
 import { buildV20Glossary } from "./glossary-v20";
 import {
   BATCH_COLUMNS,
@@ -36,12 +36,8 @@ const COLUMN_DESCRIPTIONS: Record<(typeof BATCH_COLUMNS)[number], string> = {
 const HEADER_FILL = "FF0F766E";
 const HEADER_FONT = { color: { argb: "FFFFFFFF" }, bold: true } as const;
 
-// Public warning labels match the calculator screen; text colors use its light-theme status palette.
-const WARNING_PRESENTATION = {
-  critical: { label: "PERINGATAN", foreground: "FFB4493F", background: "FFF8EDEC" },
-  warning: { label: "PERHATIAN", foreground: "FFA76F24", background: "FFFFF3CD" },
-  info: { label: "INFORMASI", foreground: "FF3F6F8F", background: "FFECF1F4" },
-} as const;
+// Palette converted from shared v20 CSS colors to Excel ARGB.
+const excelArgb = (hex: string) => "FF" + hex.slice(1).toUpperCase();
 
 function addWarningRow(
   sheet: import("exceljs").Worksheet,
@@ -50,11 +46,11 @@ function addWarningRow(
   severity: ClinicalWarning["severity"],
   message: string,
 ): void {
-  const presentation = WARNING_PRESENTATION[severity];
+  const presentation = V20_WARNING_STYLE[severity];
   const row = sheet.addRow([sourceRow, patientCode, presentation.label, message]);
   const category = row.getCell(3);
-  category.font = { bold: true, color: { argb: presentation.foreground } };
-  category.fill = { type: "pattern", pattern: "solid", fgColor: { argb: presentation.background } };
+  category.font = { bold: true, color: { argb: excelArgb(presentation.color) } };
+  category.fill = { type: "pattern", pattern: "solid", fgColor: { argb: excelArgb(presentation.background) } };
   row.eachCell(cell => { cell.alignment = { vertical: "middle", wrapText: true }; });
   row.height = Math.max(28, Math.ceil(message.length / 70) * 16 + 8);
 }
@@ -328,10 +324,11 @@ export async function buildBatchResultWorkbook(result: BatchProcessingResult): P
     else {
       const patientWarnings: ClinicalWarning[] = [
         ...getV20ClinicalWarnings(row.calculator),
+        ...getSupplementalV20Warnings(row.calculator),
         ...row.warnings.map(message => ({ code: "BATCH_DATA", severity: "warning" as const, message: "Peringatan data: " + message })),
       ];
-      for(const warning of deduplicateClinicalWarnings(patientWarnings).sort((a,b) => ({critical:0,warning:1,info:2}[a.severity] - {critical:0,warning:1,info:2}[b.severity]))) {
-        addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, warning.title ? warning.title + ". " + warning.message : warning.message);
+      for (const warning of sortV20Warnings(patientWarnings)) {
+        addWarningRow(warnings, row.sourceRow, row.patientCode, warning.severity, v20WarningText(warning));
       }
     }
   }
