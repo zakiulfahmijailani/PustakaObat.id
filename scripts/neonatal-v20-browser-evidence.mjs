@@ -136,6 +136,59 @@ try {
       }
     }
   }
+
+  // Simultaneous hypothermia and COX inhibitor flags (notebook v20).
+  // Verify visible decision-rule explanation, resulting interval and PDF print.
+  const comboExpectations = {
+    gentamisin: { hours: 36, hint: "hanya menerapkan aturan hipotermia", note: "ANMF tidak mengatur kombinasi keduanya" },
+    amikasin: { hours: 48, hint: "memperpanjang interval 12 jam satu kali", note: "kalkulator memperpanjang 12 jam satu kali" },
+    vankomisin: { hours: 12, hint: "tidak mengubah interval ANMF vankomisin", note: "sebelum dosis ke-2" },
+  };
+  for (const antibiotic of antibiotics) {
+    for (const mode of ["recommendation", "evaluation"]) {
+      const key = "combination-" + antibiotic + "-" + mode;
+      const prefix = mode === "recommendation" ? "rec" : "eval";
+      const page = await browser.newPage({ viewport: { width: 1365, height: 950 }, deviceScaleFactor: 1 });
+      try {
+        await page.goto(origin + "/kalkulator?mode=" + mode, { waitUntil: "domcontentloaded", timeout: 60000 });
+        await page.locator("#" + prefix + "-antibiotic").waitFor({ state:"visible", timeout:30000 });
+        await page.locator("#" + prefix + "-antibiotic").selectOption(antibiotic);
+        await page.locator("#" + prefix + "-ga").fill("32");
+        await page.locator("#" + prefix + "-pna").fill("5");
+        await page.locator("#" + prefix + "-weight").fill("1.5");
+        const hypo = page.getByRole("checkbox", {name:"Hipotermia terapeutik / HIE"});
+        const cox = page.getByRole("checkbox", {name:"Terapi indometasin atau ibuprofen (COX inhibitor)"});
+        await hypo.check();
+        await cox.check();
+        const hint = page.getByRole("status").filter({hasText:"Dua kondisi dicentang bersamaan."});
+        await hint.waitFor({state:"visible",timeout:30000});
+        const hintText = await hint.innerText();
+        check(hintText.includes(comboExpectations[antibiotic].hint), key + ": contextual hint incorrect");
+        await cox.uncheck();
+        check(await hint.count() === 0, key + ": hint remained after unchecking COX");
+        await cox.check();
+        if (mode === "evaluation") {
+          await page.locator("#eval-actual-dose").fill("8");
+          await page.locator("#eval-actual-hours").fill("24");
+          await page.locator('#evaluation-panel button').filter({hasText:"Evaluasi Pemberian"}).last().click();
+        } else {
+          await page.getByRole("button", {name:"Hitung rekomendasi"}).click();
+        }
+        const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
+        const resultNotes = await panel.locator("tr").filter({hasText:"Catatan klinis dan sumber"}).first().innerText();
+        check(resultNotes.includes(comboExpectations[antibiotic].note), key + ": notebook combination note missing");
+        const frequency = await panel.locator("tr").filter({hasText:"Frekuensi"}).first().innerText();
+        check(frequency.includes("tiap " + comboExpectations[antibiotic].hours + " jam"),
+          key + ": wrong ANMF interval " + frequency);
+        await page.screenshot({path:join(out,key+"-screen.png"),fullPage:true});
+        await page.emulateMedia({media:"print"});
+        await page.pdf({path:join(out,key+"-print.pdf"),format:"A4",printBackground:true,preferCSSPageSize:true});
+        console.log("PASS combination browser + print " + key);
+      } finally {
+        await page.close();
+      }
+    }
+  }
 } finally {
   await browser.close();
 }
