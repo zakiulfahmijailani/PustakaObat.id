@@ -252,7 +252,7 @@ function SortedWarnings({ calculated }: { calculated: CalculatorResult }) {
   return <div className="space-y-2" aria-label="Peringatan klinis">{getDisplayV20Warnings(calculated).map(warning =>
     <Warning key={JSON.stringify([warning.severity, warning.title ?? "", warning.message])} warning={warning} />
   )}</div>;
-
+}
 
 function AbbreviationGlossary() {
   return <details className="rounded-2xl border border-border bg-surface p-4">
