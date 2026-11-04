@@ -17,8 +17,8 @@ const renalScenarios = [
   { name: "SCr 1 tanpa data UOP", scr: 1, uop: undefined, impaired: true },
 ] as const;
 
-const actualText = (bytes: Uint8Array) => [...new TextDecoder().decode(bytes).matchAll(/\\((.*)\\) Tj/g)]
-  .map(match => match[1].replace(/\\\\([\\\\()])/g, "$1")).join(" ");
+const actualText = (bytes: Uint8Array) => [...new TextDecoder().decode(bytes).matchAll(/\((.*)\) Tj/g)]
+  .map(match => match[1].replace(/\\([\\()])/g, "$1")).join(" ");
 
 describe("catatan ginjal dan atribusi peringatan — sumber notebook v20", () => {
   it.each(antibiotics)("menambah catatan ANMF tepat sekali dan tanpa mengubah catatan awal: %s", antibiotic => {
