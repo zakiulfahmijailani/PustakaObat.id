@@ -1,5 +1,5 @@
 import { intervalBounds, numberText } from "./notebook-results";
-import type { CalculatorResult, ClinicalWarning } from "./types";
+import type { Antibiotic, CalculatorResult, ClinicalWarning } from "./types";
 
 // Text and conditions from frozen v20 cells 5 and 6. The catalogue describes
 // existing results; it never adjusts a recommendation dose or interval.
@@ -9,6 +9,15 @@ export const ANMF_RENAL = {
   amikasin: "ANMF, gangguan ginjal sedang-berat: perpanjang interval 12-24 jam, ukur kadar trough 1 jam sebelum setiap dosis, dan tunggu hasilnya sebelum memberi dosis. Interval di tabel adalah interval rutin dan belum diperpanjang.",
   vankomisin: "ANMF, gangguan ginjal: bila memungkinkan pertimbangkan antibiotik yang tidak nefrotoksik. Bila vankomisin tetap dipakai, ukur kadar trough sebelum dosis ke-2 dan sesuaikan interval hingga trough 10-20 mg/L. Interval di tabel adalah interval rutin.",
 } as const;
+
+/** Preserve exact ANMF v20 renal wording and do not infer impairment from
+ * missing clinical data or from unrelated warnings. The original list and
+ * order of notes remain unchanged when UNC renal criteria are not met.
+ */
+export function withAnmfRenalNote(notes: string[], antibiotic: Antibiotic, criteriaMet: boolean): string[] {
+  if (!criteriaMet || notes.includes(ANMF_RENAL[antibiotic])) return notes;
+  return [...notes, ANMF_RENAL[antibiotic]];
+}
 const RENAL_ASSUMPTION = "Hasil dihitung dengan ASUMSI fungsi ginjal normal sesuai usia (keputusan tim peneliti, agar kalkulator tetap dapat dipakai dengan data rutin), sehingga kriteria gangguan ginjal tidak dapat dinilai. Evaluasi ulang hasil ini setelah kreatinin serum tersedia.";
 const RENAL_HIGH_RISK = "Pasien termasuk kelompok risiko gangguan ginjal tinggi menurut kriteria kehati-hatian tim peneliti (usia gestasi <29 minggu, berat <1,5 kg, hipotermia terapeutik, indometasin/ibuprofen, atau vankomisin; dasar kriteria tercantum pada kotak Rujukan). Asumsi fungsi ginjal normal pada pasien ini lebih mungkin keliru.";
 // Frozen notebook v20 palette (cell 6 _TINGKAT_PERINGATAN), shared by all report formats.

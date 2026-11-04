@@ -28,7 +28,7 @@ import type {
   Recommendation,
 } from "./types";
 import { validatePatientInput } from "./validation";
-import { ANMF_RENAL } from "./warning-catalog-v20";
+import { withAnmfRenalNote } from "./warning-catalog-v20";
 
 const LOCAL_PROVENANCE =
   "Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017); PNPK Tata Laksana Sepsis pada Anak, Kemenkes RI (2021).";
@@ -68,9 +68,8 @@ function aminoglycosideRenalWarning(antibiotic: "gentamisin" | "amikasin"): Clin
 }
 
 function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) {
-  const warnings = hasAminoglycosideRenalSafetySignal(input)
-    ? [aminoglycosideRenalWarning("gentamisin")]
-    : [];
+  const renalCriteriaMet = hasAminoglycosideRenalSafetySignal(input);
+  const warnings = renalCriteriaMet ? [aminoglycosideRenalWarning("gentamisin")] : [];
   const anmf = anmfGentamicin(input, pmaWeeks);
   return {
     institutionalPrimary: {
@@ -105,7 +104,7 @@ function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) 
       provenanceDetail: ANMF_PROVENANCE,
       dose: anmf.dose,
       interval: anmf.interval,
-      notes: warnings.length ? [...anmf.notes, ANMF_RENAL.gentamisin] : anmf.notes,
+      notes: withAnmfRenalNote(anmf.notes, "gentamisin", renalCriteriaMet),
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -113,9 +112,8 @@ function createGentamicinRecommendations(input: PatientInput, pmaWeeks: number) 
 }
 
 function createAmikacinRecommendations(input: PatientInput, pmaWeeks: number) {
-  const warnings = hasAminoglycosideRenalSafetySignal(input)
-    ? [aminoglycosideRenalWarning("amikasin")]
-    : [];
+  const renalCriteriaMet = hasAminoglycosideRenalSafetySignal(input);
+  const warnings = renalCriteriaMet ? [aminoglycosideRenalWarning("amikasin")] : [];
   const anmf = anmfAmikacin(input, pmaWeeks);
   const dose = institutionalAmikacinDose(input.currentWeightKg);
   const interval = institutionalAmikacinInterval();
@@ -152,7 +150,7 @@ function createAmikacinRecommendations(input: PatientInput, pmaWeeks: number) {
       provenanceDetail: ANMF_PROVENANCE,
       dose: anmf.dose,
       interval: anmf.interval,
-      notes: warnings.length ? [...anmf.notes, ANMF_RENAL.amikasin] : anmf.notes,
+      notes: withAnmfRenalNote(anmf.notes, "amikasin", renalCriteriaMet),
       warnings,
       eligibleForRegimenEvaluation: true,
     },
@@ -196,9 +194,7 @@ function createVancomycinRecommendations(
   renalStatus: CalculatorResult["renalStatus"],
 ) {
   const anmf = anmfVancomycin(input, pmaWeeks);
-  const anmfNotes = renalStatus === "renal-impairment-criteria-met"
-    ? [...anmf.notes, ANMF_RENAL.vankomisin]
-    : anmf.notes;
+  const anmfNotes = withAnmfRenalNote(anmf.notes, "vankomisin", renalStatus === "renal-impairment-criteria-met");
   const anmfWarnings: ClinicalWarning[] =
     renalStatus === "renal-impairment-criteria-met"
       ? [{ code: "ANMF_REQUIRES_RENAL_REVIEW", severity: "critical", message: "Kriteria ginjal terpenuhi; regimen ANMF rutin tidak boleh diterapkan tanpa evaluasi kadar dan klinis." }]
