@@ -18,6 +18,8 @@ import { getV20ContextCheckboxes, getV20InputReasonablenessNote, V20_RENAL_DATA_
 import { getDisplayV20Warnings, V20_WARNING_STYLE } from "@/lib/neonatal-calculator/warning-catalog-v20";
 import { ReferenceBlock } from "./ReferenceBlock";
 import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
+import { RenalStatusSummary, ActualAdministeredDoseSummary } from "./PatientOutcomeSummary";
+import { v20ActualDoseText } from "@/lib/neonatal-calculator/notebook-results";
 import {
   ANTIBIOTIC_LABELS,
   CALCULATOR_RULE_VERSION,
@@ -479,16 +481,6 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
     downloadPdf(buildEvaluationPdf(evaluationResult, evaluation, manualEnabled), "evaluasi-neonatus.pdf");
   };
 
-  const renalStatusLabel =
-    result?.renalStatus === "data-unavailable"
-      ? "Data fungsi ginjal tidak tersedia (diasumsikan normal sesuai usia)"
-      : result?.renalStatus === "renal-impairment-criteria-met"
-        ? result.input.antibiotic === "vankomisin"
-          ? "Kriteria gangguan ginjal UNC untuk vankomisin terpenuhi"
-          : "Sinyal kaji ulang fungsi ginjal (kriteria UNC vankomisin; bukan aturan penyesuaian aminoglikosida)"
-        : result?.input.antibiotic === "vankomisin"
-          ? "Kriteria gangguan ginjal UNC untuk vankomisin tidak terpenuhi dari data yang diberikan"
-          : "Tidak ada sinyal berdasarkan kriteria kaji ulang UNC dari data yang diberikan; bukan konfirmasi fungsi ginjal normal";
   const activeIntervalsRequired = evaluationResult
     ? [evaluationResult.recommendations.institutionalPrimary, evaluationResult.recommendations.anmf2024].some(
         (recommendation) =>
@@ -548,7 +540,8 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <div className="space-y-5" aria-live="polite">
                 <div className="rounded-2xl border border-border bg-surface p-4 print-break-inside-avoid">
                   <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-primary">Ringkasan input</p><h2 className="text-xl font-semibold text-text">{ANTIBIOTIC_LABELS[result.input.antibiotic]}{result.input.patientLabel ? ` — ${result.input.patientLabel}` : ""}</h2><p className="mt-1 text-sm text-text-muted">{formatPatientAgeTitle(result.input)}</p></div><div className="flex flex-wrap gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadRecommendation}>Unduh PDF Rekomendasi Dosis</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} />Cetak</Button></div></div>
-                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">Usia gestasi lahir / usia pascalahir / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div><dt className="text-text-muted">Status data ginjal</dt><dd className="font-semibold text-text">{renalStatusLabel}</dd></div><div><dt className="text-text-muted">Kreatinin serum / produksi urin</dt><dd className="font-semibold text-text">{result.input.serumCreatinineMgDl === undefined ? "Tidak tersedia" : `${formatNumber(result.input.serumCreatinineMgDl)} mg/dL`} / {result.input.urineOutputMlKgHour === undefined ? "Tidak tersedia" : `${formatNumber(result.input.urineOutputMlKgHour)} mL/kg/jam`}</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
+                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3"><div><dt className="text-text-muted">Usia gestasi lahir / usia pascalahir / PMA</dt><dd className="font-semibold text-text">{formatNumber(result.input.gestationalAgeWeeks)} minggu {result.input.gestationalAgeDays ?? 0} hari / {result.input.postnatalAgeDays} hari / {result.input.gestationalAgeWeeks + Math.floor(((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) / 7)} minggu {((result.input.gestationalAgeDays ?? 0) + result.input.postnatalAgeDays) % 7} hari</dd></div><div><dt className="text-text-muted">Berat</dt><dd className="font-semibold text-text">{formatNumber(result.input.currentWeightKg)} kg</dd></div><div className="sm:col-span-2"><dt className="text-text-muted">Konteks klinis</dt><dd className="font-semibold text-text">{[result.input.therapeuticHypothermia && "Hipotermia terapeutik/HIE", result.input.coxInhibitorTherapy && "COX inhibitor", result.input.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih"}</dd></div></dl>
+                  <RenalStatusSummary calculated={result} />
                   {generatedAt && <p className="mt-3 hidden text-xs text-text-muted print:block">Dibuat lokal: {generatedAt} · Versi aturan: {result.calculatorRuleVersion}</p>}
                 </div>
                 <SortedWarnings calculated={result} />
@@ -606,6 +599,8 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
             {!evaluation || !evaluationResult ? <div className="rounded-2xl border border-dashed border-border p-8 text-center text-text-muted">Isi data pasien dan dosis aktual, lalu pilih Evaluasi Pemberian.</div> : <>
               <div className="rounded-2xl border border-border bg-surface p-4"><h2 className="text-lg font-semibold">Evaluasi Pemberian — {ANTIBIOTIC_LABELS[evaluationResult.input.antibiotic]}</h2>
                 <p className="mt-2 text-xs text-text-muted">Kode pasien: {evaluationResult.input.patientLabel ?? "Tanpa kode"} · {evaluationResult.input.gestationalAgeWeeks} minggu {evaluationResult.input.gestationalAgeDays ?? 0} hari · {evaluationResult.input.postnatalAgeDays} hari pascalahir</p>
+                <RenalStatusSummary calculated={evaluationResult} />
+                <ActualAdministeredDoseSummary calculated={evaluationResult} evaluation={evaluation} />
                 <div className="mt-3"><WarningLegend /></div>
               </div>
               <ActualEvaluationSummary calculated={evaluationResult} evaluation={evaluation} />
@@ -625,7 +620,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
         </div>
         {evaluationHistory.length > 0 && <details className="mt-5 rounded-2xl border border-border bg-surface p-4 print-hide">
           <summary className="cursor-pointer font-semibold">Riwayat Evaluasi Pemberian ({evaluationHistory.length})</summary>
-          <div className="mt-3 overflow-x-auto"><table className="min-w-[480px] w-full text-left text-sm"><thead><tr><th>Kode pasien</th><th>Antibiotik</th><th>Dosis aktual</th><th>Interval</th><th>Perbandingan RS</th><th>Perbandingan Literatur</th></tr></thead><tbody>{evaluationHistory.map((entry, index)=><tr key={index} className="border-t border-border"><td className="py-2">{entry.patient.input.patientLabel ?? `Pasien ${index+1}`}</td><td>{ANTIBIOTIC_LABELS[entry.patient.input.antibiotic]}</td><td>{formatNumber(entry.evaluation.input.actualDoseMg)} mg</td><td>{entry.evaluation.input.actualIntervalHours ?? "–"} jam</td><td>{entry.evaluation.targets[0]?.actualDose.status}</td><td>{entry.evaluation.targets[2]?.actualDose.status}</td></tr>)}</tbody></table></div>
+          <div className="mt-3 overflow-x-auto"><table className="min-w-[480px] w-full text-left text-sm"><thead><tr><th>Kode pasien</th><th>Antibiotik</th><th>Dosis aktual</th><th>Interval</th><th>Perbandingan RS</th><th>Perbandingan Literatur</th></tr></thead><tbody>{evaluationHistory.map((entry, index)=><tr key={index} className="border-t border-border"><td className="py-2">{entry.patient.input.patientLabel ?? `Pasien ${index+1}`}</td><td>{ANTIBIOTIC_LABELS[entry.patient.input.antibiotic]}</td><td>{v20ActualDoseText(entry.evaluation.input.actualDoseMg, entry.patient.input.currentWeightKg)}</td><td>{entry.evaluation.input.actualIntervalHours ?? "–"} jam</td><td>{entry.evaluation.targets[0]?.actualDose.status}</td><td>{entry.evaluation.targets[2]?.actualDose.status}</td></tr>)}</tbody></table></div>
         </details>}
       </section>
 
