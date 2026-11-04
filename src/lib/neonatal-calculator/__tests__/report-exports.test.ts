@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { calculateRecommendations } from "../recommendation-engine";
 import { evaluateRegimen } from "../evaluation-engine";
 import { patient } from "./fixtures";
@@ -32,6 +34,79 @@ describe("PDF laporan neonatal", () => {
       }
     },
   );
+
+  it.each(["gentamisin", "amikasin", "vankomisin"] as const)(
+    "menampilkan seluruh kotak Rujukan v20 dalam PDF rekomendasi dan evaluasi %s",
+    antibiotic => {
+      const result = calculateRecommendations(patient({ antibiotic }));
+      const evaluation = evaluateRegimen(result, {
+        actualDoseMg: 8, actualIntervalHours: 24,
+        manualDoseMinMg: 7.5, manualDoseMaxMg: 11.25,
+        manualIntervalMinHours: 24, manualIntervalMaxHours: 48,
+      });
+      for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)]) {
+        const raw = decode(bytes);
+        const text = plainText(bytes);
+        expect((raw.match(/\/Type \/Page\b/g) ?? []).length).toBeGreaterThanOrEqual(1);
+        expect(raw).toContain("(Rujukan) Tj");
+        expect(text).toContain("Pedoman Rumah Sakit:");
+        expect(text).toContain("Literatur Terkini:");
+        expect(text).toContain("Peringatan tambahan:");
+        expect(text).toContain("Ketetapan tim peneliti (bukan dari pedoman):");
+        expect(text).toContain("Evans RE, Peterson J");
+        expect(text).toContain("Papile LA, Baley JE");
+        expect(text).toContain("kriteria gangguan ginjal UNC");
+        if (antibiotic === "vankomisin") {
+          expect(text).toContain("Vancomycin Dosing");
+          expect(text).not.toContain("Panduan Praktik Klinik (PPK) Sepsis Neonatal");
+        } else {
+          expect(text).toContain("Panduan Praktik Klinik (PPK)");
+          expect(text).toContain("PNPK Tata Laksana");
+        }
+        expect(text).not.toMatch(/\bSPO\b/);
+      }
+    },
+  );
+
+  it("mempertahankan kotak Rujukan sesudah tabel panjang pada halaman PDF berikutnya", () => {
+    const result = calculateRecommendations(patient({ antibiotic: "amikasin" }));
+    result.recommendations.anmf2024.notes.push(
+      Array.from({length: 650}, (_, index) => "PANJANG" + String(index).padStart(3, "0")).join(" "),
+    );
+    const bytes = buildRecommendationPdf(result), raw = decode(bytes), text = plainText(bytes);
+    const pages = (raw.match(/\/Type \/Page\b/g) ?? []).length;
+    expect(pages).toBeGreaterThan(1);
+    expect(text).toContain("PANJANG000");
+    expect(text).toContain("PANJANG649");
+    expect(text).toContain("Rujukan Pedoman Rumah Sakit:");
+    expect(text).toContain("Papile LA, Baley JE");
+    expect(text).toContain("Ketetapan tim peneliti (bukan dari pedoman):");
+    for (let page = 1; page <= pages; page++) {
+      expect(text).toContain("PustakaObat.id - Halaman " + page + "/" + pages);
+    }
+  });
+
+
+  it("menyediakan PDF Rujukan nyata untuk inspeksi semua halaman ketika diminta CI", () => {
+    const directory = process.env.NEONATAL_RUJUKAN_EVIDENCE_DIR;
+    if (!directory) return;
+    mkdirSync(directory, { recursive: true });
+    for (const antibiotic of ["gentamisin", "amikasin", "vankomisin"] as const) {
+      const result = calculateRecommendations(patient({ antibiotic }));
+      const evaluation = evaluateRegimen(result, {
+        actualDoseMg: 8, actualIntervalHours: 24,
+        manualDoseMinMg: 7.5, manualDoseMaxMg: 11.25,
+        manualIntervalMinHours: 24, manualIntervalMaxHours: 48,
+      });
+      writeFileSync(join(directory, antibiotic + "-rekomendasi.pdf"), buildRecommendationPdf(result));
+      writeFileSync(join(directory, antibiotic + "-evaluasi.pdf"), buildEvaluationPdf(result, evaluation, true));
+    }
+    const long = calculateRecommendations(patient({ antibiotic: "amikasin" }));
+    long.recommendations.anmf2024.notes.push(
+      Array.from({ length: 650 }, (_, index) => "PANJANG" + String(index).padStart(3, "0")).join(" "),
+    );
+    writeFileSync(join(directory, "amikasin-rujukan-multipage.pdf"), buildRecommendationPdf(long));
+  });
 
   it("menghasilkan berkas PDF rekomendasi nyata", () => {
     const bytes = buildRecommendationPdf(calculateRecommendations(patient()));

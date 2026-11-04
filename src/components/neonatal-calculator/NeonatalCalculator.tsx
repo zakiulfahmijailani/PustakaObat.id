@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { buildRecommendationPdf, buildEvaluationPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import { BatchCalculator } from "./BatchCalculator";
+import { ReferenceBlock } from "./ReferenceBlock";
 import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
 import {
   ANTIBIOTIC_LABELS,
@@ -536,6 +537,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 </div>
                 <SortedWarnings warnings={[...result.globalWarnings, ...result.recommendations.institutionalPrimary.warnings, ...result.recommendations.anmf2024.warnings]} />
                 <RecommendationTable calculated={result} />
+                <ReferenceBlock antibiotic={result.input.antibiotic} />
                 <WarningLegend />
                 <AbbreviationGlossary />
                 <details className="rounded-2xl border border-border bg-surface p-4">
@@ -595,6 +597,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <section aria-labelledby="evaluation-recommendation-heading" className="space-y-3">
                 <h3 id="evaluation-recommendation-heading" className="text-lg font-semibold text-text">Rekomendasi dosis</h3>
                 <RecommendationTable calculated={evaluationResult} />
+                <ReferenceBlock antibiotic={evaluationResult.input.antibiotic} />
               </section>
               <AbbreviationGlossary />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
