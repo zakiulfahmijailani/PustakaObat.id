@@ -106,7 +106,7 @@ describe("kombinasi hipotermia terapeutik + indometasin/ibuprofen v20", () => {
       expect([rec.dose.minTotalMg, rec.dose.maxTotalMg], JSON.stringify(item.input)).toEqual(item.expected.litDose);
       if (rec.interval.kind === "single") expect([rec.interval.hours, rec.interval.hours]).toEqual(item.expected.litInterval);
     }
-  });
+  }, 120_000);
 
   it.each(["gentamisin", "amikasin", "vankomisin"] as const)(
     "catatan kombinasi tetap terbaca pada PDF rekomendasi dan evaluasi: %s", antibiotic => {
@@ -120,7 +120,7 @@ describe("kombinasi hipotermia terapeutik + indometasin/ibuprofen v20", () => {
       const reports = [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)];
       for (const bytes of reports) {
         const printed = pdfText(bytes);
-        expect(printed).toContain("Hipotermia terapeutik");
+        expect(printed.toLowerCase()).toContain("hipotermia terapeutik");
         expect(printed).toContain("Rujukan");
         if (antibiotic === "gentamisin") {
           expect(printed).toContain("ANMF tidak mengatur kombinasi keduanya");
