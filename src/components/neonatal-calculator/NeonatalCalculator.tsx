@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { buildRecommendationPdf, buildEvaluationPdf, downloadPdf } from "@/lib/neonatal-calculator/pdf-reports";
 import { BatchCalculator } from "./BatchCalculator";
+import { getV20ContextCheckboxes, getV20InputReasonablenessNote, V20_RENAL_DATA_HELP, V20_MANUAL_COMPARISON_HELP } from "@/lib/neonatal-calculator/form-guidance-v20";
 import { getDisplayV20Warnings, V20_WARNING_STYLE } from "@/lib/neonatal-calculator/warning-catalog-v20";
 import { ReferenceBlock } from "./ReferenceBlock";
 import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
@@ -182,6 +183,7 @@ function PatientCaseFields({
   prefix: string;
   onChange: (key: keyof PatientForm, value: string | boolean) => void;
 }) {
+  const contextFlags = getV20ContextCheckboxes(form.antibiotic);
   return (
     <>
               <Field id={`${prefix}-patient-label`} label="Kode pasien" value={form.patientLabel} onChange={(value) => onChange("patientLabel", value)} maxLength={60} error={errors.patientLabel} helper="Label kasus non-identifying; jangan masukkan nama, nomor rekam medis, NIK, tanggal lahir, atau identitas pasien." />
@@ -201,6 +203,7 @@ function PatientCaseFields({
               <fieldset className="rounded-xl border border-border p-4">
                 <legend className="px-1 text-sm font-semibold text-text">Fungsi ginjal</legend>
                 <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-text"><input type="checkbox" className="h-5 w-5 accent-primary" checked={form.renalDataAvailable} onChange={(event) => { const available = event.target.checked; onChange("renalDataAvailable", available); }} />Data fungsi ginjal tersedia</label>
+                <p className="mt-1 text-xs leading-relaxed text-text-muted">{V20_RENAL_DATA_HELP}</p>
                 {!form.renalDataAvailable && <p className="mt-2 text-xs leading-relaxed text-warning">Data ginjal tidak tersedia; perhitungan mengikuti asumsi normal sesuai usia pada notebook. Periksa fungsi ginjal sebelum keputusan terapi.</p>}
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
                   <Field id={`${prefix}-scr`} label="Kreatinin serum (mg/dL)" type="number" min="0" max="10" step="0.01" required={form.renalDataAvailable} disabled={!form.renalDataAvailable} placeholder="mis. 0,6" helper="Isi 0–10 mg/dL. Bila hasil laboratorium dalam µmol/L, bagi dengan 88,4 terlebih dahulu; nilai tidak dikonversi otomatis." value={form.serumCreatinineMgDl} onChange={(value) => onChange("serumCreatinineMgDl", value)} error={errors.serumCreatinineMgDl} />
@@ -209,11 +212,18 @@ function PatientCaseFields({
               </fieldset>
               <fieldset className="space-y-2 rounded-xl border border-border p-4">
                 <legend className="px-1 text-sm font-semibold text-text">Konteks klinis</legend>
-                {([
-                  ["therapeuticHypothermia", "Hipotermia terapeutik / HIE"],
-                  ["coxInhibitorTherapy", "Terapi indometasin atau ibuprofen (COX inhibitor)"],
-                  ["severeSepsisOrHighRiskInfection", "Sepsis berat / kecurigaan MRSA / meningitis / endokarditis"],
-                ] as const).map(([key, label]) => <label key={key} className={`flex min-h-11 cursor-pointer items-center gap-3 text-sm ${key === "severeSepsisOrHighRiskInfection" && form.antibiotic !== "vankomisin" ? "text-text-muted" : "text-text"}`}><input type="checkbox" checked={form[key]} onChange={(event) => onChange(key, event.target.checked)} className="h-5 w-5 accent-primary" />{label}</label>)}
+                {contextFlags.map(({ key, label, effect }) => (
+                  <div key={key} className="space-y-1.5">
+                    <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-text" htmlFor={`${prefix}-${key}`}>
+                      <input id={`${prefix}-${key}`} type="checkbox" checked={form[key]}
+                        aria-describedby={`${prefix}-${key}-effect`}
+                        onChange={(event) => onChange(key, event.target.checked)}
+                        className="h-5 w-5 shrink-0 accent-primary" />
+                      <span>{label}</span>
+                    </label>
+                    <p id={`${prefix}-${key}-effect`} className="pl-8 text-xs leading-relaxed text-text-muted">{effect}</p>
+                  </div>
+                ))}
                 {form.therapeuticHypothermia && form.coxInhibitorTherapy && form.antibiotic && (
                   <p role="status" aria-live="polite" className="rounded-lg border border-info/30 bg-info/10 px-3 py-2 text-xs leading-relaxed text-text">
                     <strong>Dua kondisi dicentang bersamaan.</strong>{" "}
@@ -226,6 +236,7 @@ function PatientCaseFields({
                   </p>
                 )}
               </fieldset>
+              <p role="note" className="rounded-xl border border-border bg-surface-2 px-3 py-2 text-xs leading-relaxed text-text-muted">{getV20InputReasonablenessNote()}</p>
 
     </>
   );
@@ -579,6 +590,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               <Field id="eval-actual-dose" type="number" step="0.001" min="0.001" label="Dosis aktual per pemberian (mg)" required value={evaluationForm.actualDoseMg} error={evaluationErrors.actualDoseMg} onChange={v => { setEvaluationForm(p=>({...p, actualDoseMg:v}));setEvaluation(null); }} />
               <Field id="eval-actual-hours" type="number" step="1" min="1" max="96" label="Frekuensi aktual — diberikan setiap ... jam" required={activeIntervalsRequired} value={evaluationForm.actualIntervalHours} error={evaluationErrors.actualIntervalHours} onChange={v => { setEvaluationForm(p=>({...p, actualIntervalHours:v}));setEvaluation(null); }} />
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-5 w-5 accent-primary" checked={manualEnabled} onChange={e=>{setManualEnabled(e.target.checked);setEvaluation(null);}} />Saya punya hasil hitung manual sebagai pembanding (opsional)</label>
+              <p className="text-xs leading-relaxed text-text-muted">{V20_MANUAL_COMPARISON_HELP}</p>
               {manualEnabled && <div className="grid gap-3 rounded-xl border border-border p-4 sm:grid-cols-2">
                 {([
                   ["manualDoseMinMg", "Dosis manual batas bawah (mg)", "0.001"],
