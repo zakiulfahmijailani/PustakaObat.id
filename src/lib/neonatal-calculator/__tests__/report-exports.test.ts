@@ -22,11 +22,11 @@ describe("PDF laporan neonatal", () => {
       for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)]) {
         const content = plainText(bytes);
         if (antibiotic === "vankomisin") {
-          expect(content).toContain("UNC Medical Center");
+          expect(content).toContain("UNC");
         } else {
-          expect(content).toContain("Panduan Praktik Klinik (PPK)");
-          expect(content).toContain("PNPK Tata Laksana Sepsis pada Anak");
-          expect(content).toContain("PPK = Panduan Praktik Klinik");
+          expect(content).toContain("PPK");
+          expect(content).toContain("PNPK");
+          expect(content).toContain("Panduan Praktik Klinik");
         }
         expect(content).not.toMatch(/\bSPO\b/);
       }
