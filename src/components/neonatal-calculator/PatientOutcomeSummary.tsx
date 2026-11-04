@@ -24,6 +24,9 @@ export function ActualAdministeredDoseSummary({
           <dt className="text-text-muted">Dosis per pemberian (mg dan mg/kg)</dt>
           <dd className="font-semibold text-text">
             {v20ActualDoseText(evaluation.input.actualDoseMg, calculated.input.currentWeightKg)}
+            {evaluation.input.actualIntervalHours === null
+              ? ", interval aktual tidak diisi."
+              : `, diberikan tiap ${evaluation.input.actualIntervalHours} jam.`}
           </dd>
         </div>
       </dl>
