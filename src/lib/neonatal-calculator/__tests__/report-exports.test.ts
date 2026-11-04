@@ -122,10 +122,11 @@ describe("PDF laporan neonatal", () => {
       const text = plainText(bytes);
       expect(text).toContain("Keterangan singkatan");
       expect(text).toContain("PMA = usia pascamenstruasi");
-      expect(text).toContain("GA = usia gestasi; PNA = usia pascalahir");
+      expect(text).not.toContain("GA = usia gestasi; PNA = usia pascalahir");
       expect(text).toContain("ANMF = Australasian Neonatal Medicines Formulary");
-      expect(text).toContain("q24h = tiap 24 jam");
+      expect(text).not.toContain("q24h = tiap 24 jam");
       expect(text).toContain("RS = Rumah Sakit; RSUP = Rumah Sakit Umum Pusat");
+      expect(text).toContain("PPK = Panduan Praktik Klinik");
       expect(text).toContain("interval antardosis");
       expect(text).not.toMatch(/berlebih -|sesuai -|lebih-pendek|tidak-dapat-dievaluasi/);
       expect(text).not.toContain("COX =");
