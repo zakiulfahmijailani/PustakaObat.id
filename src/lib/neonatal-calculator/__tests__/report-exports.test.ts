@@ -10,6 +10,29 @@ describe("PDF laporan neonatal", () => {
   const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
   const plainText = (bytes: Uint8Array) => [...decode(bytes).matchAll(/\((.*)\) Tj/g)]
     .map(match => match[1].replace(/\\([\\()])/g, "$1")).join(" ");
+  it.each(["gentamisin", "amikasin", "vankomisin"] as const)(
+    "memakai sumber PPK/PNPK atau UNC pada PDF rekomendasi dan evaluasi %s",
+    (antibiotic) => {
+      const result = calculateRecommendations(patient({ antibiotic }));
+      const evaluation = evaluateRegimen(result, {
+        actualDoseMg: 8, actualIntervalHours: 24,
+        manualDoseMinMg: 7.5, manualDoseMaxMg: 11.25,
+        manualIntervalMinHours: 24, manualIntervalMaxHours: 48,
+      });
+      for (const bytes of [buildRecommendationPdf(result), buildEvaluationPdf(result, evaluation, true)]) {
+        const content = plainText(bytes);
+        if (antibiotic === "vankomisin") {
+          expect(content).toContain("UNC");
+        } else {
+          expect(content).toContain("PPK");
+          expect(content).toContain("PNPK");
+          expect(content).toContain("Panduan Praktik Klinik");
+        }
+        expect(content).not.toMatch(/\bSPO\b/);
+      }
+    },
+  );
+
   it("menghasilkan berkas PDF rekomendasi nyata", () => {
     const bytes = buildRecommendationPdf(calculateRecommendations(patient()));
     expect(decode(bytes).startsWith("%PDF-1.4")).toBe(true);
