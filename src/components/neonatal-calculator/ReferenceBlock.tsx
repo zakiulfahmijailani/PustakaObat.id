@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Antibiotic } from "@/lib/neonatal-calculator/types";
 import { getV20ReferenceEntries } from "@/lib/neonatal-calculator/reference-block-v20";
 
