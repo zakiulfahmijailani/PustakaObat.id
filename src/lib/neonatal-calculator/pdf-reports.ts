@@ -1,4 +1,5 @@
 import { pythonFixed } from "./python-rounding";
+import { v20ActualDoseText } from "./notebook-results";
 import { getDisplayV20Warnings, V20_WARNING_STYLE } from "./warning-catalog-v20";
 import { getV20ReferenceEntries } from "./reference-block-v20";
 import { buildActualEvaluationSummary } from "./actual-evaluation-summary";
@@ -211,6 +212,15 @@ function doseText(rec:Recommendation): string {
   const dose=rec.dose.minTotalMg===rec.dose.maxTotalMg?formatNumber(rec.dose.minTotalMg??0):formatNumber(rec.dose.minTotalMg??0)+"-"+formatNumber(rec.dose.maxTotalMg??0);
   return dose + " mg";
 }
+/** PDF-only annotation: use the already calculated per-kg values, never recalculate the regimen. */
+function doseWithMgKgText(rec:Recommendation): string {
+  const { minMgPerKg, maxMgPerKg } = rec.dose;
+  if (minMgPerKg === null || maxMgPerKg === null) return doseText(rec);
+  const perKg = minMgPerKg === maxMgPerKg
+    ? formatNumber(minMgPerKg)
+    : formatNumber(minMgPerKg) + "-" + formatNumber(maxMgPerKg);
+  return doseText(rec) + " (" + perKg + " mg/kg per pemberian)";
+}
 function intervalText(rec:Recommendation): string {
   return rec.interval.kind==="single"?"tiap "+rec.interval.hours+" jam":rec.interval.kind==="continuous-range"?"tiap "+rec.interval.minHours+"-"+rec.interval.maxHours+" jam":rec.interval.kind==="single-dose-only"?"Dosis tunggal (bukan rutin)":rec.interval.allowedHours.map(n=>"tiap "+n+" jam").join(" atau ");
 }
@@ -223,7 +233,7 @@ function recommendationTable(calculated: CalculatorResult): ReportTable {
   const refs = [calculated.recommendations.institutionalPrimary, calculated.recommendations.anmf2024];
   const row = (label: string, value: (rec: Recommendation) => string): ReportCell[] => [{ text: label }, ...refs.map(rec => ({ text: value(rec) }))];
   return { table: { title: "Rekomendasi dosis", columns: recommendationColumns, rows: [
-    row("Dosis per pemberian", doseText), row("Frekuensi pemberian", intervalText),
+    row("Dosis per pemberian", doseWithMgKgText), row("Frekuensi pemberian", intervalText),
     row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
   ] } };
 }
@@ -318,7 +328,7 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
     [{ text: "Manual interval:" }, ...targets.map(target => ({ text: resultMessage(target?.manualInterval.summary ?? target?.manualInterval.lowerBound?.message ?? "Tidak tersedia") }))],
   );
   const lines:ReportItem[]=[...patientLines(calculated, actualSummary),
-    {text:"Dosis aktual: "+formatNumber(evaluation.input.actualDoseMg)+" mg; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
+    {text:"Dosis aktual: "+v20ActualDoseText(evaluation.input.actualDoseMg, calculated.input.currentWeightKg)+"; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
     recommendationTable(calculated),
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
     referencePanel(calculated),
