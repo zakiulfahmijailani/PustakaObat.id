@@ -18,6 +18,7 @@ import { getV20ContextCheckboxes, getV20InputReasonablenessNote, V20_RENAL_DATA_
 import { getDisplayV20Warnings, V20_WARNING_STYLE } from "@/lib/neonatal-calculator/warning-catalog-v20";
 import { ReferenceBlock } from "./ReferenceBlock";
 import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
+import { EvaluationStatusText } from "./EvaluationStatusText";
 import { RenalStatusSummary, ActualAdministeredDoseSummary } from "./PatientOutcomeSummary";
 import { v20ActualDoseText } from "@/lib/neonatal-calculator/notebook-results";
 import {
@@ -157,11 +158,11 @@ function EvaluationCard({ target, showManual = true }: { target: RecommendationE
       <dl className="mt-4 grid gap-4 text-sm md:grid-cols-2">
         <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Dosis aktual</dt>
-          <dd className="mt-1 text-text-muted"><strong className="capitalize text-text">{target.actualDose.status.replaceAll("-", " ")}</strong> — {target.actualDose.message}</dd>
+          <dd className="mt-1 text-text-muted"><EvaluationStatusText status={target.actualDose.status} message={target.actualDose.message} /></dd>
         </div>
         <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Interval aktual</dt>
-          <dd className="mt-1 text-text-muted"><strong className="capitalize text-text">{target.actualInterval.status.replaceAll("-", " ")}</strong> — {target.actualInterval.message}</dd>
+          <dd className="mt-1 text-text-muted"><EvaluationStatusText status={target.actualInterval.status} message={target.actualInterval.message} /></dd>
         </div>
         {showManual && <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Rentang manual vs dosis</dt>
