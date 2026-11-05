@@ -21,6 +21,7 @@ import { ActualEvaluationSummary } from "./ActualEvaluationSummary";
 import { EvaluationStatusText } from "./EvaluationStatusText";
 import { RenalStatusSummary, ActualAdministeredDoseSummary } from "./PatientOutcomeSummary";
 import { v20ActualDoseText } from "@/lib/neonatal-calculator/notebook-results";
+import { describeDoseReference, describeIntervalReference } from "@/lib/neonatal-calculator/reference-shape-v20";
 import {
   ANTIBIOTIC_LABELS,
   CALCULATOR_RULE_VERSION,
@@ -153,10 +154,22 @@ function Direction({ comparison }: { comparison: DirectionComparison | null }) {
 
 const PATIENT_REFERENCE_TITLES = { hospital: "Pedoman Rumah Sakit", literature: "Literatur Terkini (ANMF 2024)" } as const;
 
-function EvaluationCard({ target, referenceTitle, showManual = true }: { target: RecommendationEvaluation; referenceTitle: string; showManual?: boolean }) {
+function ReferenceShapeNote({ recommendation, kind }: { recommendation: Recommendation; kind: "dose" | "interval" }) {
+  const note = kind === "dose"
+    ? describeDoseReference(recommendation.dose)
+    : describeIntervalReference(recommendation.interval, recommendation.eligibleForRegimenEvaluation);
+  return <p data-reference-shape={kind} className="mt-1 text-xs leading-relaxed text-text-muted">
+    <strong className="font-semibold text-text">{note.label}.</strong>{" "}{note.description}
+  </p>;
+}
+
+function EvaluationCard({ target, reference, referenceTitle, showManual = true }: { target: RecommendationEvaluation; reference: Recommendation; referenceTitle: string; showManual?: boolean }) {
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 print-break-inside-avoid">
       <h3 className="text-lg font-semibold text-text">{referenceTitle}</h3>
+      <p className="mt-2 text-xs leading-relaxed text-text-muted print-hide" data-evaluation-reference-shape>
+        Bentuk rujukan: {describeDoseReference(reference.dose).label.toLowerCase()} dan {describeIntervalReference(reference.interval, reference.eligibleForRegimenEvaluation).label.toLowerCase()}. Penjelasan dan nilai pembanding ada pada tabel rekomendasi di atas.
+      </p>
       <dl className="mt-4 grid gap-4 text-sm md:grid-cols-2">
         <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Dosis aktual</dt>
@@ -312,11 +325,12 @@ function RecommendationTable({ calculated }: { calculated: CalculatorResult }) {
     <table className="min-w-[560px] w-full text-left text-sm">
       <thead className="bg-surface-2"><tr><th className="p-3">Parameter</th><th className="p-3">{PATIENT_REFERENCE_TITLES.hospital}</th><th className="p-3">{PATIENT_REFERENCE_TITLES.literature}</th></tr></thead>
       <tbody>
-        <tr className="border-t border-border"><th className="p-3">Dosis per pemberian</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}><strong>{doseText(r)}</strong><div className="mt-1 text-xs text-text-muted">{mgKg(r)}</div></td>)}</tr>
-        <tr className="border-t border-border"><th className="p-3">Frekuensi</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}>{r.interval.kind === "single-dose-only" ? "Dosis tunggal (bukan rutin)" : r.interval.label.startsWith("tiap") ? r.interval.label : formatInterval(r.interval).replace(/q(\d+)h/g, "tiap $1 jam")}</td>)}</tr>
+        <tr className="border-t border-border"><th className="p-3">Dosis per pemberian</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}><strong>{doseText(r)}</strong><div className="mt-1 text-xs text-text-muted">{mgKg(r)}</div><ReferenceShapeNote kind="dose" recommendation={r} /></td>)}</tr>
+        <tr className="border-t border-border"><th className="p-3">Frekuensi</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}>{r.interval.kind === "single-dose-only" ? "Dosis tunggal (bukan rutin)" : r.interval.label.startsWith("tiap") ? r.interval.label : formatInterval(r.interval).replace(/q(\d+)h/g, "tiap $1 jam")}<ReferenceShapeNote kind="interval" recommendation={r} /></td>)}</tr>
         <tr className="border-t border-border"><th className="p-3 align-top">Catatan klinis dan sumber</th>{[rs, anmf].map(r=><td className="p-3 align-top" key={r.id}><ul className="list-disc space-y-2 pl-4 text-xs leading-relaxed text-text-muted">{r.notes.map((note, index)=><li key={`${r.id}-note-${index}`}>{note}</li>)}</ul></td>)}</tr>
       </tbody>
     </table>
+    <p className="border-t border-border p-3 text-xs text-text-muted"><strong>Cara membaca rujukan:</strong> Nilai tunggal berarti satu angka; rentang berarti batas bawah–atas. Opsi interval “atau” bukan rentang kontinu. “Dosis tunggal (bukan rutin)” tidak menetapkan frekuensi rutin. Keterangan ini hanya membantu membaca hasil, bukan mengubah evaluasi klinis.</p>
     <p className="border-t border-border p-3 text-xs text-text-muted">Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan.</p>
   </div>;
 }
@@ -617,7 +631,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               </section>
               <AbbreviationGlossary />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
-                <EvaluationCard key={target.recommendationId} target={target} referenceTitle={target.recommendationId === evaluationResult.recommendations.institutionalPrimary.id ? PATIENT_REFERENCE_TITLES.hospital : PATIENT_REFERENCE_TITLES.literature} showManual={manualEnabled} />
+                <EvaluationCard key={target.recommendationId} target={target} reference={target.recommendationId === evaluationResult.recommendations.institutionalPrimary.id ? evaluationResult.recommendations.institutionalPrimary : evaluationResult.recommendations.anmf2024} referenceTitle={target.recommendationId === evaluationResult.recommendations.institutionalPrimary.id ? PATIENT_REFERENCE_TITLES.hospital : PATIENT_REFERENCE_TITLES.literature} showManual={manualEnabled} />
               )}
             </>}
           </div>

@@ -60,7 +60,31 @@ try {
         const tableHeadings = await recommendationTable.locator("thead th").allInnerTexts();
         check(tableHeadings[1] === expectedReferenceTitles[0] && tableHeadings[2] === expectedReferenceTitles[1],
           key + ": recommendation table reference titles differ: " + JSON.stringify(tableHeadings));
+        const shapeDoseNotes = await recommendationTable.locator('[data-reference-shape="dose"]').allInnerTexts();
+        const shapeIntervalNotes = await recommendationTable.locator('[data-reference-shape="interval"]').allInnerTexts();
+        check(shapeDoseNotes.length === 2 && shapeIntervalNotes.length === 2,
+          key + ": expected one dose and interval shape explanation per reference");
+        check(shapeDoseNotes.every(value => /Nilai dosis tunggal|Rentang dosis|Dosis numerik tidak tersedia/.test(value)),
+          key + ": missing dose range/single explanation " + JSON.stringify(shapeDoseNotes));
+        check(shapeIntervalNotes.every(value => /Nilai interval tunggal|Rentang interval kontinu|Rentang interval informatif|Opsi interval terpisah|Dosis tunggal/.test(value)),
+          key + ": missing interval shape explanation " + JSON.stringify(shapeIntervalNotes));
+        const tableContext = await recommendationTable.locator("xpath=..").innerText();
+        check(tableContext.includes("Cara membaca rujukan:"), key + ": reference reading guidance missing");
+        if (antibiotic === "gentamisin") {
+          check(shapeDoseNotes[0].includes("Rentang dosis") && shapeDoseNotes[1].includes("Nilai dosis tunggal"),
+            key + ": gentamicin expected reference dose shapes not shown");
+        }
+        if (antibiotic === "amikasin") {
+          check(shapeDoseNotes[0].includes("Nilai dosis tunggal"), key + ": amikacin single dose value not explained");
+        }
+        if (antibiotic === "vankomisin" && mode === "evaluation") {
+          check(shapeIntervalNotes[0].includes("Dosis tunggal (tanpa interval rutin)"),
+            key + ": renal vancomycin must not be presented as routine interval");
+        }
         if (mode === "evaluation") {
+          const evaluationShapeNotes = await panel.locator("[data-evaluation-reference-shape]").allInnerTexts();
+          check(evaluationShapeNotes.length === 2 && evaluationShapeNotes.every(value => value.includes("Bentuk rujukan:")),
+            key + ": evaluation cards missing shape explanations");
           const evaluationCardHeadings = await panel.locator("article > h3").allInnerTexts();
           check(JSON.stringify(evaluationCardHeadings) === JSON.stringify(expectedReferenceTitles),
             key + ": evaluation card titles differ from the table: " + JSON.stringify(evaluationCardHeadings));
