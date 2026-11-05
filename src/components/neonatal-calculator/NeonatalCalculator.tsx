@@ -194,10 +194,11 @@ function PatientCaseFields({
               <Field id={`${prefix}-patient-label`} label="Kode pasien" value={form.patientLabel} onChange={(value) => onChange("patientLabel", value)} maxLength={60} error={errors.patientLabel} helper="Label kasus non-identifying; jangan masukkan nama, nomor rekam medis, NIK, tanggal lahir, atau identitas pasien." />
               <div>
                 <label htmlFor={`${prefix}-antibiotic`} className="block text-sm font-medium text-text">Antibiotik <span className="text-error">*</span></label>
-                <select id={`${prefix}-antibiotic`} value={form.antibiotic} onChange={(event) => onChange("antibiotic", event.target.value as PatientForm["antibiotic"])} className="mt-1.5 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+                <select id={`${prefix}-antibiotic`} value={form.antibiotic} aria-invalid={Boolean(errors.antibiotic)} aria-describedby={errors.antibiotic ? `${prefix}-antibiotic-error` : undefined} onChange={(event) => onChange("antibiotic", event.target.value as PatientForm["antibiotic"])} className="mt-1.5 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
                   <option value="">-- pilih antibiotik --</option>
                   {Object.entries(ANTIBIOTIC_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
+                {errors.antibiotic && <p id={`${prefix}-antibiotic-error`} role="alert" className="mt-1 text-xs text-error">{errors.antibiotic}</p>}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field id={`${prefix}-ga`} label="Usia gestasi saat lahir — minggu" type="number" min="22" max="43" step="1" required placeholder="mis. 32" value={form.gestationalAgeWeeks} onChange={(value) => onChange("gestationalAgeWeeks", value)} error={errors.gestationalAgeWeeks} />
@@ -416,7 +417,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
       setPatientErrors(issuesByField(validated.issues));
       setResult(null);
       const firstField = validated.issues[0]?.field;
-      const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", gestationalAgeDays: "ga-days", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label" };
+      const fieldIds: Record<string, string> = { gestationalAgeWeeks: "ga", gestationalAgeDays: "ga-days", postnatalAgeDays: "pna", currentWeightKg: "weight", serumCreatinineMgDl: "scr", urineOutputMlKgHour: "uop", patientLabel: "patient-label", antibiotic: "antibiotic" };
       window.requestAnimationFrame(() => document.getElementById(`rec-${fieldIds[firstField] ?? firstField}`)?.focus());
       return;
     }

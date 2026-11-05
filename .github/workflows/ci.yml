@@ -27,7 +27,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Browser acceptance for v20 renal and actual-dose screen
-        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106'
         env:
           NEONATAL_SCREEN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-patient-screen
         run: |
@@ -61,7 +61,7 @@ jobs:
             pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
           done
       - name: Store v20 renal and actual-dose screen evidence
-        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-patient-screen-browser-print

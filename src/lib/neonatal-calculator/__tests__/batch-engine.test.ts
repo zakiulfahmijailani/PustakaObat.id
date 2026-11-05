@@ -150,7 +150,7 @@ describe("processBatchTable", () => {
     const messages = result.rows
       .filter((row) => row.status === "gagal")
       .flatMap((row) => row.errors);
-    expect(messages).toContain("kode_pasien duplikat di dalam file.");
+    expect(messages).toContain("Kode pasien duplikat di dalam file.");
     expect(messages).toContain("Kreatinin serum wajib diisi jika produksi urin dicantumkan.");
   });
 
@@ -165,13 +165,13 @@ describe("processBatchTable", () => {
     expect(processed.status).toBe("berhasil");
     if (processed.status === "berhasil") {
       expect(processed.manualEvaluation).toBeNull();
-      expect(processed.warnings).toContain("Dosis manual minimum tidak boleh melebihi maksimum.");
+      expect(processed.warnings).toContain("Dosis manual batas bawah (mg) tidak boleh melebihi batas atas (mg).");
     }
   });
 
   it("menolak template dengan kolom wajib yang hilang", () => {
     expect(() => processBatchTable([["kode_pasien", "antibiotik"]])).toThrow(
-      "Kolom wajib 'usia_gestasi_lahir_minggu' tidak ditemukan.",
+      "Kolom wajib 'usia_gestasi_lahir_minggu' (Usia gestasi saat lahir — minggu) tidak ditemukan.",
     );
   });
 
