@@ -34,6 +34,27 @@ export const BATCH_COLUMNS = [
 ] as const;
 
 export type BatchColumn = (typeof BATCH_COLUMNS)[number];
+
+export const BATCH_COLUMN_LABELS: Record<BatchColumn, string> = {
+  kode_pasien: "Kode pasien",
+  antibiotik: "Antibiotik",
+  usia_gestasi_lahir_minggu: "Usia gestasi saat lahir — minggu",
+  usia_gestasi_lahir_hari: "Usia gestasi saat lahir — tambahan hari",
+  usia_pascalahir_hari: "Usia pascalahir (hari)",
+  berat_badan_kg: "Berat badan saat ini (kg)",
+  kreatinin_serum_mg_dl: "Kreatinin serum (mg/dL)",
+  produksi_urin_ml_kg_jam: "Produksi urin (mL/kg/jam)",
+  hipotermia_terapeutik: "Hipotermia terapeutik",
+  terapi_cox_inhibitor: "Terapi indometasin/ibuprofen",
+  sepsis_berat: "Dugaan sepsis berat (khusus vankomisin)",
+  dosis_manual_min_mg: "Dosis manual batas bawah (mg)",
+  dosis_manual_max_mg: "Dosis manual batas atas (mg)",
+  frekuensi_manual_min_jam: "Frekuensi manual paling sering (interval dalam jam)",
+  frekuensi_manual_max_jam: "Frekuensi manual paling jarang (interval dalam jam)",
+  dosis_aktual_mg: "Dosis aktual per pemberian (mg)",
+  frekuensi_aktual_jam: "Frekuensi aktual (interval dalam jam)",
+} as const;
+
 export type BatchManualInput = Omit<RegimenEvaluationInput, "actualDoseMg" | "actualIntervalHours">;
 
 export type BatchSuccessRow = {
@@ -111,7 +132,7 @@ function parseAntibiotic(value: unknown, errors: string[]): Antibiotic | null {
   if (["gentamisin", "amikasin", "vankomisin"].includes(normalized)) {
     return normalized as Antibiotic;
   }
-  errors.push("antibiotik harus Gentamisin, Amikasin, atau Vankomisin.");
+  errors.push("Antibiotik harus Gentamisin, Amikasin, atau Vankomisin.");
   return null;
 }
 
@@ -144,10 +165,10 @@ function parseManualEvaluation(
     return null;
   }
 
-  const manualDoseMinMg = parseNumber(record.dosis_manual_min_mg, "dosis_manual_min_mg", errors, true);
-  const manualDoseMaxMg = parseNumber(record.dosis_manual_max_mg, "dosis_manual_max_mg", errors, true);
-  const manualIntervalMinHours = parseNumber(record.frekuensi_manual_min_jam, "frekuensi_manual_min_jam", incompleteErrors, true);
-  const manualIntervalMaxHours = parseNumber(record.frekuensi_manual_max_jam, "frekuensi_manual_max_jam", incompleteErrors, true);
+  const manualDoseMinMg = parseNumber(record.dosis_manual_min_mg, BATCH_COLUMN_LABELS.dosis_manual_min_mg, errors, true);
+  const manualDoseMaxMg = parseNumber(record.dosis_manual_max_mg, BATCH_COLUMN_LABELS.dosis_manual_max_mg, errors, true);
+  const manualIntervalMinHours = parseNumber(record.frekuensi_manual_min_jam, BATCH_COLUMN_LABELS.frekuensi_manual_min_jam, incompleteErrors, true);
+  const manualIntervalMaxHours = parseNumber(record.frekuensi_manual_max_jam, BATCH_COLUMN_LABELS.frekuensi_manual_max_jam, incompleteErrors, true);
   if (manualIntervalMinHours !== null && manualIntervalMaxHours !== null &&
       (!Number.isInteger(manualIntervalMinHours) || !Number.isInteger(manualIntervalMaxHours) ||
        manualIntervalMinHours < 1 || manualIntervalMaxHours > 96 || manualIntervalMinHours > manualIntervalMaxHours)) {
@@ -177,7 +198,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
   for (const column of BATCH_COLUMNS) {
     const index = headers.indexOf(column);
     if (column === "usia_gestasi_lahir_hari" && index === -1) continue;
-    if (index === -1) throw new Error(`Kolom wajib '${column}' tidak ditemukan.`);
+    if (index === -1) throw new Error(`Kolom wajib '${column}' (${BATCH_COLUMN_LABELS[column]}) tidak ditemukan.`);
     headerIndex.set(column, index);
   }
 
@@ -201,37 +222,37 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     }
 
     const errors: string[] = [];
-    if (!patientCode) errors.push("kode_pasien wajib diisi.");
-    if (patientCode.length > 60) errors.push("kode_pasien maksimal 60 karakter.");
+    if (!patientCode) errors.push("Kode pasien wajib diisi.");
+    if (patientCode.length > 60) errors.push("Kode pasien maksimal 60 karakter.");
     if (patientCode && seenCodes.has(patientCode.toLowerCase())) {
-      errors.push("kode_pasien duplikat di dalam file.");
+      errors.push("Kode pasien duplikat di dalam file.");
     }
     if (patientCode) seenCodes.add(patientCode.toLowerCase());
 
     const antibiotic = parseAntibiotic(record.antibiotik, errors);
     const gestationalAgeWeeks = parseNumber(
       record.usia_gestasi_lahir_minggu,
-      "usia_gestasi_lahir_minggu",
+      BATCH_COLUMN_LABELS.usia_gestasi_lahir_minggu,
       errors,
       true,
     );
-    const gestationalAgeDays = parseNumber(record.usia_gestasi_lahir_hari, "usia_gestasi_lahir_hari", errors, false);
+    const gestationalAgeDays = parseNumber(record.usia_gestasi_lahir_hari, BATCH_COLUMN_LABELS.usia_gestasi_lahir_hari, errors, false);
     const postnatalAgeDays = parseNumber(
       record.usia_pascalahir_hari,
-      "usia_pascalahir_hari",
+      BATCH_COLUMN_LABELS.usia_pascalahir_hari,
       errors,
       true,
     );
-    const currentWeightKg = parseNumber(record.berat_badan_kg, "berat_badan_kg", errors, true);
+    const currentWeightKg = parseNumber(record.berat_badan_kg, BATCH_COLUMN_LABELS.berat_badan_kg, errors, true);
     const serumCreatinineMgDl = parseNumber(
       record.kreatinin_serum_mg_dl,
-      "Kreatinin serum (mg/dL)",
+      BATCH_COLUMN_LABELS.kreatinin_serum_mg_dl,
       errors,
       false,
     );
     const urineOutputMlKgHour = parseNumber(
       record.produksi_urin_ml_kg_jam,
-      "produksi_urin_ml_kg_jam",
+      BATCH_COLUMN_LABELS.produksi_urin_ml_kg_jam,
       errors,
       false,
     );
@@ -242,10 +263,10 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
     const frequencyBlank = isBlank(record.frekuensi_aktual_jam);
     const partiallyFilled = doseBlank !== frequencyBlank;
     if (partiallyFilled) errors.push("Dosis aktual dan frekuensi aktual harus diisi bersama.");
-    const actualDoseMg = parseNumber(record.dosis_aktual_mg, "dosis_aktual_mg", errors, false);
+    const actualDoseMg = parseNumber(record.dosis_aktual_mg, BATCH_COLUMN_LABELS.dosis_aktual_mg, errors, false);
     const actualIntervalHours = parseNumber(
       record.frekuensi_aktual_jam,
-      "frekuensi_aktual_jam",
+      BATCH_COLUMN_LABELS.frekuensi_aktual_jam,
       errors,
       false,
     );
@@ -268,17 +289,17 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
             urineOutputMlKgHour: urineOutputMlKgHour ?? undefined,
             therapeuticHypothermia: parseBoolean(
               record.hipotermia_terapeutik,
-              "hipotermia_terapeutik",
+              BATCH_COLUMN_LABELS.hipotermia_terapeutik,
               errors,
             ),
             coxInhibitorTherapy: parseBoolean(
               record.terapi_cox_inhibitor,
-              "terapi_cox_inhibitor",
+              BATCH_COLUMN_LABELS.terapi_cox_inhibitor,
               errors,
             ),
             severeSepsisOrHighRiskInfection: parseBoolean(
               record.sepsis_berat,
-              "sepsis_berat",
+              BATCH_COLUMN_LABELS.sepsis_berat,
               errors,
             ),
           };
@@ -296,7 +317,7 @@ export function processBatchTable(table: readonly (readonly unknown[])[]): Batch
       if (validation.success) validatedPatient = validation.data;
       else errors.push(...validation.issues.map((issue) => issue.message));
     }
-    if (actualDoseMg !== null && actualDoseMg <= 0) errors.push("dosis_aktual_mg harus lebih dari 0.");
+    if (actualDoseMg !== null && actualDoseMg <= 0) errors.push("Dosis aktual per pemberian (mg) harus lebih dari 0.");
     if (
       actualIntervalHours !== null &&
       (!Number.isInteger(actualIntervalHours) || actualIntervalHours < 1 || actualIntervalHours > 96)
