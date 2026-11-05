@@ -167,7 +167,7 @@ function EvaluationCard({ target, reference, referenceTitle, showManual = true }
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 print-break-inside-avoid">
       <h3 className="text-lg font-semibold text-text">{referenceTitle}</h3>
-      <p className="mt-2 text-xs leading-relaxed text-text-muted" data-evaluation-reference-shape>
+      <p className="mt-2 text-xs leading-relaxed text-text-muted print-hide" data-evaluation-reference-shape>
         Bentuk rujukan: {describeDoseReference(reference.dose).label.toLowerCase()} dan {describeIntervalReference(reference.interval, reference.eligibleForRegimenEvaluation).label.toLowerCase()}. Penjelasan dan nilai pembanding ada pada tabel rekomendasi di atas.
       </p>
       <dl className="mt-4 grid gap-4 text-sm md:grid-cols-2">
