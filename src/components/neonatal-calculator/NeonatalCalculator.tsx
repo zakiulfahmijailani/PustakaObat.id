@@ -151,10 +151,12 @@ function Direction({ comparison }: { comparison: DirectionComparison | null }) {
   return comparison ? <span>{comparison.message}</span> : <span>Tidak berlaku.</span>;
 }
 
-function EvaluationCard({ target, showManual = true }: { target: RecommendationEvaluation; showManual?: boolean }) {
+const PATIENT_REFERENCE_TITLES = { hospital: "Pedoman Rumah Sakit", literature: "Literatur Terkini (ANMF 2024)" } as const;
+
+function EvaluationCard({ target, referenceTitle, showManual = true }: { target: RecommendationEvaluation; referenceTitle: string; showManual?: boolean }) {
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 print-break-inside-avoid">
-      <h3 className="text-lg font-semibold text-text">{target.recommendationLabel}</h3>
+      <h3 className="text-lg font-semibold text-text">{referenceTitle}</h3>
       <dl className="mt-4 grid gap-4 text-sm md:grid-cols-2">
         <div className="rounded-xl bg-surface-2 p-3">
           <dt className="font-semibold text-text">Dosis aktual</dt>
@@ -307,7 +309,7 @@ function RecommendationTable({ calculated }: { calculated: CalculatorResult }) {
     : `${formatNumber(r.dose.minMgPerKg ?? 0)}–${formatNumber(r.dose.maxMgPerKg ?? 0)} mg/kg per pemberian`;
   return <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
     <table className="min-w-[560px] w-full text-left text-sm">
-      <thead className="bg-surface-2"><tr><th className="p-3">Parameter</th><th className="p-3">Pedoman Rumah Sakit</th><th className="p-3">Literatur Terkini (ANMF 2024)</th></tr></thead>
+      <thead className="bg-surface-2"><tr><th className="p-3">Parameter</th><th className="p-3">{PATIENT_REFERENCE_TITLES.hospital}</th><th className="p-3">{PATIENT_REFERENCE_TITLES.literature}</th></tr></thead>
       <tbody>
         <tr className="border-t border-border"><th className="p-3">Dosis per pemberian</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}><strong>{doseText(r)}</strong><div className="mt-1 text-xs text-text-muted">{mgKg(r)}</div></td>)}</tr>
         <tr className="border-t border-border"><th className="p-3">Frekuensi</th>{[rs, anmf].map(r=><td className="p-3" key={r.id}>{r.interval.kind === "single-dose-only" ? "Dosis tunggal (bukan rutin)" : r.interval.label.startsWith("tiap") ? r.interval.label : formatInterval(r.interval).replace(/q(\d+)h/g, "tiap $1 jam")}</td>)}</tr>
@@ -614,7 +616,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
               </section>
               <AbbreviationGlossary />
               {evaluation.targets.filter(target => target.recommendationId !== evaluationResult.recommendations.institutionalAgeComparator.id).map(target =>
-                <EvaluationCard key={target.recommendationId} target={target} showManual={manualEnabled} />
+                <EvaluationCard key={target.recommendationId} target={target} referenceTitle={target.recommendationId === evaluationResult.recommendations.institutionalPrimary.id ? PATIENT_REFERENCE_TITLES.hospital : PATIENT_REFERENCE_TITLES.literature} showManual={manualEnabled} />
               )}
             </>}
           </div>
