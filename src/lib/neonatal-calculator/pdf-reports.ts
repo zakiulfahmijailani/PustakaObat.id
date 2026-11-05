@@ -185,7 +185,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
           let cellTop = y - 8;
           for (const row of cell.rows) {
             const baseline = cellTop - row.fontSize, left = cellX + 8;
-            const prefix = cell.color && /^(Sesuai|Berlebih|Kurang)(?=$|[\\s(:;,])/.exec(row.text)?.[1];
+            const prefix = cell.color && /^(Sesuai|Berlebih|Kurang)(?=$|[\s(:;,])/.exec(row.text)?.[1];
             if (prefix) {
               // The screen colors only the semantic category; details retain normal text.
               const rest = row.text.slice(prefix.length);
