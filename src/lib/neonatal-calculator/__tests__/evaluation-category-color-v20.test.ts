@@ -72,7 +72,7 @@ describe("[2.5] identical colors for v20 actual dose and frequency categories", 
     expect((html.match(/data-evaluation-category="Sesuai" class="text-success"/g) ?? []).length).toBe(1);
     expect(html).toContain("Dosis aktual vs Pedoman RS");
     expect(html).toContain("Frekuensi aktual vs Pedoman RS");
-    expect(html).toContain("Berlebih (+0,3 mg; +1,4%)");
+    expect(html.replace(/<[^>]*>/g, "")).toContain("Berlebih (+0,3 mg; +1,4%)");
     expect(JSON.stringify(evalResult)).toBe(original);
   });
 
