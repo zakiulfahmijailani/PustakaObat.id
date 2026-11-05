@@ -33,8 +33,23 @@ try {
           await page.locator("#eval-uop").fill("0.8");
           await page.locator("#eval-actual-dose").fill("9");
           await page.locator("#eval-actual-hours").fill("24");
+          await page.locator("#eval-actual-dose").fill("0");
+          await page.locator('#evaluation-panel button').filter({ hasText: "Evaluasi Pemberian" }).last().click();
+          const doseError = await page.locator("#eval-actual-dose-error").innerText();
+          check(doseError === "Dosis aktual per pemberian (mg) harus lebih dari 0.", key + ": actual dose error uses wrong field label: " + doseError);
+          await page.locator("#eval-actual-dose").fill("9");
           await page.locator('#evaluation-panel button').filter({ hasText: "Evaluasi Pemberian" }).last().click();
         } else {
+          await page.locator("#rec-ga").fill("21");
+          await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
+          const gaError = await page.locator("#rec-ga-error").innerText();
+          check(gaError === "Usia gestasi saat lahir — minggu harus 22–43 minggu.", key + ": gestation error uses wrong field label: " + gaError);
+          await page.locator("#rec-ga").fill("32");
+          await page.locator("#rec-antibiotic").selectOption("");
+          await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
+          const antibioticError = await page.locator("#rec-antibiotic-error").innerText();
+          check(antibioticError === "Pilih antibiotik yang didukung: Gentamisin, Amikasin, atau Vankomisin.", key + ": antibiotic error missing: " + antibioticError);
+          await page.locator("#rec-antibiotic").selectOption(antibiotic);
           await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
         }
         const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
