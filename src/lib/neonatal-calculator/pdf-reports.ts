@@ -1,5 +1,6 @@
 import { pythonFixed } from "./python-rounding";
-import { v20ActualDoseText } from "./notebook-results";
+import { v20ActualDoseText, v20RenalText } from "./notebook-results";
+import { describeDoseReference, describeIntervalReference } from "./reference-shape-v20";
 import { getDisplayV20Warnings, V20_WARNING_STYLE } from "./warning-catalog-v20";
 import { getV20ReferenceEntries } from "./reference-block-v20";
 import { buildActualEvaluationSummary } from "./actual-evaluation-summary";
@@ -9,13 +10,13 @@ import { ANTIBIOTIC_LABELS, CALCULATOR_RULE_VERSION, CLINICAL_DISCLAIMER, format
 import type { CalculatorResult, ClinicalWarning, DoseEvaluation, IntervalEvaluation, RegimenEvaluationResult, Recommendation } from "./types";
 
 type BoxTone = ClinicalWarning["severity"] | "success";
-type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title">; panelTitle?: string; panelTone?: BoxTone; panelParagraphs?: string[] };
+type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading?: boolean; warning?: Pick<ClinicalWarning, "severity" | "title">; panelTitle?: string; panelTone?: BoxTone; evaluationSummary?: boolean; panelParagraphs?: string[] };
 type ReportCell = { text: string; color?: ReportLine["color"] };
 type ReportTable = { table: { title: string; columns: { text: string; width: number }[]; rows: ReportCell[][] } };
 type ReportItem = ReportLine | ReportTable;
 type PdfRow = { text: string; fontSize: number; bold: boolean; leading: number; gap?: number };
 type PdfCell = { rows: PdfRow[]; width: number; color?: ReportLine["color"] };
-type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: BoxTone; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
+type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: BoxTone; evaluationSummary?: boolean; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
 // Standard Helvetica advance widths for printable ASCII, in 1/1000 em (Adobe font metrics).
 const HELVETICA_WIDTHS = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
 const HELVETICA_BOLD_WIDTHS = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
@@ -28,6 +29,22 @@ const WARNING_STYLES = {
   info: { label: V20_WARNING_STYLE.info.label, text: pdfRgb(V20_WARNING_STYLE.info.color), fill: pdfRgb(V20_WARNING_STYLE.info.background) },
   success: { label: "SESUAI", text: "0.05 0.43 0.39", fill: "0.91 0.96 0.94" },
 } as const;
+/** Match light-mode computed screen colors (src/app/globals.css); never use warning severity colors for dose categories. */
+const PDF_SEMANTIC_RGB = {
+  red: pdfRgb("#b4493f"), // text-error / Berlebih
+  orange: pdfRgb("#a76f24"), // text-warning / Kurang
+  blue: pdfRgb("#3f6f8f"), // text-info
+  green: pdfRgb("#287344"), // text-success / Sesuai
+} as const;
+const EVALUATION_SUMMARY_STYLES = {
+  critical: { text: PDF_SEMANTIC_RGB.red, fill: pdfRgb("#f8edec") },
+  warning: { text: PDF_SEMANTIC_RGB.orange, fill: pdfRgb("#f6f0e9") },
+  info: { text: PDF_SEMANTIC_RGB.blue, fill: pdfRgb("#ecf1f4") },
+  success: { text: pdfRgb("#14532d"), fill: pdfRgb("#e8eeea") }, // text-primary / bg-primary/10
+} as const;
+const colorForCategory = (category: "Sesuai" | "Berlebih" | "Kurang" | null): ReportLine["color"] | undefined =>
+  category === "Sesuai" ? "green" : category === "Berlebih" ? "red" : category === "Kurang" ? "orange" : undefined;
+
 const clean = (value: unknown): string => String(value ?? "")
   .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
   .replaceAll("≥", ">=").replaceAll("≤", "<=").replaceAll("−", "-")
@@ -127,7 +144,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
           if (height + nextHeight > limit) break;
           part.push(row); height += nextHeight; offset++;
         }
-        appendBlock({ rows: part, height, warning: severity });
+        appendBlock({ rows: part, height, warning: severity, evaluationSummary: line.evaluationSummary });
       }
     } else {
       const fontSize = line.heading ? 12 : 9.5, leading = line.heading ? 24 : 16;
@@ -151,7 +168,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
   const add=(s:string)=>{objects.push(s);return objects.length;};
   const catalog=add(""),pageTree=add(""),font=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"),boldFont=add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
   const kids:number[]=[];
-  const colors={red:"0.72 0.1 0.1",orange:"0.57 0.32 0.02",blue:"0.08 0.32 0.67",green:"0.05 0.43 0.27"};
+  const colors = PDF_SEMANTIC_RGB;
   for(let p=0;p<pages.length;p++){
     let y=pageHeight-margin;
     const items=[
@@ -167,8 +184,16 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
           items.push("q", fill + " rg", "0.72 0.79 0.79 RG", "0.5 w", `${cellX} ${y - block.height} ${cell.width} ${block.height} re B`, "Q");
           let cellTop = y - 8;
           for (const row of cell.rows) {
-            const color = cell.color ? colors[cell.color] : "0.12 0.18 0.2";
-            items.push("BT", `/${row.bold ? "F2" : "F1"} ${row.fontSize} Tf`, color + " rg", `${cellX + 8} ${cellTop - row.fontSize} Td`, "(" + escapePdf(row.text) + ") Tj", "ET");
+            const baseline = cellTop - row.fontSize, left = cellX + 8;
+            const prefix = cell.color && /^(Sesuai|Berlebih|Kurang)(?=$|[\\s(:;,])/.exec(row.text)?.[1];
+            if (prefix) {
+              // The screen colors only the semantic category; details retain normal text.
+              const rest = row.text.slice(prefix.length);
+              items.push("BT", `/F1 ${row.fontSize} Tf`, colors[cell.color!] + " rg", `${left} ${baseline} Td`, "(" + escapePdf(prefix) + ") Tj", "ET");
+              if (rest) items.push("BT", `/F1 ${row.fontSize} Tf`, "0.12 0.18 0.2 rg", `${left + textWidth(prefix, row.fontSize, false)} ${baseline} Td`, "(" + escapePdf(rest) + ") Tj", "ET");
+            } else {
+              items.push("BT", `/${row.bold ? "F2" : "F1"} ${row.fontSize} Tf`, "0.12 0.18 0.2 rg", `${left} ${baseline} Td`, "(" + escapePdf(row.text) + ") Tj", "ET");
+            }
             cellTop -= row.leading;
           }
           cellX += cell.width;
@@ -180,7 +205,7 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
       let color = block.color ? colors[block.color] : "0.12 0.18 0.2";
       let x = margin;
       if (block.warning) {
-        const style = WARNING_STYLES[block.warning], boxHeight = block.height - afterBox;
+        const style = block.evaluationSummary ? EVALUATION_SUMMARY_STYLES[block.warning] : WARNING_STYLES[block.warning], boxHeight = block.height - afterBox;
         items.push("q", style.fill + " rg", style.text + " RG", "0.7 w", `${margin} ${y - boxHeight} ${contentWidth} ${boxHeight} re B`, "Q");
         top -= padding; x += padding; color = style.text;
       }
@@ -227,13 +252,20 @@ function intervalText(rec:Recommendation): string {
 const recommendationColumns = [
   { text: "Parameter", width: 111 },
   { text: "Pedoman Rumah Sakit", width: 195 },
-  { text: "Literatur Terkini - ANMF 2024", width: 195 },
+  { text: "Literatur Terkini (ANMF 2024)", width: 195 },
 ];
 function recommendationTable(calculated: CalculatorResult): ReportTable {
   const refs = [calculated.recommendations.institutionalPrimary, calculated.recommendations.anmf2024];
   const row = (label: string, value: (rec: Recommendation) => string): ReportCell[] => [{ text: label }, ...refs.map(rec => ({ text: value(rec) }))];
   return { table: { title: "Rekomendasi dosis", columns: recommendationColumns, rows: [
-    row("Dosis per pemberian", doseWithMgKgText), row("Frekuensi pemberian", intervalText),
+    row("Dosis per pemberian", rec => {
+      const note = describeDoseReference(rec.dose);
+      return doseWithMgKgText(rec) + ". " + note.label + ". " + note.description;
+    }),
+    row("Frekuensi pemberian", rec => {
+      const note = describeIntervalReference(rec.interval, rec.eligibleForRegimenEvaluation);
+      return intervalText(rec) + ". " + note.label + ". " + note.description;
+    }),
     row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
   ] } };
 }
@@ -253,7 +285,8 @@ function patientLines(calculated:CalculatorResult, actualSummary?:ReportLine):Re
     {text:"Kode pasien: "+(p.patientLabel??"Tanpa kode")},
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
     {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+(p.gestationalAgeWeeks+Math.floor(((p.gestationalAgeDays??0)+p.postnatalAgeDays)/7))+" minggu "+(((p.gestationalAgeDays??0)+p.postnatalAgeDays)%7)+" hari; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
-    {text:"Data ginjal: "+(p.renalDataAvailable?"Data diberikan":"Tidak tersedia (diasumsikan normal sesuai usia)")},
+    {text:"Konteks klinis: "+([p.therapeuticHypothermia && "Hipotermia terapeutik/HIE", p.coxInhibitorTherapy && "COX inhibitor", p.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih")},
+    {text:"Fungsi ginjal: "+v20RenalText(calculated)},
     ...(actualSummary ? [actualSummary] : []),
     ...warnings.map(warning => ({ text: warning.message, warning }))
   ];
@@ -306,6 +339,8 @@ export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
   return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",withGlossary([
     ...patientLines(calculated),
     recommendationTable(calculated),
+    {text:"Cara membaca rujukan: Nilai tunggal berarti satu angka; rentang berarti batas bawah-atas. Opsi interval 'atau' bukan rentang kontinu. 'Dosis tunggal (bukan rutin)' tidak menetapkan frekuensi rutin. Keterangan ini hanya membantu membaca hasil, bukan mengubah evaluasi klinis."},
+    {text:"Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan."},
     referencePanel(calculated),
   ]));
 }
@@ -314,14 +349,15 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
   const actualSummary: ReportLine = {
     panelTitle: WARNING_STYLES[summary.tone].label + ": " + summary.title,
     panelTone: summary.tone,
+    evaluationSummary: true,
     text: summary.items.map(item => item.label + ": " + item.message).join(" "),
     panelParagraphs: summary.items.map(item => item.label + ": " + item.message),
   };
   const refs=[calculated.recommendations.institutionalPrimary,calculated.recommendations.anmf2024];
   const targets = refs.map(rec => evaluation.targets.find(target => target.recommendationId === rec.id));
   const rows: ReportCell[][] = [
-    [{ text: "Dosis aktual:" }, ...targets.map(target => ({ text: target ? doseEvaluationText(target.actualDose) : "Tidak tersedia", color: target?.actualDose.status === "berlebih" ? "red" as const : target?.actualDose.status === "kurang" ? "orange" as const : target?.actualDose.status === "sesuai" ? "green" as const : undefined }))],
-    [{ text: "Frekuensi aktual:" }, ...targets.map((target, index) => ({ text: target ? intervalEvaluationText(target.actualInterval, refs[index], evaluation.input.actualIntervalHours) : "Tidak tersedia" }))],
+    [{ text: "Dosis aktual:" }, ...targets.map((target, index) => ({ text: target ? doseEvaluationText(target.actualDose) : "Tidak tersedia", color: colorForCategory(summary.items[index * 2].category) }))],
+    [{ text: "Frekuensi aktual:" }, ...targets.map((target, index) => ({ text: target ? intervalEvaluationText(target.actualInterval, refs[index], evaluation.input.actualIntervalHours) : "Tidak tersedia", color: colorForCategory(summary.items[index * 2 + 1].category) }))],
   ];
   if (manualEnabled) rows.push(
     [{ text: "Manual dosis:" }, ...targets.map(target => ({ text: resultMessage(target?.manualDose.summary ?? target?.manualDose.lowerBound?.message ?? "Tidak tersedia") }))],
@@ -330,6 +366,8 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
   const lines:ReportItem[]=[...patientLines(calculated, actualSummary),
     {text:"Dosis aktual: "+v20ActualDoseText(evaluation.input.actualDoseMg, calculated.input.currentWeightKg)+"; Interval aktual: "+(evaluation.input.actualIntervalHours === null ? "Tidak tersedia" : evaluation.input.actualIntervalHours + " jam"),heading:true},
     recommendationTable(calculated),
+    {text:"Cara membaca rujukan: Nilai tunggal berarti satu angka; rentang berarti batas bawah-atas. Opsi interval 'atau' bukan rentang kontinu. 'Dosis tunggal (bukan rutin)' tidak menetapkan frekuensi rutin. Keterangan ini hanya membantu membaca hasil, bukan mengubah evaluasi klinis."},
+    {text:"Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan."},
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
     referencePanel(calculated),
   ];
