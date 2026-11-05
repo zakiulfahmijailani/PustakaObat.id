@@ -14,6 +14,7 @@ type ReportLine = { text: string; color?: "red"|"orange"|"blue"|"green"; heading
 type ReportCell = { text: string; color?: ReportLine["color"] };
 type ReportTable = { table: { title: string; columns: { text: string; width: number }[]; rows: ReportCell[][] } };
 type ReportItem = ReportLine | ReportTable;
+export type PdfGeneratedAtOptions = { generatedAt?: Date; timeZone?: string };
 type PdfRow = { text: string; fontSize: number; bold: boolean; leading: number; gap?: number };
 type PdfCell = { rows: PdfRow[]; width: number; color?: ReportLine["color"] };
 type PdfBlock = { rows: PdfRow[]; height: number; color?: ReportLine["color"]; warning?: BoxTone; evaluationSummary?: boolean; cells?: PdfCell[]; tableHeader?: boolean; pageBreakBefore?: boolean };
@@ -71,8 +72,25 @@ function wrapText(text: string, width: number, fontSize: number, bold = false): 
   if (current) lines.push(current);
   return lines;
 }
-function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
+/** The PDF timestamp is the export instant in the browser's actual local time zone.
+ * Explicit values allow deterministic tests, including day/month/year rollovers.
+ */
+export function formatPdfGeneratedAt(generatedAt: Date, timeZone: string): string {
+  if (Number.isNaN(generatedAt.getTime())) throw new RangeError("Waktu pembuatan PDF tidak valid.");
+  const complete = new Intl.DateTimeFormat("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    timeZone, timeZoneName: "short",
+  }).format(generatedAt);
+  return "Dibuat lokal: " + complete + " (" + timeZone + ")";
+}
+function pdfDocument(title:string,lines:ReportItem[],timestamp:PdfGeneratedAtOptions = {}):Uint8Array {
   // Small, offline PDF writer. Every file is a real PDF, not an HTML print fallback.
+  // Snapshot one instant so all pages share the same timestamp, even near midnight.
+  const stampedAt = formatPdfGeneratedAt(
+    timestamp.generatedAt ?? new Date(),
+    timestamp.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC",
+  );
   const pageWidth=595,pageHeight=842,margin=47;
   const bodyTop = pageHeight - margin - 28, capacity = bodyTop - margin, contentWidth = pageWidth - 2 * margin;
   const padding = 10, afterBox = 8;
@@ -173,7 +191,8 @@ function pdfDocument(title:string,lines:ReportItem[]):Uint8Array {
     let y=pageHeight-margin;
     const items=[
       "q", "0.05 0.43 0.39 rg", "0 "+(pageHeight-12)+" "+pageWidth+" 12 re f","Q",
-      "BT","/F1 15 Tf","0.08 0.2 0.25 rg",margin+" "+y+" Td","("+escapePdf(title)+") Tj","ET"
+      "BT","/F1 15 Tf","0.08 0.2 0.25 rg",margin+" "+y+" Td","("+escapePdf(title)+") Tj","ET",
+      "BT","/F1 8.5 Tf","0.4 0.4 0.4 rg",margin+" "+(y-19)+" Td","("+escapePdf(stampedAt)+") Tj","ET"
     ];
     y=bodyTop;
     for(const block of pages[p]){
@@ -335,16 +354,16 @@ function intervalEvaluationText(result: IntervalEvaluation, rec: Recommendation,
 function categoryLabel(category: string): string {
   return category === "opsi-diskrit-tidak-cocok" ? "Tidak sesuai opsi interval" : resultMessage(category);
 }
-export function buildRecommendationPdf(calculated:CalculatorResult):Uint8Array{
+export function buildRecommendationPdf(calculated:CalculatorResult,timestamp?:PdfGeneratedAtOptions):Uint8Array{
   return pdfDocument("Rekomendasi Dosis Antibiotik Neonatus",withGlossary([
     ...patientLines(calculated),
     recommendationTable(calculated),
     {text:"Cara membaca rujukan: Nilai tunggal berarti satu angka; rentang berarti batas bawah-atas. Opsi interval 'atau' bukan rentang kontinu. 'Dosis tunggal (bukan rutin)' tidak menetapkan frekuensi rutin. Keterangan ini hanya membantu membaca hasil, bukan mengubah evaluasi klinis."},
     {text:"Pedoman Rumah Sakit tidak membedakan usia gestasi dalam regimen utama. ANMF 2024 membedakan usia pascamenstruasi dan usia pascalahir. Verifikasi terhadap pedoman klinis terbaru tetap diperlukan."},
     referencePanel(calculated),
-  ]));
+  ]),timestamp);
 }
-export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean):Uint8Array{
+export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:RegimenEvaluationResult,manualEnabled:boolean,timestamp?:PdfGeneratedAtOptions):Uint8Array{
   const summary = buildActualEvaluationSummary(calculated, evaluation.input);
   const actualSummary: ReportLine = {
     panelTitle: WARNING_STYLES[summary.tone].label + ": " + summary.title,
@@ -371,9 +390,9 @@ export function buildEvaluationPdf(calculated:CalculatorResult,evaluation:Regime
     { table: { title: "Evaluasi pemberian", columns: recommendationColumns, rows } },
     referencePanel(calculated),
   ];
-  return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",withGlossary(lines));
+  return pdfDocument("Evaluasi Pemberian Antibiotik Neonatus",withGlossary(lines),timestamp);
 }
-export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
+export function buildBatchSummaryPdf(result:BatchProcessingResult,timestamp?:PdfGeneratedAtOptions):Uint8Array{
   const summary=summarizeBatch(result), lines:ReportLine[]=[
     {text:"Kandidat: "+result.candidateRows+"; Berhasil: "+result.successCount+"; Gagal: "+result.errorCount+"; Contoh dilewati: "+result.ignoredRows,heading:true},
     {text:"Distribusi Kesesuaian",heading:true},
@@ -384,7 +403,7 @@ export function buildBatchSummaryPdf(result:BatchProcessingResult):Uint8Array{
     ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+(x.method==="Tidak ada pasangan diskordan"?"Tidak diuji: tidak ada pasangan diskordan":x.method)+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
     {text:"Kesimpulan: hasil statistik memerlukan verifikasi terhadap notebook acuan dan penafsiran oleh peneliti.",color:"orange"},
   ];
-  return pdfDocument("Ringkasan Evaluasi Batch Neonatus",withGlossary(lines, false));
+  return pdfDocument("Ringkasan Evaluasi Batch Neonatus",withGlossary(lines, false),timestamp);
 }
 export function downloadPdf(bytes:Uint8Array,filename:string):void {
   const copy=new Uint8Array(bytes.byteLength);copy.set(bytes);
