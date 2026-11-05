@@ -45,7 +45,7 @@ function postnatalAgeValidationMessage(value: number): string {
 export function validatePatientInput(input: PatientInput): ValidationResult<PatientInput> {
   const issues: ValidationIssue[] = [];
   if (!ANTIBIOTICS.includes(input.antibiotic)) {
-    issues.push({ field: "antibiotic", message: "Antibiotik tidak didukung." });
+    issues.push({ field: "antibiotic", message: "Pilih antibiotik yang didukung: Gentamisin, Amikasin, atau Vankomisin." });
   }
   if (
     !finite(input.gestationalAgeWeeks) ||
@@ -53,7 +53,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     input.gestationalAgeWeeks < INPUT_LIMITS.gestationalAgeWeeks.min ||
     input.gestationalAgeWeeks > INPUT_LIMITS.gestationalAgeWeeks.max
   ) {
-    issues.push({ field: "gestationalAgeWeeks", message: "Usia gestasi harus 22–43 minggu." });
+    issues.push({ field: "gestationalAgeWeeks", message: "Usia gestasi saat lahir — minggu harus 22–43 minggu." });
   }
   if (
     input.gestationalAgeDays !== undefined &&
@@ -62,7 +62,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
       input.gestationalAgeDays > INPUT_LIMITS.gestationalAgeDays.max ||
       input.gestationalAgeWeeks + input.gestationalAgeDays / 7 > INPUT_LIMITS.gestationalAgeWeeks.max)
   ) {
-    issues.push({ field: "gestationalAgeDays", message: "Tambahan usia gestasi harus 0–6 hari dan usia gestasi total maksimal 43 minggu." });
+    issues.push({ field: "gestationalAgeDays", message: "Usia gestasi saat lahir — tambahan hari harus 0–6 hari dan usia gestasi total maksimal 43 minggu." });
   }
   if (
     !finite(input.postnatalAgeDays) ||
@@ -82,7 +82,7 @@ export function validatePatientInput(input: PatientInput): ValidationResult<Pati
     issues.push({ field: "currentWeightKg", message: "Berat badan maksimal tiga angka desimal." });
   }
   if (input.patientLabel && input.patientLabel.length > INPUT_LIMITS.patientLabelMaxLength) {
-    issues.push({ field: "patientLabel", message: `Label kasus maksimal ${INPUT_LIMITS.patientLabelMaxLength} karakter.` });
+    issues.push({ field: "patientLabel", message: `Kode pasien maksimal ${INPUT_LIMITS.patientLabelMaxLength} karakter.` });
   }
   if (!input.renalDataAvailable) {
     if (input.serumCreatinineMgDl !== undefined || input.urineOutputMlKgHour !== undefined) {
@@ -132,26 +132,26 @@ export function validateRegimenEvaluationInput(
   intervalsRequired = true,
 ): ValidationResult<RegimenEvaluationInput> {
   const issues: ValidationIssue[] = [];
-  positiveNumber(input.manualDoseMinMg, "manualDoseMinMg", "Dosis manual minimum", issues);
-  positiveNumber(input.manualDoseMaxMg, "manualDoseMaxMg", "Dosis manual maksimum", issues);
-  positiveNumber(input.actualDoseMg, "actualDoseMg", "Dosis aktual", issues);
+  positiveNumber(input.manualDoseMinMg, "manualDoseMinMg", "Dosis manual batas bawah (mg)", issues);
+  positiveNumber(input.manualDoseMaxMg, "manualDoseMaxMg", "Dosis manual batas atas (mg)", issues);
+  positiveNumber(input.actualDoseMg, "actualDoseMg", "Dosis aktual per pemberian (mg)", issues);
   if (intervalsRequired) {
-    if (input.manualIntervalMinHours === null) issues.push({ field: "manualIntervalMinHours", message: "Interval manual minimum wajib diisi." });
-    else positiveInteger(input.manualIntervalMinHours, "manualIntervalMinHours", "Interval manual minimum", issues);
-    if (input.manualIntervalMaxHours === null) issues.push({ field: "manualIntervalMaxHours", message: "Interval manual maksimum wajib diisi." });
-    else positiveInteger(input.manualIntervalMaxHours, "manualIntervalMaxHours", "Interval manual maksimum", issues);
-    if (input.actualIntervalHours === null) issues.push({ field: "actualIntervalHours", message: "Interval aktual wajib diisi." });
-    else positiveInteger(input.actualIntervalHours, "actualIntervalHours", "Interval aktual", issues);
+    if (input.manualIntervalMinHours === null) issues.push({ field: "manualIntervalMinHours", message: "Frekuensi manual paling sering (interval dalam jam) wajib diisi." });
+    else positiveInteger(input.manualIntervalMinHours, "manualIntervalMinHours", "Frekuensi manual paling sering (interval dalam jam)", issues);
+    if (input.manualIntervalMaxHours === null) issues.push({ field: "manualIntervalMaxHours", message: "Frekuensi manual paling jarang (interval dalam jam) wajib diisi." });
+    else positiveInteger(input.manualIntervalMaxHours, "manualIntervalMaxHours", "Frekuensi manual paling jarang (interval dalam jam)", issues);
+    if (input.actualIntervalHours === null) issues.push({ field: "actualIntervalHours", message: "Frekuensi aktual (interval dalam jam) wajib diisi." });
+    else positiveInteger(input.actualIntervalHours, "actualIntervalHours", "Frekuensi aktual (interval dalam jam)", issues);
   }
   if (input.manualDoseMinMg > input.manualDoseMaxMg) {
-    issues.push({ field: "manualDoseMaxMg", message: "Dosis manual minimum tidak boleh melebihi maksimum." });
+    issues.push({ field: "manualDoseMaxMg", message: "Dosis manual batas bawah (mg) tidak boleh melebihi batas atas (mg)." });
   }
   if (
     input.manualIntervalMinHours !== null &&
     input.manualIntervalMaxHours !== null &&
     input.manualIntervalMinHours > input.manualIntervalMaxHours
   ) {
-    issues.push({ field: "manualIntervalMaxHours", message: "Interval manual minimum tidak boleh melebihi maksimum." });
+    issues.push({ field: "manualIntervalMaxHours", message: "Frekuensi manual paling sering (interval dalam jam) tidak boleh melebihi paling jarang (interval dalam jam)." });
   }
   return issues.length > 0 ? { success: false, issues } : { success: true, data: input };
 }
