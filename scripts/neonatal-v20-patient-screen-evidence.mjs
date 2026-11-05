@@ -67,6 +67,32 @@ try {
           check(repeats.length === 0, key + ": repeated evaluation classification " + JSON.stringify(repeats));
           check(statuses.some(value => /^(Sesuai|Berlebih|Kurang)\b/i.test(value.trim())),
             key + ": no visible evaluation classification");
+          const categoryColors = await panel.locator("[data-evaluation-category]").evaluateAll(elements => {
+            const semanticClasses = { Sesuai: "text-success", Berlebih: "text-error", Kurang: "text-warning" };
+            const probe = document.createElement("strong");
+            document.body.append(probe);
+            const colors = {};
+            for (const [category, className] of Object.entries(semanticClasses)) {
+              probe.className = className;
+              colors[category] = getComputedStyle(probe).color;
+            }
+            probe.remove();
+            return elements.map(element => {
+              const category = element.getAttribute("data-evaluation-category");
+              return {
+                category, location: element.closest("#actual-evaluation-summary") ? "summary" : "card",
+                text: element.textContent?.trim(),
+                expectedClass: semanticClasses[category],
+                hasExpectedClass: element.classList.contains(semanticClasses[category]),
+                expectedColor: colors[category],
+                actualColor: getComputedStyle(element).color,
+              };
+            });
+          });
+          check(categoryColors.some(item => item.location === "summary"), key + ": missing colored summary categories");
+          check(categoryColors.some(item => item.location === "card"), key + ": missing colored card categories");
+          check(categoryColors.every(item => item.expectedClass && item.hasExpectedClass && item.expectedColor === item.actualColor && item.category === item.text),
+            key + ": dose/frequency semantic category colors inconsistent " + JSON.stringify(categoryColors));
         }
         await page.screenshot({ path: join(directory, key + "-desktop.png"), fullPage: true });
         await page.emulateMedia({ media: "print" });
