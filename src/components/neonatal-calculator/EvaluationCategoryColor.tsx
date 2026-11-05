@@ -14,7 +14,7 @@ export const EVALUATION_CATEGORY_COLOR = {
 function startsWithCategory(text: string, category: VisibleEvaluationCategory): boolean {
   const rest = text.slice(category.length);
   return text.slice(0, category.length).toLocaleLowerCase("id-ID") === category.toLocaleLowerCase("id-ID") &&
-    (!rest || /^[\\s:;,.()–—-]/.test(rest));
+    (!rest || /^[\s:;,.()–—-]/.test(rest));
 }
 
 /** Do not paint a discrete-option mismatch green just because its message says "Sesuai". */
