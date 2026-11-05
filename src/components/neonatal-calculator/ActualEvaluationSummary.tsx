@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { buildActualEvaluationSummary } from "@/lib/neonatal-calculator/actual-evaluation-summary";
+import { HighlightEvaluationCategory } from "./EvaluationCategoryColor";
 import type { CalculatorResult, RegimenEvaluationResult } from "@/lib/neonatal-calculator/types";
 
 export function ActualEvaluationSummary({ calculated, evaluation }: { calculated: CalculatorResult; evaluation: RegimenEvaluationResult }) {
@@ -19,8 +20,8 @@ export function ActualEvaluationSummary({ calculated, evaluation }: { calculated
       <div className="min-w-0">
         <h3 id="actual-evaluation-summary-title" className="font-semibold">{labels[summary.tone]}: {summary.title}</h3>
         <ul className="mt-2 space-y-1.5">
-          {summary.items.map(item => <li key={item.label} className="break-words">
-            <strong>{item.label}:</strong>{" "}<span>{item.message}</span>
+          {summary.items.map(item => <li key={item.label} className="break-words text-text">
+            <strong>{item.label}:</strong>{" "}<span><HighlightEvaluationCategory category={item.category} text={item.message} /></span>
           </li>)}
         </ul>
       </div>
