@@ -107,15 +107,25 @@ describe("[3.2] kesesuaian isi layar dan PDF v20", () => {
   });
 
   it("menyamakan warna dan latar ringkasan evaluasi, tanpa mengubah katalog peringatan klinis", () => {
-    const p = {critical:"#b4493f",warning:"#a76f24",info:"#3f6f8f",success:"#14532d"};
-    for (const [status, color] of Object.entries(p)) {
-      const result=calculateRecommendations(patient({
-        antibiotic: "amikasin",currentWeightKg:1.5,renalDataAvailable:false,serumCreatinineMgDl:undefined,urineOutputMlKgHour:undefined,
-      }));
-      const d = status === "critical" ? 30 : status === "warning" ? 3 : 22.5;
+    const scenarios = [
+      {expected:"critical", color:"#b4493f", dose:30, hours:36},
+      {expected:"warning", color:"#a76f24", dose:3, hours:36},
+      {expected:"info", color:"#3f6f8f", dose:7.5, hours:null},
+      {expected:"success", color:"#14532d", dose:7.5, hours:36},
+    ] as const;
+    const result = calculateRecommendations(patient({
+      antibiotic:"gentamisin",currentWeightKg:1.5,gestationalAgeWeeks:32,
+      postnatalAgeDays:5,renalDataAvailable:false,serumCreatinineMgDl:undefined,
+      urineOutputMlKgHour:undefined,
+    }));
+    for (const {expected,color,dose,hours} of scenarios) {
       const evaluation=evaluateRegimen(result,{
-        actualDoseMg:d,actualIntervalHours:24,manualDoseMinMg:d,manualDoseMaxMg:d,manualIntervalMinHours:24,manualIntervalMaxHours:24,
+        actualDoseMg:dose,actualIntervalHours:hours,
+        manualDoseMinMg:dose,manualDoseMaxMg:dose,
+        manualIntervalMinHours:hours,manualIntervalMaxHours:hours,
       });
+      const summary = buildActualEvaluationSummary(result, evaluation.input);
+      expect(summary.tone).toBe(expected);
       const pdf=rawPdf(buildEvaluationPdf(result,evaluation,false));
       expect(pdf).toContain(rgb(color) + " RG");
     }
