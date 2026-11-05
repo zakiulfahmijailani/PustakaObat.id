@@ -127,7 +127,9 @@ describe("[3.2] kesesuaian isi layar dan PDF v20", () => {
       const summary = buildActualEvaluationSummary(result, evaluation.input);
       expect(summary.tone).toBe(expected);
       const pdf=rawPdf(buildEvaluationPdf(result,evaluation,false));
-      expect(pdf).toContain(rgb(color) + " RG");
+      const expectedStroke = rgb(color) + " RG";
+      const observedStrokes = [...pdf.matchAll(/(?:\\d+\\.?\\d*\\s+){3}RG/g)].map(match => match[0]);
+      expect(pdf.includes(expectedStroke), expected + " expected stroke " + expectedStroke + " but got " + JSON.stringify([...new Set(observedStrokes)])).toBe(true);
     }
   });
 });
