@@ -119,11 +119,17 @@ describe("[3.2] kesesuaian isi layar dan PDF v20", () => {
       urineOutputMlKgHour:undefined,
     }));
     for (const {expected,color,dose,hours} of scenarios) {
-      const evaluation=evaluateRegimen(result,{
-        actualDoseMg:dose,actualIntervalHours:hours,
+      // Routine gentamicin intervals are required by the v20 input validator.
+      // For the info-palette renderer test, represent a previously calculated
+      // report with an unavailable interval without weakening that validator.
+      const evaluationWithHours=evaluateRegimen(result,{
+        actualDoseMg:dose,actualIntervalHours:hours ?? 36,
         manualDoseMinMg:dose,manualDoseMaxMg:dose,
-        manualIntervalMinHours:hours,manualIntervalMaxHours:hours,
+        manualIntervalMinHours:hours ?? 36,manualIntervalMaxHours:hours ?? 36,
       });
+      const evaluation = hours === null
+        ? { ...evaluationWithHours, input: { ...evaluationWithHours.input, actualIntervalHours: null } }
+        : evaluationWithHours;
       const summary = buildActualEvaluationSummary(result, evaluation.input);
       expect(summary.tone).toBe(expected);
       const pdf=rawPdf(buildEvaluationPdf(result,evaluation,false));
