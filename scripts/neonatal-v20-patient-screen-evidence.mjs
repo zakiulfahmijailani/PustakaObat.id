@@ -1,6 +1,7 @@
 // Browser acceptance for v20 patient-result presentation. Uses synthetic data only.
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 const directory = process.env.NEONATAL_SCREEN_EVIDENCE_DIR;
@@ -13,13 +14,24 @@ const browser = await chromium.launch({
 });
 const check = (condition, description) => { if (!condition) throw new Error(description); };
 const origin = "http://127.0.0.1:3000";
+const normalize = value => value.normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+  .replaceAll("≥", ">=").replaceAll("≤", "<=").replaceAll("−","-")
+  .replace(/[^\x20-\x7E]/g, ch => ch === "–" || ch === "—" ? "-" : " ")
+  .replace(/\s+/g," ").trim();
+const pdfTexts = raw => normalize([...raw.matchAll(/\((.*)\) Tj/g)]
+  .map(match => match[1].replace(/\\([\\()])/g,"$1")).join(" "));
+const cssColorToPdf = rgbString => {
+  const rgb = rgbString.match(/\d+(?:\.\d+)?/g)?.slice(0,3).map(Number);
+  check(rgb?.length === 3, "Cannot read browser computed RGB " + rgbString);
+  return rgb.map(n => Number((n / 255).toFixed(4)).toString()).join(" ");
+};
 const antibiotics = ["gentamisin", "amikasin", "vankomisin"];
 try {
   for (const antibiotic of antibiotics) {
     for (const mode of ["recommendation", "evaluation"]) {
       const prefix = mode === "recommendation" ? "rec" : "eval";
       const key = antibiotic + "-" + mode;
-      const page = await browser.newPage({ viewport: { width: 1365, height: 920 }, deviceScaleFactor: 1 });
+      const page = await browser.newPage({ viewport: { width: 1365, height: 920 }, deviceScaleFactor: 1, acceptDownloads: true });
       try {
         await page.goto(origin + "/kalkulator?mode=" + mode, { waitUntil: "domcontentloaded", timeout: 60000 });
         await page.locator("#" + prefix + "-antibiotic").waitFor({ state: "visible", timeout: 30000 });
@@ -132,6 +144,49 @@ try {
           check(categoryColors.some(item => item.location === "card"), key + ": missing colored card categories");
           check(categoryColors.every(item => item.expectedClass && item.hasExpectedClass && item.expectedColor === item.actualColor && item.category === item.text),
             key + ": dose/frequency semantic category colors inconsistent " + JSON.stringify(categoryColors));
+        }
+        // Download the real programmatic PDF (not Chromium print) and compare against live screen values.
+        const downloadPromise = page.waitForEvent("download");
+        await page.getByRole("button", { name: mode === "recommendation" ? "Unduh PDF Rekomendasi Dosis" : "Unduh PDF Evaluasi Pemberian" }).click();
+        const exported = await downloadPromise;
+        const exportedPath = join(directory, key + "-export.pdf");
+        await exported.saveAs(exportedPath);
+        const rawPdf = readFileSync(exportedPath, "utf8");
+        check(rawPdf.startsWith("%PDF-1.4"), key + ": downloaded report is not a PDF");
+        const pdfPlain = pdfTexts(rawPdf);
+        const extracted = normalize(execFileSync("pdftotext", ["-layout", exportedPath, "-"], { encoding: "utf8" }));
+        const doseCells = recommendationTable.locator("tbody tr").first().locator("td");
+        for (let col = 0; col < 2; col++) {
+          const cell = doseCells.nth(col);
+          const total = normalize(await cell.locator("strong").first().innerText());
+          const perKg = normalize(await cell.locator("div").first().innerText());
+          const shape = normalize(await cell.locator('[data-reference-shape="dose"] strong').innerText());
+          check(pdfPlain.includes(total), key + ": PDF dose does not match on-screen total for column " + col + ": " + total);
+          check(pdfPlain.includes(perKg), key + ": PDF mg/kg does not match on-screen value for column " + col + ": " + perKg);
+          check(pdfPlain.includes(shape), key + ": PDF missing on-screen dose reference shape " + shape);
+          const intervalShape = normalize(await recommendationTable.locator("tbody tr").nth(1).locator("td").nth(col).locator('[data-reference-shape="interval"] strong').innerText());
+          check(pdfPlain.includes(intervalShape), key + ": PDF missing interval reference shape " + intervalShape);
+        }
+        const renalText = normalize((await renal.innerText()).replace(/^Fungsi ginjal/, "").trim());
+        check(pdfPlain.includes(renalText), key + ": PDF and screen renal summaries differ: " + renalText);
+        check(extracted.includes("Pedoman Rumah Sakit") && extracted.includes("mg/kg"), key + ": exported PDF text extraction missing reference or mg/kg");
+        check(pdfPlain.includes("Cara membaca rujukan:"), key + ": PDF lacks screen's reference interpretation");
+        if (mode === "evaluation") {
+          const actual = normalize((await panel.locator('[aria-label="Ringkasan dosis aktual"] dd').innerText()).split(", interval")[0].split(", diberikan")[0]);
+          check(pdfPlain.includes(actual), key + ": PDF and screen actual mg/kg differ: " + actual);
+          const categories = await panel.locator("[data-evaluation-category]").evaluateAll(elements => {
+            const result = {};
+            for (const element of elements) {
+              const category = element.dataset.evaluationCategory;
+              if (category && !result[category]) result[category] = getComputedStyle(element).color;
+            }
+            return result;
+          });
+          for (const [category, computed] of Object.entries(categories)) {
+            const color = cssColorToPdf(computed);
+            const match = new RegExp(color.replaceAll(".", "\\.") + " rg\\n[^\\n]+ Td\\n\\(" + category + "\\) Tj");
+            check(match.test(rawPdf), key + ": PDF category color does not equal browser " + category + " " + computed);
+          }
         }
         await page.screenshot({ path: join(directory, key + "-desktop.png"), fullPage: true });
         await page.emulateMedia({ media: "print" });
