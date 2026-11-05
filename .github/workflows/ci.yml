@@ -27,7 +27,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Browser acceptance for v20 renal and actual-dose screen
-        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106' || github.ref_name == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.head_ref == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106' || github.ref_name == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.head_ref == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.ref_name == 'fix/neonatal-v20-screen-pdf-parity-20261106' || github.head_ref == 'fix/neonatal-v20-screen-pdf-parity-20261106'
         env:
           NEONATAL_SCREEN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-patient-screen
         run: |
@@ -43,11 +43,20 @@ jobs:
             sleep 2
           done
           if [ "$ready" != "1" ]; then cat "$RUNNER_TEMP/neonatal-patient-screen-server.log"; exit 1; fi
-          node scripts/neonatal-v20-patient-screen-evidence.mjs
           if ! command -v pdftoppm >/dev/null || ! command -v pdftotext >/dev/null; then
             sudo apt-get update
             sudo apt-get install -y poppler-utils
           fi
+          node scripts/neonatal-v20-patient-screen-evidence.mjs
+          for pdf in "$NEONATAL_SCREEN_EVIDENCE_DIR"/*-export.pdf; do
+            prefix="${pdf%.pdf}"
+            pdftotext -layout "$pdf" "$prefix.txt"
+            grep -Fq "Fungsi ginjal" "$prefix.txt"
+            grep -Fq "Cara membaca rujukan" "$prefix.txt"
+            grep -Fq "mg/kg" "$prefix.txt"
+            pdftoppm -png -r 105 "$pdf" "$prefix"
+            pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
+          done
           for pdf in "$NEONATAL_SCREEN_EVIDENCE_DIR"/*-print.pdf; do
             prefix="${pdf%.pdf}"
             pdftotext -layout "$pdf" "$prefix.txt"
@@ -62,7 +71,7 @@ jobs:
             pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
           done
       - name: Store v20 renal and actual-dose screen evidence
-        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106' || github.ref_name == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.head_ref == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-patient-screen-20261104' || github.head_ref == 'feat/neonatal-v20-patient-screen-20261104' || github.ref_name == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.head_ref == 'fix/neonatal-v20-evaluation-category-once-20261104' || github.ref_name == 'fix/neonatal-v20-reference-headings-20261106' || github.head_ref == 'fix/neonatal-v20-reference-headings-20261106' || github.ref_name == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.head_ref == 'fix/neonatal-v20-dose-frequency-category-colors-20261106' || github.ref_name == 'fix/neonatal-v20-validation-message-labels-20261106' || github.head_ref == 'fix/neonatal-v20-validation-message-labels-20261106' || github.ref_name == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.head_ref == 'feat/neonatal-v20-reference-range-single-explanation-20261106' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.ref_name == 'fix/neonatal-v20-screen-pdf-parity-20261106' || github.head_ref == 'fix/neonatal-v20-screen-pdf-parity-20261106'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-patient-screen-browser-print
@@ -95,7 +104,7 @@ jobs:
           path: ${{ runner.temp }}/neonatal-checkbox-v20-evidence
           if-no-files-found: error
       - name: Render v20 Rujukan PDF evidence (every page)
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.ref_name == 'fix/neonatal-v20-screen-pdf-parity-20261106' || github.head_ref == 'fix/neonatal-v20-screen-pdf-parity-20261106'
         env:
           NEONATAL_RUJUKAN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-evidence
         run: |
@@ -109,6 +118,8 @@ jobs:
             prefix="${pdf%.pdf}"
             pdftoppm -png -r 110 "$pdf" "$prefix"
             pdftotext -layout "$pdf" "$prefix.txt"
+            grep -Fq "Fungsi ginjal" "$prefix.txt"
+            grep -Fq "Cara membaca rujukan" "$prefix.txt"
             if [[ "$pdf" == *"-rekomendasi.pdf" || "$pdf" == *"-evaluasi.pdf" ]]; then
               grep -Fq "mg/kg per pemberian" "$prefix.txt"
             fi
@@ -118,7 +129,7 @@ jobs:
             pdfinfo "$pdf" | grep '^Pages:' | sed "s|^|$(basename "$pdf"): |"
           done
       - name: Store v20 Rujukan PDF pages
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.ref_name == 'fix/neonatal-v20-screen-pdf-parity-20261106' || github.head_ref == 'fix/neonatal-v20-screen-pdf-parity-20261106'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-rujukan-pdf-pages
