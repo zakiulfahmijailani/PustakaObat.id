@@ -38,6 +38,18 @@ try {
           await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
         }
         const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
+        const expectedReferenceTitles = ["Pedoman Rumah Sakit", "Literatur Terkini (ANMF 2024)"];
+        const recommendationTable = mode === "evaluation"
+          ? panel.locator('section[aria-labelledby="evaluation-recommendation-heading"] table')
+          : panel.locator("table").first();
+        const tableHeadings = await recommendationTable.locator("thead th").allInnerTexts();
+        check(tableHeadings[1] === expectedReferenceTitles[0] && tableHeadings[2] === expectedReferenceTitles[1],
+          key + ": recommendation table reference titles differ: " + JSON.stringify(tableHeadings));
+        if (mode === "evaluation") {
+          const evaluationCardHeadings = await panel.locator("article > h3").allInnerTexts();
+          check(JSON.stringify(evaluationCardHeadings) === JSON.stringify(expectedReferenceTitles),
+            key + ": evaluation card titles differ from the table: " + JSON.stringify(evaluationCardHeadings));
+        }
         const renal = panel.locator('section[aria-label="Ringkasan fungsi ginjal"]');
         await renal.waitFor({ state: "visible", timeout: 30000 });
         const text = await renal.innerText();
