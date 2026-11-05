@@ -125,7 +125,7 @@ jobs:
           path: ${{ runner.temp }}/neonatal-rujukan-evidence
           if-no-files-found: error
       - name: Browser and print preview evidence for v20 Rujukan
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104'
         env:
           NEONATAL_BROWSER_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-rujukan-browser
         run: |
@@ -148,7 +148,7 @@ jobs:
             pdftoppm -png -r 110 "$pdf" "${pdf%.pdf}"
           done
       - name: Store v20 Rujukan browser and print evidence
-        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104' || github.ref_name == 'fix/neonatal-v20-pdf-mgkg-20261106' || github.head_ref == 'fix/neonatal-v20-pdf-mgkg-20261106'
+        if: github.ref_name == 'feat/neonatal-v20-reference-box-20261104' || github.head_ref == 'feat/neonatal-v20-reference-box-20261104' || github.ref_name == 'fix/neonatal-v20-warning-catalog-20261104' || github.head_ref == 'fix/neonatal-v20-warning-catalog-20261104' || github.ref_name == 'test/neonatal-v20-renal-notes-20261104' || github.head_ref == 'test/neonatal-v20-renal-notes-20261104' || github.ref_name == 'test/neonatal-v20-combined-therapy-20261104' || github.head_ref == 'test/neonatal-v20-combined-therapy-20261104'
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-rujukan-browser-print
