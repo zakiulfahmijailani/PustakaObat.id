@@ -1,5 +1,5 @@
 import type { BatchSuccessRow } from "./batch-engine";
-import type { IntervalRecommendation } from "./types";
+import type { CalculatorResult, IntervalRecommendation } from "./types";
 import { notebookNumber, pythonFixed, pythonRound } from "./python-rounding";
 
 export type Category = "Sesuai" | "Berlebih" | "Kurang" | "";
@@ -48,13 +48,17 @@ function v20WeeksDays(weeks: number): string {
   if (days === 7) { wholeWeeks += 1; days = 0; }
   return days ? `${wholeWeeks} minggu ${days} hari` : `${wholeWeeks} minggu`;
 }
-function v20RenalText(row: BatchSuccessRow): string {
-  const p = row.calculator.input;
+export function v20RenalText(calculated: CalculatorResult): string {
+  const p = calculated.input;
   if (!p.renalDataAvailable) return "Tidak diisi (diasumsikan normal sesuai usia)";
   const scr = v20NumberText(p.serumCreatinineMgDl!);
   const urine = p.urineOutputMlKgHour === undefined ? "tidak diisi" : `${v20NumberText(p.urineOutputMlKgHour)} mL/kg/jam`;
-  const outcome = row.calculator.renalStatus === "renal-impairment-criteria-met" ? "memenuhi" : "tidak memenuhi";
+  const outcome = calculated.renalStatus === "renal-impairment-criteria-met" ? "memenuhi" : "tidak memenuhi";
   return `SCr ${scr} mg/dL; produksi urin ${urine}: ${outcome} kriteria gangguan ginjal UNC`;
+}
+/** Display only: mass per dose and mass normalized by the validated patient weight. */
+export function v20ActualDoseText(actualDoseMg: number, weightKg: number): string {
+  return `${v20NumberText(actualDoseMg)} mg (${v20NumberText(actualDoseMg / weightKg)} mg/kg per pemberian)`;
 }
 function v20ManualText(min: number|null, max: number|null, lower: number|null, upper: number|null, frequency = false): string {
   if (min === null || max === null || lower === null || upper === null) return "-";
@@ -122,7 +126,7 @@ export function notebookBatchRecord(row: BatchSuccessRow): Record<string, string
   return {
     "Kode Pasien":row.patientCode,"Antibiotik":p.antibiotic[0].toUpperCase()+p.antibiotic.slice(1),
     "Usia Gestasi saat Lahir":v20WeeksDays(p.gestationalAgeWeeks+(p.gestationalAgeDays??0)/7),"Usia Pascalahir (hari)":p.postnatalAgeDays,"Usia Pascamenstruasi (PMA)":v20WeeksDays(row.calculator.pmaWeeks),"Berat Badan (kg)":p.currentWeightKg,
-    "Fungsi Ginjal":v20RenalText(row),
+    "Fungsi Ginjal":v20RenalText(row.calculator),
     "Dosis Pedoman RS (mg)":v20RangeText(rs.dose.minTotalMg,rs.dose.maxTotalMg),"Frekuensi Pedoman RS":v20IntervalText(ri,rj),"Dosis Literatur Terkini (mg)":v20RangeText(lit.dose.minTotalMg,lit.dose.maxTotalMg),"Frekuensi Literatur Terkini":v20IntervalText(li,lj),
     "Dosis Hitung Manual (mg)":v20RangeText(dmin,dmax),"Frekuensi Hitung Manual":imin===null?"-":v20IntervalText(imin,imax),"Dosis Aktual (mg)":da===null?"-":v20NumberText(da)+" mg","Dosis Aktual (mg/kg per pemberian)":daKg===null?"-":v20NumberText(daKg)+" mg/kg","Frekuensi Aktual":ia===null?"-":`tiap ${ia} jam`,
     "Dosis Aktual terhadap Pedoman RS":categoryText(ra),"Frekuensi Aktual terhadap Pedoman RS":categoryText(rf),"Dosis Aktual terhadap Literatur Terkini":categoryText(la),"Frekuensi Aktual terhadap Literatur Terkini":categoryText(lf),
