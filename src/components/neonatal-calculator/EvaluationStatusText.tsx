@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { DoseEvaluation, IntervalEvaluation } from "@/lib/neonatal-calculator/types";
+import { EVALUATION_CATEGORY_COLOR, HighlightEvaluationCategory, visibleCategoryForStatus } from "./EvaluationCategoryColor";
 
 type EvaluationStatus = DoseEvaluation["status"] | IntervalEvaluation["status"];
 
@@ -20,5 +21,10 @@ export function categoryDisplayParts(status: EvaluationStatus, message: string) 
 /** Purely presentational; never changes the evaluation or notebook category. */
 export function EvaluationStatusText({ status, message }: { status: EvaluationStatus; message: string }) {
   const {label, detail, separator} = categoryDisplayParts(status, message);
-  return <><strong className="text-text">{label}</strong>{detail ? separator + detail : null}</>;
+  const category = visibleCategoryForStatus(status, message);
+  const labelCategory = category && label === category ? category : null;
+  return <>
+    <strong data-evaluation-category={labelCategory ?? undefined} className={labelCategory ? EVALUATION_CATEGORY_COLOR[labelCategory] : "text-text"}>{label}</strong>
+    {detail ? <>{separator}<HighlightEvaluationCategory category={labelCategory ? null : category} text={detail} /></> : null}
+  </>;
 }
