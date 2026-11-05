@@ -1,3 +1,4 @@
+import * as React from "react";
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { buildActualEvaluationSummary } from "@/lib/neonatal-calculator/actual-evaluation-summary";
 import { HighlightEvaluationCategory } from "./EvaluationCategoryColor";
