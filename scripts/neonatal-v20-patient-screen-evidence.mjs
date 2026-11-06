@@ -250,8 +250,25 @@ try {
             check(match.test(rawPdf), key + ": PDF category color does not equal browser " + category + " " + computed);
           }
         }
+        const screenNavigation = page.locator('nav[data-site-navigation="primary"]');
+        check(await screenNavigation.count() === 1 && await screenNavigation.isVisible(),
+          key + ": site navigation should remain visible during normal screen use");
         await page.screenshot({ path: join(directory, key + "-desktop.png"), fullPage: true });
         await page.emulateMedia({ media: "print" });
+        const printChrome = await page.evaluate(() => {
+          const state = selector => {
+            const element = document.querySelector(selector);
+            return element ? getComputedStyle(element).display : null;
+          };
+          return {
+            navigation: state('nav[data-site-navigation="primary"]'),
+            skipLink: state('a.skip-link[href="#main-content"]'),
+            siteFooter: state('footer:not(.print-always)'),
+            tabList: state('[role="tablist"][aria-label="Mode kalkulator"]'),
+          };
+        });
+        check(Object.values(printChrome).every(value => value === "none"),
+          key + ": site navigation/accessibility chrome leaked into print layout: " + JSON.stringify(printChrome));
         const printPanels = await page.evaluate(() => {
           const ids = ["recommendation-panel", "evaluation-panel"];
           return Object.fromEntries(ids.map(id => {
@@ -263,10 +280,39 @@ try {
         const inactiveId = mode === "evaluation" ? "recommendation-panel" : "evaluation-panel";
         check(printPanels[activeId].display !== "none" && printPanels[inactiveId].hidden && printPanels[inactiveId].display === "none",
           key + ": print must show only the active result panel: " + JSON.stringify(printPanels));
-        await page.pdf({ path: join(directory, key + "-print.pdf"), format: "A4", printBackground: true, preferCSSPageSize: true });
+        const printedPath = join(directory, key + "-print.pdf");
+        await page.pdf({ path: printedPath, format: "A4", printBackground: true, preferCSSPageSize: true });
+        const printText = normalize(execFileSync("pdftotext", ["-layout", printedPath, "-"], { encoding: "utf8" }));
+        for (const siteLabel of ["Lewati navigasi", "Beranda", "Cari Obat", "Tentang Kami", "Login", "Jelajahi"]) {
+          check(!printText.includes(siteLabel),
+            key + ": global navigation text found in printed PDF: " + siteLabel);
+        }
+        check(printText.includes("Pedoman Rumah Sakit") && printText.includes("Literatur Terkini"),
+          key + ": printable patient report disappeared while hiding navigation");
         if (mode === "evaluation") {
           await page.emulateMedia({ media: "screen" });
           await page.setViewportSize({ width: 390, height: 844 });
+          const menuButton = page.getByRole("button", { name: "Buka menu navigasi" });
+          await menuButton.click();
+          check(await page.getByRole("dialog", { name: "Menu navigasi" }).isVisible(),
+            key + ": mobile site menu must work on screen before print");
+          await page.emulateMedia({ media: "print" });
+          const mobilePrint = await page.evaluate(() => ({
+            nav: getComputedStyle(document.querySelector('nav[data-site-navigation="primary"]')).display,
+            skip: getComputedStyle(document.querySelector(".skip-link")).display,
+            bodyOverflow: getComputedStyle(document.body).overflow,
+          }));
+          check(mobilePrint.nav === "none" && mobilePrint.skip === "none" && mobilePrint.bodyOverflow === "visible",
+            key + ": mobile navigation overlay or scroll lock leaks into print: " + JSON.stringify(mobilePrint));
+          const mobilePrintPath = join(directory, key + "-mobile-print.pdf");
+          await page.pdf({ path: mobilePrintPath, format: "A4", printBackground: true, preferCSSPageSize: true });
+          const mobilePrintText = normalize(execFileSync("pdftotext", ["-layout", mobilePrintPath, "-"], { encoding: "utf8" }));
+          check(!["Lewati navigasi", "Beranda", "Cari Obat", "Tentang Kami", "Login"].some(word => mobilePrintText.includes(word)),
+            key + ": mobile menu text leaked into printed PDF");
+          check(mobilePrintText.includes("Pedoman Rumah Sakit") && mobilePrintText.includes("Literatur Terkini"),
+            key + ": mobile print lost evaluation report");
+          await page.emulateMedia({ media: "screen" });
+          await page.getByRole("button", { name: "Tutup menu navigasi" }).click();
           await renal.scrollIntoViewIfNeeded();
           const bounds = await renal.boundingBox();
           check(bounds && bounds.x >= -1 && bounds.x + bounds.width <= 391, key + ": renal summary clipped on mobile");
