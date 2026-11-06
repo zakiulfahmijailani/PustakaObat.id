@@ -13,6 +13,37 @@ import { buildV20Glossary } from "../glossary-v20";
 
 const oracle = loadV20Reference();
 
+const v20RejectedCases = [
+  {
+    code: "T31",
+    sourceRow: 32,
+    column: "usia_pascalahir_hari",
+    rawValue: 29,
+    reason: "Usia pascalahir di luar cakupan kalkulator (0–28 hari). Gunakan pedoman dosis bayi di atas 28 hari.",
+  },
+  {
+    code: "T32",
+    sourceRow: 33,
+    column: "berat_badan_kg",
+    rawValue: 1720,
+    reason: "Berat badan harus 0,3–10 kg. Tampaknya berat diisi dalam gram; isi dalam kilogram (mis. 1720 g = 1,72 kg).",
+  },
+  {
+    code: "T33",
+    sourceRow: 34,
+    column: "usia_gestasi_lahir_hari",
+    rawValue: 7,
+    reason: "Usia gestasi saat lahir — tambahan hari harus 0–6 hari dan usia gestasi total maksimal 43 minggu.",
+  },
+  {
+    code: "T34",
+    sourceRow: 35,
+    column: "antibiotik",
+    rawValue: "Gentamycin",
+    reason: "Antibiotik harus Gentamisin, Amikasin, atau Vankomisin.",
+  },
+] as const;
+
 describe("frozen v20 reference integrity and unchanged dosing", () => {
   it("pins the original notebook, two XLSX files, and review document bytes", () => {
     const hashes = {
@@ -67,6 +98,49 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     expect(result.rows.filter(row => row.status === "gagal").map(row => row.patientCode)).toEqual(oracle.comparator.rejectedCodes);
     expect(oracle.comparator.rejectedCodes).toEqual(["T31", "T32", "T33", "T34"]);
     expect(oracle.batchWarnings).toHaveLength(4);
+  });
+
+  it.each(v20RejectedCases)("rejects original XLSX case $code with its exact validation reason", ({code, sourceRow, column, rawValue, reason}) => {
+    // Read the immutable XLSX through the Python notebook oracle, not a transcribed test copy.
+    const inputColumn = oracle.header.indexOf(column);
+    expect(inputColumn, code + ": missing frozen XLSX column").toBeGreaterThanOrEqual(0);
+    const input = oracle.inputRows.find(row => row[oracle.header.indexOf("kode_pasien")] === code);
+    expect(input, code + ": missing input row").toBeDefined();
+    expect(input![inputColumn], code + ": unexpected input value").toBe(rawValue);
+
+    const batch = processBatchTable([oracle.header, ...oracle.inputRows]);
+    expect(batch.successCount).toBe(30);
+    expect(batch.errorCount).toBe(4);
+    const rejected = batch.rows.find(row => row.patientCode === code);
+    expect(rejected?.status, code).toBe("gagal");
+    if (rejected?.status !== "gagal") throw new Error(code + ": rejected case is absent");
+    expect(rejected.sourceRow).toBe(sourceRow);
+    expect(rejected.errors).toEqual([reason]);
+  });
+
+  it("exports the exact four rejection reasons to XLSX without exporting rejected patients as results", async () => {
+    const batch = processBatchTable([oracle.header, ...oracle.inputRows]);
+    const ExcelJS = await import("exceljs");
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
+
+    const warningSheet = book.getWorksheet("Peringatan")!;
+    const errorCodes = new Set(v20RejectedCases.map(item => item.code));
+    const errorRows = warningSheet.getRows(2, warningSheet.rowCount - 1)!.filter(row =>
+      errorCodes.has(String(row.getCell(2).value)));
+    expect(errorRows).toHaveLength(4);
+    for (const item of v20RejectedCases) {
+      const row = errorRows.find(row => row.getCell(2).value === item.code);
+      expect(row, item.code + ": missing exported warning").toBeDefined();
+      expect(row!.getCell(1).value).toBe(item.sourceRow);
+      expect(row!.getCell(3).value).toBe("PERINGATAN");
+      expect(row!.getCell(4).value).toBe("Baris dilewati: " + item.reason);
+    }
+    const resultSheet = book.getWorksheet("Hasil per Pasien")!;
+    expect(resultSheet.rowCount).toBe(31); // 30 valid patients + header
+    for (const row of resultSheet.getRows(2, 30)!) {
+      expect(errorCodes.has(String(row.getCell(1).value))).toBe(false);
+    }
   });
 
   it("preserves v20 dose and interval values for 30 supplied patients and 1,242 boundary/renal profiles", () => {
