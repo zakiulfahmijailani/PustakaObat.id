@@ -85,6 +85,6 @@ describe("[3.1] PDF dosis mg dan mg/kg (presentasi saja)", () => {
     expect(content).toContain("7,5-11,25 mg (5-7,5 mg/kg per pemberian)");
     expect(content).toContain("7,5 mg (5 mg/kg per pemberian)");
     expect(content).not.toContain("Dosis aktual:");
-    expect(content).toContain("Versi aturan: 2026.11.01");
+    expect(content).toContain("Versi aturan: 2026.11.03");
   });
 });
