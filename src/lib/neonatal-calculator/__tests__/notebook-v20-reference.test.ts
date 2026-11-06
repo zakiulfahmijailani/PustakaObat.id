@@ -125,7 +125,7 @@ describe("frozen v20 reference integrity and unchanged dosing", () => {
     await book.xlsx.load(new Uint8Array(await buildBatchResultWorkbook(batch)) as unknown as import("exceljs").Buffer);
 
     const warningSheet = book.getWorksheet("Peringatan")!;
-    const errorCodes = new Set(v20RejectedCases.map(item => item.code));
+    const errorCodes: Set<string> = new Set(v20RejectedCases.map(item => item.code));
     const errorRows = warningSheet.getRows(2, warningSheet.rowCount - 1)!.filter(row =>
       errorCodes.has(String(row.getCell(2).value)));
     expect(errorRows).toHaveLength(4);
