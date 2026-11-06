@@ -1,6 +1,6 @@
 import type { Antibiotic } from "./types";
 
-export const CALCULATOR_RULE_VERSION = "2026.11.01";
+export const CALCULATOR_RULE_VERSION = "2026.11.03";
 
 export const CLINICAL_DISCLAIMER =
   "Alat ini merupakan clinical decision support dan bukan pengganti penilaian klinis apoteker, dokter penanggung jawab pasien (DPJP), maupun therapeutic drug monitoring. Selalu verifikasi dengan Panduan Praktik Klinik (PPK), pedoman klinis yang berlaku, dan formularium rumah sakit terbaru, kondisi klinis pasien, fungsi ginjal, dan hasil kadar obat bila tersedia.";
