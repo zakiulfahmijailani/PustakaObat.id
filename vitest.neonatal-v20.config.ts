@@ -10,6 +10,7 @@ export default defineConfig({
     include: [
       "src/lib/neonatal-calculator/__tests__/notebook-v20-reference.test.ts",
       "tests/neonatal-v20-acceptance.test.ts",
+      "src/lib/neonatal-calculator/__tests__/additional-input-cases-v20.test.ts",
     ],
   },
 });
