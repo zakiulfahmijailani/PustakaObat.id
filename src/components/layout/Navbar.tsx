@@ -54,6 +54,7 @@ export const Navbar = () => {
 
   return (
     <nav
+      data-site-navigation="primary"
       aria-label="Navigasi utama"
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,padding,box-shadow] duration-200 ${
         isScrolled ? 'border-b border-border bg-surface/95 py-3 shadow-sm backdrop-blur-md' : 'bg-background/90 py-4 backdrop-blur-sm md:py-5'

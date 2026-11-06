@@ -174,7 +174,11 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     margin: 12mm;
   }
 
+  /* The global site navigation, including its mobile menu and skip link,
+     is screen-only; it must not consume space or appear in printed reports. */
   nav,
+  [data-site-navigation="primary"],
+  .skip-link,
   footer:not(.print-always),
   .print-hide {
     display: none !important;
@@ -188,6 +192,8 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     background: white !important;
     color: black !important;
     font-size: 10pt;
+    /* A mobile menu may have locked scrolling before Ctrl+P. */
+    overflow: visible !important;
   }
 
   .print-container {
