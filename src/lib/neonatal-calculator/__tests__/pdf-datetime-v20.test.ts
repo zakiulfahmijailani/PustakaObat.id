@@ -55,7 +55,7 @@ describe("[3.3] tanggal lengkap dan jam pada PDF v20", () => {
         expect(readable(pdf)).toContain(expectedStamp);
         expect(pages(pdf)).toBeGreaterThanOrEqual(1);
         expect(stamps(pdf)).toBe(pages(pdf));
-        expect(readable(pdf)).toContain("Versi aturan: 2026.11.01");
+        expect(readable(pdf)).toContain("Versi aturan: 2026.11.03");
       }
       const again = buildRecommendationPdf(result, jakarta);
       expect(text(again)).toBe(text(buildRecommendationPdf(result, jakarta)));
