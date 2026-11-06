@@ -200,6 +200,12 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     display: block !important;
   }
 
+  /* Only the selected patient report may print; retain hidden tab semantics. */
+  .print-always[hidden],
+  .print-evaluation[hidden] {
+    display: none !important;
+  }
+
   .print-break-inside-avoid {
     break-inside: avoid;
   }
