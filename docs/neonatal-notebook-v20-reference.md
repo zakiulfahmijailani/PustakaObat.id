@@ -1,5 +1,11 @@
 # Acuan pengujian kalkulator neonatus v20
 
+## Pembaruan 5.1 (draft, 6 November 2026)
+
+Dengan CI pada branch hasil PR #32, 572/572 tes umum, 67/67 tes v20, dan 12/12 skenario browser/laporan PDF/cetak lulus. Bukti dalam artefak `neonatal-v20-12-scenario-browser-pdf-print`. Pada branch draft 5.1, label versi aplikasi diusulkan berubah menjadi `2026.11.03` sesuai manifest acuan tanpa mengubah aturan dosis/interval. Keterangan di bawah bertajuk **status 3 November** adalah catatan historis saat versi aplikasi masih `2026.11.01` dan belum semua tes layar/cetak tersedia.
+
+**Batas rilis:** perubahan versi belum disetujui atau di-merge. Persetujuan klinis tertulis, termasuk kebijakan data fungsi ginjal yang tidak tersedia, validasi kasus admin resmi, dan izin deploy tetap menjadi prasyarat terpisah. Kecocokan notebook dan tes browser tidak membuktikan validasi klinis independen.
+
 ## Status sesudah migrasi hasil batch, 3 November 2026
 
 Enam pemeriksaan penerimaan batch sekarang lulus: 24 kolom pasien, seluruh 660 nilai yang diperiksa Excel Cek, statistik per antibiotik, rekap di atas/di bawah rentang beserta median pasien di luar rentang, McNemar, serta seluruh paragraf narasi enam bagian. Statistik dan narasi tambahan diuji terhadap Python v20 pada 14 kelompok (kosong, kecil, semua di dalam rentang, konstan, normal, nilai berulang, dan perhitungan manual).
