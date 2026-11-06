@@ -622,7 +622,7 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 <div className="mt-3"><WarningLegend /></div>
               </div>
               <ActualEvaluationSummary calculated={evaluationResult} evaluation={evaluation} />
-              <Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button>
+              <div className="flex flex-wrap gap-2 print-hide"><Button type="button" variant="outline" onClick={downloadEvaluation}>Unduh PDF Evaluasi Pemberian</Button><Button type="button" variant="outline" onClick={printReport}><Printer size={17} aria-hidden="true" /> Cetak Evaluasi Pemberian</Button></div>
               <SortedWarnings calculated={evaluationResult} />
               <section aria-labelledby="evaluation-recommendation-heading" className="space-y-3">
                 <h3 id="evaluation-recommendation-heading" className="text-lg font-semibold text-text">Rekomendasi dosis</h3>
