@@ -212,7 +212,7 @@ try {
           key + ": mobile renal summary exceeds viewport");
         await page.screenshot({ path: join(dir, key + "-mobile.png"), fullPage: true });
         check(patientPosts === 0, key + ": case data appeared in a POST request");
-        cases.push({ key, antibiotic, mode, renal: "measured" , screen: screenName,
+        cases.push({ key, antibiotic, mode, renal: measured ? "measured" : "absent", screen: screenName,
           exportPdf: exportName, printPdf: printName,
           exportPages: pdfPages(join(dir, exportName)), printPages: pdfPages(join(dir, printName)),
           assertions: "PASS", notes: "complement to legacy six-case browser runner" });
