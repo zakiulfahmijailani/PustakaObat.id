@@ -77,6 +77,11 @@ try {
           await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
         }
         const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
+        const expectedReferenceTitles = ["Pedoman Rumah Sakit", "Literatur Terkini (ANMF 2024)"];
+        const recommendationTable = mode === "evaluation"
+          ? panel.locator('section[aria-labelledby="evaluation-recommendation-heading"] table')
+          : panel.locator("table").first();
+        await recommendationTable.locator("thead th").first().waitFor({ state: "visible", timeout: 30000 });
         const displayedCopy = await panel.textContent();
         check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(displayedCopy),
           key + ": user-facing screen still contains old internal terminology");
@@ -84,12 +89,8 @@ try {
           check(displayedCopy.includes("Konteks klinis"),
             key + ": recommendation screen missing clinical context heading");
           check(displayedCopy.includes("Rekomendasi disusun berdasarkan sumber rujukan yang tercantum"),
-            key + ": source attribution still mentions notebook");
+            key + ": user-facing reference attribution not rendered");
         }
-        const expectedReferenceTitles = ["Pedoman Rumah Sakit", "Literatur Terkini (ANMF 2024)"];
-        const recommendationTable = mode === "evaluation"
-          ? panel.locator('section[aria-labelledby="evaluation-recommendation-heading"] table')
-          : panel.locator("table").first();
         const tableHeadings = await recommendationTable.locator("thead th").allInnerTexts();
         check(tableHeadings[1] === expectedReferenceTitles[0] && tableHeadings[2] === expectedReferenceTitles[1],
           key + ": recommendation table reference titles differ: " + JSON.stringify(tableHeadings));
