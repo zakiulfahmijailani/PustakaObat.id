@@ -91,6 +91,7 @@ try {
         const reference = panel.locator('section[aria-label="Rujukan"]');
         await reference.waitFor({ state: "visible", timeout: 30_000 });
         const clinicalText = normalize(await panel.innerText());
+        check((await page.locator("footer.print-always strong").innerText()) === "Versi aturan 2026.11.03.", key + ": screen footer does not show v20 rule version");
         check(clinicalText.includes("Pedoman Rumah Sakit")
           && clinicalText.includes("Literatur Terkini (ANMF 2024)")
           && clinicalText.includes("Cara membaca rujukan"),
@@ -119,6 +120,7 @@ try {
         check(readFileSync(join(dir, exportName), "utf8").startsWith("%PDF-1.4"),
           key + ": downloaded file is not a PDF");
         const exported = pdfText(join(dir, exportName));
+        check(exported.includes("Versi aturan: 2026.11.03"), key + ": exported PDF version does not match v20");
         check(pdfPages(join(dir, exportName)) >= 1, key + ": blank exported report");
         check(exported.includes("Fungsi ginjal") && exported.includes("Dibuat lokal:")
           && exported.includes("Cara membaca rujukan")
@@ -185,6 +187,7 @@ try {
         await page.pdf({ path: join(dir, printName), format: "A4",
           printBackground: true, preferCSSPageSize: true });
         const printed = pdfText(join(dir, printName));
+        check(printed.includes("Versi aturan 2026.11.03."), key + ": printed report version does not match v20");
         check(pdfPages(join(dir, printName)) >= 1, key + ": blank print PDF");
         check(printed.includes("Pedoman Rumah Sakit")
           && printed.includes("Literatur Terkini") && printed.includes("Cara membaca rujukan")
@@ -243,6 +246,8 @@ for (const antibiotic of antibiotics) {
     for (const filename of [original.screen, original.exportPdf, original.printPdf]) {
       check(statSync(join(dir, filename)).size > 700, key + ": original evidence file missing/empty " + filename);
     }
+    check(pdfText(join(dir, original.exportPdf)).includes("Versi aturan: 2026.11.03"), key + ": original exported PDF version does not match v20");
+    check(pdfText(join(dir, original.printPdf)).includes("Versi aturan 2026.11.03."), key + ": original print PDF version does not match v20");
     original.exportPages = pdfPages(join(dir, original.exportPdf));
     original.printPages = pdfPages(join(dir, original.printPdf));
     all.push(original);

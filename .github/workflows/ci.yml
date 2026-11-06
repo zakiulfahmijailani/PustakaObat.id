@@ -191,7 +191,7 @@ jobs:
           if-no-files-found: error
 
       - name: Verify 12 neonatal v20 patient screen/export/print scenarios [4.5]
-        if: github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106'
+        if: github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.ref_name == 'chore/neonatal-v20-rule-version-20261106' || github.head_ref == 'chore/neonatal-v20-rule-version-20261106'
         env:
           NEONATAL_SCREEN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-v20-12-scenarios
           NEONATAL_12_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-v20-12-scenarios
@@ -222,7 +222,7 @@ jobs:
           done
           node -e 'const x=require(process.argv[1]); if(x.scenarioCount!==12 || x.scenarios.some(s=>s.assertions!=="PASS")) process.exit(1); console.log("Verified 12/12 screen/export/print scenario reports")' "$NEONATAL_12_EVIDENCE_DIR/12-scenario-results.json"
       - name: Store 12 neonatal v20 browser, PDF and print proofs [4.5]
-        if: always() && (github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106')
+        if: always() && (github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.ref_name == 'chore/neonatal-v20-rule-version-20261106' || github.head_ref == 'chore/neonatal-v20-rule-version-20261106')
         uses: actions/upload-artifact@v4
         with:
           name: neonatal-v20-12-scenario-browser-pdf-print

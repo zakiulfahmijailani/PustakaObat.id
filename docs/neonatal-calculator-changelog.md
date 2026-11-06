@@ -1,5 +1,11 @@
 # Neonatal Calculator Changelog
 
+## 2026-11-06 — proposed v20 version metadata alignment (item 5.1; draft only)
+
+- Stage the application rule-version label `2026.11.03` to match the **unaltered** frozen v20 notebook manifest. Only metadata changes, plus the existing PDF, result and export-version assertions and an independent version-vs-manifest regression assertion. No change to dosing, intervals, clinical warning rules, input limits, or frozen fixtures.
+- Gate includes merged PRs #23–#29, successful stacked draft tests PRs #30–#32 (including 12 local browser/screen/download/print scenarios), and review of the archived synthetic visual evidence. Preserve the display's existing explicit unvalidated-clinically disclaimer.
+- **Not approved for release:** PRs #30–#32 remain draft/unmerged, institutional/clinical review and original-admin-case acceptance are outstanding, and no live deployment or production verification has been authorized. This version bump is prepared for code review only.
+
 ## 2026-11-03 — v20 batch repair repository checkpoint
 
 - Include recommendation-only batch inputs, creatinine unit guidance, sparse-workbook source row preservation, complete manual comparison text, and v20 Excel warning/glossary output. Preserve the verified dose and interval rules and frozen reference files.

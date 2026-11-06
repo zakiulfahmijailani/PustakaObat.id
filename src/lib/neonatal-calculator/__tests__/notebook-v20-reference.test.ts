@@ -7,6 +7,7 @@ import { processBatchTable } from "../batch-engine";
 import { buildBatchResultWorkbook } from "../batch-workbook";
 import { summarizeBatch } from "../batch-statistics";
 import { intervalBounds, notebookBatchRecord, rangeDeviation } from "../notebook-results";
+import { CALCULATOR_RULE_VERSION } from "../constants";
 import { calculateRecommendations } from "../recommendation-engine";
 import { getV20ClinicalWarnings, getDisplayV20Warnings, sortV20Warnings } from "../warning-catalog-v20";
 import { buildV20Glossary } from "../glossary-v20";
@@ -45,6 +46,11 @@ const v20RejectedCases = [
 ] as const;
 
 describe("frozen v20 reference integrity and unchanged dosing", () => {
+  it("[5.1] aligns the application rule version with the independently executed frozen notebook manifest", () => {
+    expect(CALCULATOR_RULE_VERSION).toBe("2026.11.03");
+    expect(CALCULATOR_RULE_VERSION).toBe(oracle.source.ruleVersion);
+  });
+
   it("pins the original notebook, two XLSX files, and review document bytes", () => {
     const hashes = {
       notebook: "d78513e5ab8cd728dc230ad7f662d06378040707e2ab08daffcaf6d237917651",
