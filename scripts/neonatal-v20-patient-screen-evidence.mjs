@@ -146,15 +146,37 @@ try {
             key + ": dose/frequency semantic category colors inconsistent " + JSON.stringify(categoryColors));
         }
         // Download the real programmatic PDF (not Chromium print) and compare against live screen values.
+        const beforePdf = await page.evaluate(() => ({
+          at: Date.now(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        }));
         const downloadPromise = page.waitForEvent("download");
         await page.getByRole("button", { name: mode === "recommendation" ? "Unduh PDF Rekomendasi Dosis" : "Unduh PDF Evaluasi Pemberian" }).click();
         const exported = await downloadPromise;
+        const afterPdf = await page.evaluate(() => Date.now());
         const exportedPath = join(directory, key + "-export.pdf");
         await exported.saveAs(exportedPath);
         const rawPdf = readFileSync(exportedPath, "utf8");
         check(rawPdf.startsWith("%PDF-1.4"), key + ": downloaded report is not a PDF");
         const pdfPlain = pdfTexts(rawPdf);
         const extracted = normalize(execFileSync("pdftotext", ["-layout", exportedPath, "-"], { encoding: "utf8" }));
+        const pageCount = (rawPdf.match(/\/Type \/Page\b/g) || []).length;
+        const stampCount = (rawPdf.match(/\(Dibuat lokal:/g) || []).length;
+        check(pageCount > 0 && pageCount === stampCount,
+          key + ": full timestamp must repeat on each PDF page (" + stampCount + "/" + pageCount + ")");
+        const stampFor = instant => "Dibuat lokal: " + new Intl.DateTimeFormat("id-ID", {
+          weekday: "long", day: "numeric", month: "long", year: "numeric",
+          hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+          timeZone: beforePdf.timeZone, timeZoneName: "short",
+        }).format(new Date(instant)) + " (" + beforePdf.timeZone + ")";
+        const expectedStamps = [];
+        for (let second = Math.floor(beforePdf.at / 1000) - 1;
+             second <= Math.floor(afterPdf / 1000) + 1; second++) {
+          expectedStamps.push(normalize(stampFor(second * 1000)));
+        }
+        check(expectedStamps.some(stamp => pdfPlain.includes(stamp)),
+          key + ": exported timestamp must match browser's local date, time and zone " + beforePdf.timeZone);
+        check(extracted.includes("Dibuat lokal:") && extracted.includes("pukul"),
+          key + ": PDF text extraction missing complete localized date/time");
         const doseCells = recommendationTable.locator("tbody tr").first().locator("td");
         for (let col = 0; col < 2; col++) {
           const cell = doseCells.nth(col);
