@@ -12,9 +12,10 @@ const codeColumn = columns.get("kode_pasien");
 if (codeColumn === undefined) throw new Error("Frozen v20 input has no patient code");
 const source = reference.inputRows.find(row => row[codeColumn] === "T04");
 if (!source) throw new Error("Frozen v20 input is missing T04");
+const frozenT04: unknown[] = source;
 
 function caseRow(code: string, fields: Record<string, unknown> = {}): unknown[] {
-  const row = [...source];
+  const row = [...frozenT04];
   row[codeColumn!] = code;
   for (const [column, value] of Object.entries(fields)) {
     const position = columns.get(column);
