@@ -52,6 +52,8 @@ try {
           await page.locator("#rec-therapeuticHypothermia").uncheck();
         }
         if (mode === "evaluation") {
+          check(await page.getByRole("button", { name: "Cetak Evaluasi Pemberian" }).count() === 0,
+            key + ": evaluation print action must not appear before calculation");
           await page.getByRole("checkbox", { name: /Data fungsi ginjal tersedia/ }).check();
           await page.locator("#eval-scr").fill("0.6");
           await page.locator("#eval-uop").fill("0.8");
@@ -122,6 +124,18 @@ try {
           const evaluationCardHeadings = await panel.locator("article > h3").allInnerTexts();
           check(JSON.stringify(evaluationCardHeadings) === JSON.stringify(expectedReferenceTitles),
             key + ": evaluation card titles differ from the table: " + JSON.stringify(evaluationCardHeadings));
+          const printButton = page.getByRole("button", { name: "Cetak Evaluasi Pemberian" });
+          check(await printButton.count() === 1 && await printButton.isVisible(),
+            key + ": missing evaluation print button next to PDF export");
+          // Capture the actual click-triggered print request without opening a system dialog.
+          await page.evaluate(() => {
+            window.__v20PrintClicks = 0;
+            window.print = () => { window.__v20PrintClicks += 1; };
+          });
+          await printButton.click();
+          await page.waitForFunction(() => window.__v20PrintClicks === 1);
+          check(await page.evaluate(() => window.__v20PrintClicks) === 1,
+            key + ": print action must invoke window.print exactly once");
         }
         const renal = panel.locator('section[aria-label="Ringkasan fungsi ginjal"]');
         await renal.waitFor({ state: "visible", timeout: 30000 });
@@ -238,6 +252,17 @@ try {
         }
         await page.screenshot({ path: join(directory, key + "-desktop.png"), fullPage: true });
         await page.emulateMedia({ media: "print" });
+        const printPanels = await page.evaluate(() => {
+          const ids = ["recommendation-panel", "evaluation-panel"];
+          return Object.fromEntries(ids.map(id => {
+            const element = document.getElementById(id);
+            return [id, { hidden: element.hidden, display: getComputedStyle(element).display }];
+          }));
+        });
+        const activeId = mode === "evaluation" ? "evaluation-panel" : "recommendation-panel";
+        const inactiveId = mode === "evaluation" ? "recommendation-panel" : "evaluation-panel";
+        check(printPanels[activeId].display !== "none" && printPanels[inactiveId].hidden && printPanels[inactiveId].display === "none",
+          key + ": print must show only the active result panel: " + JSON.stringify(printPanels));
         await page.pdf({ path: join(directory, key + "-print.pdf"), format: "A4", printBackground: true, preferCSSPageSize: true });
         if (mode === "evaluation") {
           await page.emulateMedia({ media: "screen" });
