@@ -285,7 +285,7 @@ function recommendationTable(calculated: CalculatorResult): ReportTable {
       const note = describeIntervalReference(rec.interval, rec.eligibleForRegimenEvaluation);
       return intervalText(rec) + ". " + note.label + ". " + note.description;
     }),
-    row("Sumber rujukan", rec => rec.provenanceDetail), row("Catatan", rec => rec.notes.join(" ") || "-"),
+    row("Sumber rujukan", rec => rec.provenanceDetail.replace("yang dirujuk notebook", "yang digunakan sebagai rujukan perhitungan")), row("Catatan", rec => rec.notes.join(" ") || "-"),
   ] } };
 }
 function referencePanel(calculated: CalculatorResult): ReportLine {
