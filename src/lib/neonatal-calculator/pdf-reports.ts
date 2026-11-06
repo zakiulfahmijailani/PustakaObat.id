@@ -304,7 +304,7 @@ function patientLines(calculated:CalculatorResult, actualSummary?:ReportLine):Re
     {text:"Kode pasien: "+(p.patientLabel??"Tanpa kode")},
     {text:"Antibiotik: "+ANTIBIOTIC_LABELS[p.antibiotic]+"; Usia gestasi: "+p.gestationalAgeWeeks+" minggu "+(p.gestationalAgeDays??0)+" hari"},
     {text:"Usia pascalahir: "+p.postnatalAgeDays+" hari; PMA: "+(p.gestationalAgeWeeks+Math.floor(((p.gestationalAgeDays??0)+p.postnatalAgeDays)/7))+" minggu "+(((p.gestationalAgeDays??0)+p.postnatalAgeDays)%7)+" hari; Berat: "+formatNumber(p.currentWeightKg)+" kg"},
-    {text:"Konteks klinis: "+([p.therapeuticHypothermia && "Hipotermia terapeutik/HIE", p.coxInhibitorTherapy && "COX inhibitor", p.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada modifier yang dipilih")},
+    {text:"Konteks klinis: "+([p.therapeuticHypothermia && "Hipotermia terapeutik/HIE", p.coxInhibitorTherapy && "COX inhibitor", p.severeSepsisOrHighRiskInfection && "Sepsis berat/infeksi risiko tinggi"].filter(Boolean).join("; ") || "Tidak ada kondisi klinis tambahan yang dipilih")},
     {text:"Fungsi ginjal: "+v20RenalText(calculated)},
     ...(actualSummary ? [actualSummary] : []),
     ...warnings.map(warning => ({ text: warning.message, warning }))
@@ -401,7 +401,7 @@ export function buildBatchSummaryPdf(result:BatchProcessingResult,timestamp?:Pdf
     ...summary.paired.filter(x=>x.group!=="Keseluruhan" && x.n>0).map(x=>({text:categoryLabel(x.group)+" / "+x.metric+" / "+x.reference+": "+x.method+", n="+x.n+(x.pValue===null?(x.n<3?" (n<3)":x.aboveCount+x.belowCount===0?" (semua di dalam rentang)":" (uji tidak tersedia)"):", p="+pythonFixed(x.pValue,4))})),
     {text:"Uji McNemar: kesesuaian kedua pedoman",heading:true},
     ...summary.mcnemar.filter(x=>x.group==="Keseluruhan").map(x=>({text:x.metric+": "+(x.method==="Tidak ada pasangan diskordan"?"Tidak diuji: tidak ada pasangan diskordan":x.method)+", n="+x.n+(x.pValue===null?"":", p="+pythonFixed(x.pValue,4))})),
-    {text:"Kesimpulan: hasil statistik memerlukan verifikasi terhadap notebook acuan dan penafsiran oleh peneliti.",color:"orange"},
+    {text:"Kesimpulan: hasil statistik perlu diperiksa terhadap data acuan dan ditafsirkan oleh peneliti.",color:"orange"},
   ];
   return pdfDocument("Ringkasan Evaluasi Batch Neonatus",withGlossary(lines, false),timestamp);
 }
