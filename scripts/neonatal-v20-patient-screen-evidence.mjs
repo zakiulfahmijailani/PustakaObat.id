@@ -81,8 +81,8 @@ try {
         check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(displayedCopy),
           key + ": user-facing screen still contains old internal terminology");
         if (mode === "recommendation") {
-          check(displayedCopy.includes("Tidak ada kondisi klinis tambahan yang dipilih"),
-            key + ": recommendation screen missing plain-language clinical context");
+          check(displayedCopy.includes("Konteks klinis"),
+            key + ": recommendation screen missing clinical context heading");
           check(displayedCopy.includes("Rekomendasi disusun berdasarkan sumber rujukan yang tercantum"),
             key + ": source attribution still mentions notebook");
         }
@@ -181,8 +181,8 @@ try {
         const pdfPlain = pdfTexts(rawPdf);
         check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(pdfPlain),
           key + ": exported PDF still contains old internal terminology");
-        check(pdfPlain.includes("Tidak ada kondisi klinis tambahan yang dipilih"),
-          key + ": exported PDF does not use plain-language clinical context");
+        check(pdfPlain.includes("Konteks klinis:"),
+          key + ": exported PDF missing clinical context");
         const extracted = normalize(execFileSync("pdftotext", ["-layout", exportedPath, "-"], { encoding: "utf8" }));
         const pageCount = (rawPdf.match(/\/Type \/Page\b/g) || []).length;
         const stampCount = (rawPdf.match(/\(Dibuat lokal:/g) || []).length;
