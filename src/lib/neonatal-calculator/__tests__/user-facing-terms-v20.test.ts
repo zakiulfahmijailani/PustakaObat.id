@@ -39,7 +39,7 @@ describe("[3.4] bahasa hasil pasien tanpa istilah teknis lama", () => {
         expect(shown).toContain("Tidak ada kondisi klinis tambahan yang dipilih");
         expect(shown).toContain("Pedoman Rumah Sakit");
         expect(shown).toContain("Literatur Terkini (ANMF 2024)");
-        expect(shown).toContain("Versi aturan: 2026.11.01");
+        expect(shown).toContain("Versi aturan: 2026.11.03");
       }
       expect(JSON.stringify({ calculated, evaluation })).toBe(frozen);
     },
