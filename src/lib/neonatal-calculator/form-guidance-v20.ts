@@ -31,7 +31,7 @@ const effects: Record<Antibiotic, Record<V20ContextFlag, string>> = {
   },
   vankomisin: {
     therapeuticHypothermia: "Literatur Terkini (ANMF): menambah catatan pemantauan trough sebelum dosis ke-2; tidak mengubah angka dosis atau interval.",
-    coxInhibitorTherapy: "Dalam kalkulator v20, pilihan ini tidak mengubah dosis atau interval vankomisin.",
+    coxInhibitorTherapy: "Pada kalkulator ini, pilihan tersebut tidak mengubah dosis atau interval vankomisin.",
     severeSepsisOrHighRiskInfection: "ANMF: hanya menambah catatan pertimbangan dosis muatan 20 mg/kg; tidak mengubah angka dosis rumatan pada tabel.",
   },
 };

@@ -39,6 +39,18 @@ try {
         await page.locator("#" + prefix + "-ga").fill("32");
         await page.locator("#" + prefix + "-pna").fill("5");
         await page.locator("#" + prefix + "-weight").fill("1.5");
+        if (mode === "recommendation") {
+          const renalHelp = await page.locator("#recommendation-panel").getByText("Data ginjal tidak tersedia;").first().innerText();
+          check(renalHelp.includes("ketetapan tim peneliti") && !/notebook/i.test(renalHelp),
+            key + ": renal guidance still exposes notebook term");
+          await page.locator("#rec-therapeuticHypothermia").check();
+          await page.locator("#rec-coxInhibitorTherapy").check();
+          const combined = await page.getByRole("status").filter({ hasText: "Dua kondisi dicentang bersamaan." }).innerText();
+          check(!/kalkulator v20/i.test(combined),
+            key + ": combined therapy hint still exposes internal release version");
+          await page.locator("#rec-coxInhibitorTherapy").uncheck();
+          await page.locator("#rec-therapeuticHypothermia").uncheck();
+        }
         if (mode === "evaluation") {
           await page.getByRole("checkbox", { name: /Data fungsi ginjal tersedia/ }).check();
           await page.locator("#eval-scr").fill("0.6");
@@ -69,6 +81,16 @@ try {
         const recommendationTable = mode === "evaluation"
           ? panel.locator('section[aria-labelledby="evaluation-recommendation-heading"] table')
           : panel.locator("table").first();
+        await recommendationTable.locator("thead th").first().waitFor({ state: "visible", timeout: 30000 });
+        const displayedCopy = await panel.textContent();
+        check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(displayedCopy),
+          key + ": user-facing screen still contains old internal terminology");
+        if (mode === "recommendation") {
+          check(displayedCopy.includes("Konteks klinis"),
+            key + ": recommendation screen missing clinical context heading");
+          check(displayedCopy.includes("Rekomendasi disusun berdasarkan sumber rujukan yang tercantum"),
+            key + ": user-facing reference attribution not rendered");
+        }
         const tableHeadings = await recommendationTable.locator("thead th").allInnerTexts();
         check(tableHeadings[1] === expectedReferenceTitles[0] && tableHeadings[2] === expectedReferenceTitles[1],
           key + ": recommendation table reference titles differ: " + JSON.stringify(tableHeadings));
@@ -158,6 +180,10 @@ try {
         const rawPdf = readFileSync(exportedPath, "utf8");
         check(rawPdf.startsWith("%PDF-1.4"), key + ": downloaded report is not a PDF");
         const pdfPlain = pdfTexts(rawPdf);
+        check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(pdfPlain),
+          key + ": exported PDF still contains old internal terminology");
+        check(pdfPlain.includes("Konteks klinis:"),
+          key + ": exported PDF missing clinical context");
         const extracted = normalize(execFileSync("pdftotext", ["-layout", exportedPath, "-"], { encoding: "utf8" }));
         const pageCount = (rawPdf.match(/\/Type \/Page\b/g) || []).length;
         const stampCount = (rawPdf.match(/\(Dibuat lokal:/g) || []).length;
