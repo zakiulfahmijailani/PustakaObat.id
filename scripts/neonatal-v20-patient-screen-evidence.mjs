@@ -250,6 +250,29 @@ try {
             check(match.test(rawPdf), key + ": PDF category color does not equal browser " + category + " " + computed);
           }
         }
+        const disclosureScenario = await panel.evaluate(node => {
+          const disclosures = [...node.querySelectorAll('details[data-print-expand]')];
+          const labels = disclosures.map(item => item.querySelector("summary")?.textContent?.trim());
+          const initial = disclosures.map(item => item.open);
+          // One disclosure was already open by the user: printing must preserve that choice.
+          disclosures[0].open = true;
+          window.dispatchEvent(new Event("beforeprint"));
+          window.dispatchEvent(new Event("beforeprint"));
+          const during = disclosures.map(item => item.open);
+          window.dispatchEvent(new Event("afterprint"));
+          const restored = disclosures.map(item => item.open);
+          disclosures[0].open = false;
+          return { labels, initial, during, restored };
+        });
+        const expectedDisclosureLabels = mode === "recommendation"
+          ? ["Keterangan singkatan", "Catatan Referensi Tambahan", "Sumber rujukan dan batas penggunaan"]
+          : ["Keterangan singkatan"];
+        check(JSON.stringify(disclosureScenario.labels) === JSON.stringify(expectedDisclosureLabels)
+          && disclosureScenario.initial.every(open => !open)
+          && disclosureScenario.during.every(Boolean)
+          && disclosureScenario.restored[0]
+          && disclosureScenario.restored.slice(1).every(open => !open),
+          key + ": screen/print disclosure states not expanded and restored correctly: " + JSON.stringify(disclosureScenario));
         const screenNavigation = page.locator('nav[data-site-navigation="primary"]');
         check(await screenNavigation.count() === 1 && await screenNavigation.isVisible(),
           key + ": site navigation should remain visible during normal screen use");
@@ -289,6 +312,18 @@ try {
         }
         check(printText.includes("Pedoman Rumah Sakit") && printText.includes("Literatur Terkini"),
           key + ": printable patient report disappeared while hiding navigation");
+        check(printText.includes("Australasian Neonatal Medicines Formulary"),
+          key + ": collapsed abbreviation glossary text is missing from printed PDF");
+        if (mode === "recommendation") {
+          check(printText.includes("Catatan kualitatif saja; tidak digunakan sebagai nomogram dosis.")
+            && printText.includes("Rekomendasi disusun berdasarkan sumber rujukan yang tercantum dan wajib diverifikasi"),
+            key + ": collapsed reference notes and source limitations are missing from printed PDF");
+        }
+        const afterPrintDisclosureState = await panel.locator('details[data-print-expand]').evaluateAll(
+          disclosures => disclosures.map(item => item.open),
+        );
+        check(afterPrintDisclosureState.every(open => !open),
+          key + ": browser PDF print did not restore collapsed on-screen disclosures");
         if (mode === "evaluation") {
           await page.emulateMedia({ media: "screen" });
           await page.setViewportSize({ width: 390, height: 844 });
@@ -311,6 +346,13 @@ try {
             key + ": mobile menu text leaked into printed PDF");
           check(mobilePrintText.includes("Pedoman Rumah Sakit") && mobilePrintText.includes("Literatur Terkini"),
             key + ": mobile print lost evaluation report");
+          check(mobilePrintText.includes("Australasian Neonatal Medicines Formulary"),
+            key + ": mobile print omitted collapsed abbreviation glossary");
+          const afterMobilePrintDisclosureState = await panel.locator('details[data-print-expand]').evaluateAll(
+            disclosures => disclosures.map(item => item.open),
+          );
+          check(afterMobilePrintDisclosureState.every(open => !open),
+            key + ": mobile PDF print did not restore collapsed on-screen disclosures");
           await page.emulateMedia({ media: "screen" });
           await page.getByRole("button", { name: "Tutup menu navigasi" }).click();
           await renal.scrollIntoViewIfNeeded();

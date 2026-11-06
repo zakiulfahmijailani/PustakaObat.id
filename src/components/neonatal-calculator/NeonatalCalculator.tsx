@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   AlertTriangle,
   Calculator,
@@ -296,7 +296,7 @@ function SortedWarnings({ calculated }: { calculated: CalculatorResult }) {
 }
 
 function AbbreviationGlossary() {
-  return <details className="rounded-2xl border border-border bg-surface p-4">
+  return <details data-print-expand className="rounded-2xl border border-border bg-surface p-4">
     <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Keterangan singkatan</summary>
     <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
       <div><dt className="inline font-semibold text-text">RS</dt><dd className="inline text-text-muted"> — Rumah Sakit</dd></div>
@@ -356,6 +356,34 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
   const recommendationTabRef = useRef<HTMLButtonElement>(null);
   const evaluationTabRef = useRef<HTMLButtonElement>(null);
   const batchTabRef = useRef<HTMLButtonElement>(null);
+
+  // Expand patient-facing disclosures only while the active report is printed.
+  // Preserve each disclosure's original screen state, including user-opened ones.
+  useEffect(() => {
+    const openedForPrint = new Set<HTMLDetailsElement>();
+    const beforePrint = () => {
+      const activePanel = document.querySelector<HTMLElement>(
+        '#recommendation-panel:not([hidden]), #evaluation-panel:not([hidden])',
+      );
+      activePanel?.querySelectorAll<HTMLDetailsElement>('details[data-print-expand]').forEach((section) => {
+        if (!section.open) {
+          openedForPrint.add(section);
+          section.open = true;
+        }
+      });
+    };
+    const afterPrint = () => {
+      openedForPrint.forEach((section) => { section.open = false; });
+      openedForPrint.clear();
+    };
+    window.addEventListener("beforeprint", beforePrint);
+    window.addEventListener("afterprint", afterPrint);
+    return () => {
+      window.removeEventListener("beforeprint", beforePrint);
+      window.removeEventListener("afterprint", afterPrint);
+      afterPrint();
+    };
+  }, []);
 
   const selectTab = (nextTab: Tab, focus = false) => {
     setTab(nextTab);
@@ -567,12 +595,12 @@ export function NeonatalCalculator({ initialMode = "recommendation" }: { initial
                 <ReferenceBlock antibiotic={result.input.antibiotic} />
                 <WarningLegend />
                 <AbbreviationGlossary />
-                <details className="rounded-2xl border border-border bg-surface p-4">
+                <details data-print-expand className="rounded-2xl border border-border bg-surface p-4">
                   <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Catatan Referensi Tambahan</summary>
                   <p className="mb-3 text-sm text-warning">Catatan kualitatif saja; tidak digunakan sebagai nomogram dosis.</p>
                   <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-text-muted">{result.qualitativeReferenceNotes.map((note) => <li key={note}>{note}</li>)}</ul>
                 </details>
-                <details className="rounded-2xl border border-border bg-surface p-4">
+                <details data-print-expand className="rounded-2xl border border-border bg-surface p-4">
                   <summary className="min-h-11 cursor-pointer py-2 font-semibold text-text">Sumber rujukan dan batas penggunaan</summary>
                   <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-text-muted"><li>Panduan Praktik Klinik (PPK) Sepsis Neonatal RSUP Dr. M. Djamil Padang (2017) dan PNPK Tata Laksana Sepsis pada Anak (Kemenkes RI, 2021) untuk gentamisin dan amikasin.</li><li>UNC Medical Center, Vancomycin Dosing & Monitoring Guide: Neonatal & Pediatric (2023) untuk vankomisin.</li><li>ANMF Gentamicin v4.0, Amikacin v3.0, dan Vancomycin Intermittent v3.0/errata (2024).</li><li>Rekomendasi disusun berdasarkan sumber rujukan yang tercantum dan wajib diverifikasi terhadap pedoman institusi terbaru.</li></ul>
                 </details>
