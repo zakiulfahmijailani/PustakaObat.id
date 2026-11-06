@@ -189,3 +189,42 @@ jobs:
           name: neonatal-v20-rujukan-browser-print
           path: ${{ runner.temp }}/neonatal-rujukan-browser
           if-no-files-found: error
+
+      - name: Verify 12 neonatal v20 patient screen/export/print scenarios [4.5]
+        if: github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106'
+        env:
+          NEONATAL_SCREEN_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-v20-12-scenarios
+          NEONATAL_12_EVIDENCE_DIR: ${{ runner.temp }}/neonatal-v20-12-scenarios
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          export NEONATAL_CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          if [ -z "$NEONATAL_CHROME_PATH" ]; then npx playwright install chromium; fi
+          if ! command -v pdftotext >/dev/null || ! command -v pdftoppm >/dev/null || ! command -v pdfinfo >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+          npm run start -- --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/neonatal-v20-12-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/kalkulator > /dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" != "1" ]; then cat "$RUNNER_TEMP/neonatal-v20-12-server.log"; exit 1; fi
+          node scripts/neonatal-v20-patient-screen-evidence.mjs
+          node scripts/neonatal-v20-12-scenario-evidence.mjs
+          for pdf in "$NEONATAL_12_EVIDENCE_DIR"/*-export.pdf "$NEONATAL_12_EVIDENCE_DIR"/*-print.pdf; do
+            prefix="${pdf%.pdf}"
+            pdftoppm -f 1 -l 1 -png -singlefile -r 110 "$pdf" "$prefix-preview"
+            test -s "$prefix-preview.png"
+          done
+          node -e 'const x=require(process.argv[1]); if(x.scenarioCount!==12 || x.scenarios.some(s=>s.assertions!=="PASS")) process.exit(1); console.log("Verified 12/12 screen/export/print scenario reports")' "$NEONATAL_12_EVIDENCE_DIR/12-scenario-results.json"
+      - name: Store 12 neonatal v20 browser, PDF and print proofs [4.5]
+        if: always() && (github.ref_name == 'test/neonatal-v20-screen-pdf-print-12-20261106' || github.head_ref == 'test/neonatal-v20-screen-pdf-print-12-20261106')
+        uses: actions/upload-artifact@v4
+        with:
+          name: neonatal-v20-12-scenario-browser-pdf-print
+          path: ${{ runner.temp }}/neonatal-v20-12-scenarios
+          if-no-files-found: warn
