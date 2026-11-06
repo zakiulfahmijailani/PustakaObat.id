@@ -39,6 +39,18 @@ try {
         await page.locator("#" + prefix + "-ga").fill("32");
         await page.locator("#" + prefix + "-pna").fill("5");
         await page.locator("#" + prefix + "-weight").fill("1.5");
+        if (mode === "recommendation") {
+          const renalHelp = await page.locator("#recommendation-panel").getByText("Data ginjal tidak tersedia;").first().innerText();
+          check(renalHelp.includes("ketetapan tim peneliti") && !/notebook/i.test(renalHelp),
+            key + ": renal guidance still exposes notebook term");
+          await page.locator("#rec-therapeuticHypothermia").check();
+          await page.locator("#rec-coxInhibitorTherapy").check();
+          const combined = await page.getByRole("status").filter({ hasText: "Dua kondisi dicentang bersamaan." }).innerText();
+          check(!/kalkulator v20/i.test(combined),
+            key + ": combined therapy hint still exposes internal release version");
+          await page.locator("#rec-coxInhibitorTherapy").uncheck();
+          await page.locator("#rec-therapeuticHypothermia").uncheck();
+        }
         if (mode === "evaluation") {
           await page.getByRole("checkbox", { name: /Data fungsi ginjal tersedia/ }).check();
           await page.locator("#eval-scr").fill("0.6");
@@ -65,6 +77,15 @@ try {
           await page.getByRole("button", { name: "Hitung rekomendasi" }).click();
         }
         const panel = page.locator("#" + (mode === "recommendation" ? "recommendation-panel" : "evaluation-panel"));
+        const displayedCopy = await panel.textContent();
+        check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(displayedCopy),
+          key + ": user-facing screen still contains old internal terminology");
+        if (mode === "recommendation") {
+          check(displayedCopy.includes("Tidak ada kondisi klinis tambahan yang dipilih"),
+            key + ": recommendation screen missing plain-language clinical context");
+          check(displayedCopy.includes("Rekomendasi disusun berdasarkan sumber rujukan yang tercantum"),
+            key + ": source attribution still mentions notebook");
+        }
         const expectedReferenceTitles = ["Pedoman Rumah Sakit", "Literatur Terkini (ANMF 2024)"];
         const recommendationTable = mode === "evaluation"
           ? panel.locator('section[aria-labelledby="evaluation-recommendation-heading"] table')
@@ -158,6 +179,10 @@ try {
         const rawPdf = readFileSync(exportedPath, "utf8");
         check(rawPdf.startsWith("%PDF-1.4"), key + ": downloaded report is not a PDF");
         const pdfPlain = pdfTexts(rawPdf);
+        check(!/\bnotebook\b|\bkalkulator v20\b|\bmodifier\b|sumber dan batas aturan produksi/i.test(pdfPlain),
+          key + ": exported PDF still contains old internal terminology");
+        check(pdfPlain.includes("Tidak ada kondisi klinis tambahan yang dipilih"),
+          key + ": exported PDF does not use plain-language clinical context");
         const extracted = normalize(execFileSync("pdftotext", ["-layout", exportedPath, "-"], { encoding: "utf8" }));
         const pageCount = (rawPdf.match(/\/Type \/Page\b/g) || []).length;
         const stampCount = (rawPdf.match(/\(Dibuat lokal:/g) || []).length;
